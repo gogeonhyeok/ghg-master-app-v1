@@ -22,52 +22,31 @@ export default function Home({ farms }) {
 
 export async function getServerSideProps() {
   try {
+    const response = await fetch(
+      'https://data.mongodb-api.com/app/data-efhph/endpoint/data/v1/action/find',
+      {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json',
+          'api-key':
+            'EkYheuKC7iqVZ1H2FejbfNLjSj9RHDw26HWMm8Z31Cpo3nJlK6Q8jAa7gUpX4Ow7',
+        },
+        body: {
+          dataSource: 'Cluster0',
+          database: 'ghg-master-api-v1',
+          collection: 'farms',
+          filter: {},
+          sort: {
+            completedAt: 1,
+          },
+        },
+      }
+    );
+    console.log(response);
     return {
       props: {
-        farms: [
-          {
-            name: 'Hay Dairies',
-            description: 'The only goat farm since 1988',
-            address: '3 Lim Chu Kang Lane 4, Singapore 718859',
-          },
-          {
-            name: 'The Live Turtle and Tortoise Museum',
-            description:
-              'We welcome you to enter into a rare world of turtles and tortoises',
-            address: 'ORTO, 81 Lor Chencharu #01-16, Singapore 769198',
-          },
-          {
-            name: 'Qian Hu Fish Farm',
-            description:
-              'An integrated "one-stop" service provider ranging from farming, importing, exporting and distributing of ornamental fish.',
-            address: 'No. 71 Jalan Lekar Singpoare 698950',
-          },
-          {
-            name: 'Jurong Frog Farm',
-            description: 'Frog farm',
-            address: 'Singapore Lim Chu Kang',
-          },
-          {
-            name: 'Gallop Kranji Farm Resort',
-            description: 'Vegetable farm',
-            address: 'Singapore Lim Chu Kang',
-          },
-          {
-            name: 'Dairy Folks',
-            description: 'Milk farm',
-            address: 'Singapore Lim Chu Kang',
-          },
-          {
-            name: 'Bee Amazed Garden',
-            description: 'Bee farm',
-            address: 'Singapore Lim Chu Kang',
-          },
-          {
-            name: 'Nippon Koi Farm',
-            description: 'Koi farm',
-            address: 'Singapore Lim Chu Kang',
-          },
-        ],
+        farms: response,
       },
     };
   } catch (e) {
