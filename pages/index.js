@@ -2,6 +2,7 @@ import Head from 'next/head';
 import styles from '../styles/Home.module.css';
 
 export default function Home({ farms }) {
+  console.log(farms);
   return (
     <div className={styles.container}>
       <main className={styles.main}>
@@ -32,7 +33,7 @@ export async function getServerSideProps() {
           'api-key':
             'EkYheuKC7iqVZ1H2FejbfNLjSj9RHDw26HWMm8Z31Cpo3nJlK6Q8jAa7gUpX4Ow7',
         },
-        body: {
+        body: JSON.stringify({
           dataSource: 'Cluster0',
           database: 'ghg-master-api-v1',
           collection: 'farms',
@@ -40,13 +41,14 @@ export async function getServerSideProps() {
           sort: {
             completedAt: 1,
           },
-        },
+        }),
       }
     );
-    console.log(response);
+    let responseBody = await response.json();
+    
     return {
       props: {
-        farms: response,
+        farms: responseBody.documents,
       },
     };
   } catch (e) {
