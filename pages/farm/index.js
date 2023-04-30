@@ -4,7 +4,7 @@ export default function Home({ farms }) {
   return (
     <div className={styles.container}>
       <main className={styles.main}>
-        <h1>Smart Local Farms</h1>
+        <h1>Farms</h1>
         <ul>
           {farms.map((entry) => (
             <li>
