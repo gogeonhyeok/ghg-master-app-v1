@@ -10,6 +10,14 @@ export default function Home() {
         <Link href="/center">Center</Link>
         <Link href="/contact">Contact</Link>
         <Link href="/product">Product</Link>
+        <Link href="/contact-code">Contact Code</Link>
+        <Link href="/contact-setting">Contact Setting</Link>
+        <Link href="/location">Location</Link>
+        <Link href="/lot">Lot</Link>
+        <Link href="/pallet">Pallet</Link>
+        <Link href="/plan-rule">Plan Rule</Link>
+        <Link href="/serial">Serial</Link>
+        <Link href="/sku">SKU</Link>
       </main>
     </div>
   );
