@@ -1,9 +1,6 @@
 export default function CreateFarm() {
   const onSubmit = async (event) => {
-    console.log('abc');
-    console.log(event);
     event.preventDefault();
-    console.log(event);
   };
   return (
     <form

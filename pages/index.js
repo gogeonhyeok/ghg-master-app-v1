@@ -1,27 +1,16 @@
-import Head from 'next/head';
 import styles from '../styles/Home.module.css';
-import SearchForm from '../components/search-form';
-import CreateFarm from '../components/farm/create-farm';
+import Link from 'next/link';
 
-export default function Home({ farms }) {
+export default function Home() {
   return (
     <div className={styles.container}>
       <main className={styles.main}>
-        <h1>Smart Local Farms</h1>
-        <CreateFarm />
+        <h1>Master</h1>
+        <Link href="/farm">Farm</Link>
+        <Link href="/center">Center</Link>
+        <Link href="/contact">Contact</Link>
+        <Link href="/product">Product</Link>
       </main>
     </div>
   );
-}
-
-export async function getServerSideProps() {
-  try {
-    return {
-      props: {
-        farms: [],
-      },
-    };
-  } catch (e) {
-    console.error(e);
-  }
 }
