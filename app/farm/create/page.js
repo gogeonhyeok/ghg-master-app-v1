@@ -1,4 +1,4 @@
-import CreateFarm from '../../../components/farm/create-farm';
+import CreateFarm from './create-farm';
 
 export default function FarmCreate() {
   return <CreateFarm />;

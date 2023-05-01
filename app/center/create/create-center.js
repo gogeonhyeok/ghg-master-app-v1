@@ -1,10 +1,6 @@
 export default function CreateCenter() {
-  const onSubmit = async (event) => {
-    event.preventDefault();
-  };
   return (
     <form
-      onSubmit={onSubmit}
       style={{ display: 'flex', flexDirection: 'column', gap: 4 }}
     >
       <input name="centerNo" placeholder="Center No" />

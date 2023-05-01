@@ -1,9 +1,6 @@
 import Link from 'next/link';
 
 export default function CreateFarm() {
-  const onSubmit = async (event) => {
-    event.preventDefault();
-  };
   return (
     <>
       <nav
@@ -17,7 +14,6 @@ export default function CreateFarm() {
         <Link href="/">Home</Link>
       </nav>
       <form
-        onSubmit={onSubmit}
         style={{ display: 'flex', flexDirection: 'column', gap: 4 }}
       >
         <input name="name" placeholder="Name" />
