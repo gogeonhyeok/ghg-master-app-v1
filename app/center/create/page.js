@@ -1,4 +1,4 @@
-import CreateCenter from './create-center';
+import CreateCenter from '../create';
 export default function CenterCreate() {
   return <CreateCenter />;
 }
