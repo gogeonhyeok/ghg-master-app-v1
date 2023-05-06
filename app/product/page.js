@@ -1,7 +1,7 @@
-import FarmList from './list';
+import ProductList from './list';
 import Link from 'next/link';
 
-export default function FarmPage() {
+export default function ProductPage() {
   return (
     <>
       <nav
@@ -11,10 +11,10 @@ export default function FarmPage() {
           margin: 16
         }}
       >
-        <Link href="/farm/create">Create</Link>
+        <Link href="/product/create">Create</Link>
         <Link href="/">Home</Link>
       </nav>
-      <FarmList />
+      <ProductList />
     </>
-  );
+  )
 }

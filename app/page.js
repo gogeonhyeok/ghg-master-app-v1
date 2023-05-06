@@ -9,6 +9,7 @@ export default function Home() {
       gap: 8
     }}>
       <Link href="/farm">Farm</Link>
+      <Link href="/company">Company</Link>
       <Link href="/center">Center</Link>
       <Link href="/contact">Contact</Link>
       <Link href="/product">Product</Link>
