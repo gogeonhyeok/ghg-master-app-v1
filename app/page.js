@@ -6,9 +6,12 @@ export default function Home() {
     <nav style={{
       display: 'flex',
       flexDirection: 'column',
-      gap: 8
+      gap: 24,
+      padding: 24
     }}>
       <Link href="/farm">Farm</Link>
+      <Link href="/menu">Menu</Link>
+      <Link href="/user">User</Link>
       <Link href="/company">Company</Link>
       <Link href="/center">Center</Link>
       <Link href="/contact">Contact</Link>

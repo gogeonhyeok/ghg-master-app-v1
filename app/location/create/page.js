@@ -1,7 +1,7 @@
-import ListCenter from './list';
+import CreateFarm from '../create';
 import Link from 'next/link';
 
-export default function CenterPage() {
+export default function LocationCreate() {
   return (
     <>
       <nav
@@ -11,10 +11,11 @@ export default function CenterPage() {
           margin: 16
         }}
       >
-        <Link href="/center/create">Create</Link>
+        <Link href="/location">List</Link>
         <Link href="/">Home</Link>
+
       </nav>
-      <ListCenter />
+      <CreateFarm />
     </>
-  )
+  );
 }

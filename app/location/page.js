@@ -1,7 +1,7 @@
-import ListCenter from './list';
+import ListLocation from './list';
 import Link from 'next/link';
 
-export default function CenterPage() {
+export default function LocationPage() {
   return (
     <>
       <nav
@@ -11,10 +11,10 @@ export default function CenterPage() {
           margin: 16
         }}
       >
-        <Link href="/center/create">Create</Link>
+        <Link href="/location/create">Create</Link>
         <Link href="/">Home</Link>
       </nav>
-      <ListCenter />
+      <ListLocation />
     </>
-  )
+  );
 }
