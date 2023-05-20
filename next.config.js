@@ -1,4 +1,7 @@
 module.exports = {
   reactStrictMode: true,
-  experimental: { appDir: true }
+  experimental: {
+    appDir: true,
+    serverActions: true
+  }
 }
