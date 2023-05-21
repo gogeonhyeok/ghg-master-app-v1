@@ -1,7 +1,7 @@
 import ProductList from './list';
 import Link from 'next/link';
 
-export default function ProductPage() {
+export default () => {
   return (
     <>
       <nav

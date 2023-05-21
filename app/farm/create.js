@@ -9,7 +9,6 @@ export default  () => {
       name: data.get('name'),
       address: data.get('address')
     });
-    console.log(result);
   }
   return (
     <form

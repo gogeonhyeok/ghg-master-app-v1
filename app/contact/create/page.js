@@ -1,7 +1,7 @@
-import CreateFarm from '../create';
+import Create from '../create';
 import Link from 'next/link';
 
-export default function LocationCreate() {
+export default () => {
   return (
     <>
       <nav
@@ -11,11 +11,11 @@ export default function LocationCreate() {
           margin: 16
         }}
       >
-        <Link href="/location">List</Link>
+        <Link href="/contact">List</Link>
         <Link href="/">Home</Link>
 
       </nav>
-      <CreateFarm />
+      <Create />
     </>
   );
 }

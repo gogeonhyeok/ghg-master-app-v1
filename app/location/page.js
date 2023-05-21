@@ -1,20 +1,20 @@
-import ListLocation from './list';
+import List from './list';
 import Link from 'next/link';
 
-export default function LocationPage() {
+export default () => {
   return (
     <>
       <nav
         style={{
           display: 'flex',
-          gap: 4,
-          margin: 16
+          gap: 24,
+          margin: 24
         }}
       >
-        <Link href="/location/create">Create</Link>
         <Link href="/">Home</Link>
+        <Link href="/location/create">Create</Link>
       </nav>
-      <ListLocation />
+      <List />
     </>
   );
 }

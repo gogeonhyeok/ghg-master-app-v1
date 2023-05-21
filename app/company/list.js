@@ -5,16 +5,19 @@ export default async function CompanyList() {
   const database = client.db('ghg-master-api-v1');
   const items = await database.collection('companies').find().toArray();
   return (
-    <>
-      <ul>
-        {items.map((entry) => (
-          <li>
-            <h2>{entry.name}</h2>
-            <p>{entry.headquarter}</p>
-            <p>{entry.founded}</p>
-          </li>
-        ))}
-      </ul>
-    </>
+    <ul style={{
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 24,
+      padding: 24
+    }}>
+      {items.map((entry) => (
+        <li>
+          <h2>{entry.name}</h2>
+          <p>{entry.headquarter}</p>
+          <p>{entry.founded}</p>
+        </li>
+      ))}
+    </ul>
   );
 }

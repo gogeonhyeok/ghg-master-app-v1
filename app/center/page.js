@@ -1,4 +1,4 @@
-import ListCenter from './list';
+import List from './list';
 import Link from 'next/link';
 
 export default function CenterPage() {
@@ -7,14 +7,14 @@ export default function CenterPage() {
       <nav
         style={{
           display: 'flex',
-          gap: 4,
-          margin: 16
+          gap: 24,
+          margin: 24
         }}
       >
         <Link href="/center/create">Create</Link>
         <Link href="/">Home</Link>
       </nav>
-      <ListCenter />
+      <List />
     </>
   )
 }

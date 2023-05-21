@@ -11,7 +11,7 @@ export default () => {
           margin: 16
         }}
       >
-        <Link href="/center/create">Create</Link>
+        <Link href="/menu/create">Create</Link>
         <Link href="/">Home</Link>
       </nav>
       <List />

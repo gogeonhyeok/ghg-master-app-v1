@@ -5,7 +5,13 @@ export default async function ListFarm() {
   const database = client.db('ghg-master-api-v1');
   const items = await database.collection('farms').find().toArray();
   return (
-    <ul>
+    <ul style={{
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 24,
+      padding: 24
+    }}
+    >
       {items.map((entry) => (
         <li>
           <h2>{entry.name}</h2>

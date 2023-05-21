@@ -1,4 +1,4 @@
-import CreateFarm from '../create';
+import Create from '../create';
 import Link from 'next/link';
 
 export default function LocationCreate() {
@@ -15,7 +15,7 @@ export default function LocationCreate() {
         <Link href="/">Home</Link>
 
       </nav>
-      <CreateFarm />
+      <Create />
     </>
   );
 }
