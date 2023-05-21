@@ -1,7 +1,7 @@
 import List from './list';
 import Link from 'next/link';
 
-export default function CenterPage() {
+export default () => {
   return (
     <>
       <nav
@@ -11,8 +11,8 @@ export default function CenterPage() {
           margin: 24
         }}
       >
-        <Link href="/center/create">Create</Link>
         <Link href="/">Home</Link>
+        <Link href="/center/create">Create</Link>
       </nav>
       <List />
     </>

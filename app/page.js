@@ -10,31 +10,25 @@ export default () => {
     }}>
       
       <Link href="/menu">Menu</Link>
-      <Link href="/user">User</Link>
+      <Link href="/farm">Farm</Link>
+      <Link href="/restaurant">Restaurant</Link>
+      <Link href="/hotel">Hotel</Link>
       <section>
-        <h1>Farm</h1>
+        <h1>ITSM</h1>
         <ul style={{
           display: 'flex',
           flexDirection: 'column',
           gap: 24,
           padding: 24
         }}>
-          <li><Link href="/farm">Farm</Link></li>
+          <li><Link href="/request">Request</Link></li>
+          <li><Link href="/system">System</Link></li>
+          <li><Link href="/standard-code">Standard Code</Link></li>
+          <li><Link href="/support-type">Support Type</Link></li>
         </ul>
       </section>
       <section>
-        <h1>Article</h1>
-        <ul style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 24,
-          padding: 24
-        }}>
-          <li><Link href="/article">Article</Link></li>
-        </ul>
-      </section>
-      <section>
-        <h1>Warehouse</h1>
+        <h1>WMS Master</h1>
         <ul style={{
           display: 'flex',
           flexDirection: 'column',
@@ -53,6 +47,17 @@ export default () => {
           <li><Link href="/plan-rule">Plan Rule</Link></li>
           <li><Link href="/serial">Serial</Link></li>
           <li><Link href="/sku">SKU</Link></li>
+        </ul>
+      </section>
+      <section>
+        <h1>WMS Transactions</h1>
+        <ul style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 24,
+          padding: 24
+        }}>
+          <li><Link href="/order">Order</Link></li>
           <li><Link href="/picking-plan">Picking Plan</Link></li>
           <li><Link href="/picking">Picking</Link></li>
           <li><Link href="/gi">GI (Good Issuing)</Link></li>

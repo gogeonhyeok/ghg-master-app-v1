@@ -11,8 +11,8 @@ export default () => {
           margin: 16
         }}
       >
-        <Link href="/put-away">List</Link>
         <Link href="/">Home</Link>
+        <Link href="/put-away">List</Link>
 
       </nav>
       <Create />

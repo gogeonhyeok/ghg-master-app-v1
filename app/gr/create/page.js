@@ -7,12 +7,12 @@ export default () => {
       <nav
         style={{
           display: 'flex',
-          gap: 4,
-          margin: 16
+          gap: 24,
+          margin: 24
         }}
       >
-        <Link href="/gr">List</Link>
         <Link href="/">Home</Link>
+        <Link href="/gr">List</Link>
 
       </nav>
       <Create />
