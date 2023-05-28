@@ -25,6 +25,8 @@ export default () => {
           <li><Link href="/system">System</Link></li>
           <li><Link href="/standard-code">Standard Code</Link></li>
           <li><Link href="/support-type">Support Type</Link></li>
+          <li><Link href="/request-type">Request Type</Link></li>
+          <li><Link href="/role">Role</Link></li>
         </ul>
       </section>
       <section>
