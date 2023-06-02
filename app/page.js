@@ -17,11 +17,13 @@ export default () => {
         <Link href="/support-type">Support Type</Link>
         <Link href="/request-type">Request Type</Link>
         <Link href="/role">Role</Link>
+        <Link href="/itsm-company">Company</Link>
       </section>
       <section>
         <h1>WMS Master</h1>
         <Link href="/center">Center</Link>
         <Link href="/contact">Contact</Link>
+        <Link href="/wms-company">Company</Link>
         <Link href="/contact-code">Contact Code</Link>
         <Link href="/contact-setting">Contact Setting</Link>
         <Link href="/location">Location</Link>
