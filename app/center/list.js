@@ -5,19 +5,19 @@ export default async () => {
   const database = client.db('ghg-master-api-v1');
   const items = await database.collection('centers').find().toArray();
   return (
-    <ul style={{
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 24,
-      padding: 24
-    }}>
-      {items.map((entry) => (
-        <li>
-          <h2>{entry.centerNo}</h2>
-          <p>{entry.centerName}</p>
-          <p>{entry.centerType}</p>
-        </li>
+    <table className="table">
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Type</th>
+      </tr>
+      {items.map(entry => (
+        <tr>
+          <td>{entry.centerNo}</td>
+          <td>{entry.centerName}</td>
+          <td>{entry.centerType}</td>
+        </tr>
       ))}
-    </ul>
+    </table>
   );
 }

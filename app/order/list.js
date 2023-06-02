@@ -5,17 +5,9 @@ export default async () => {
   const database = client.db('ghg-master-api-v1');
   const items = await database.collection('orders').find().limit(100).toArray();
   return (
-    <table style={{
-      tableLayout: 'fixed',
-      width: '100%',
-      margin: 24
-    }}>
-      <tr style={{
-        textAlign: 'left'
-      }}>
-        <th style={{
-          padding: 4
-        }}>Order No</th>
+    <table className="table">
+      <tr>
+        <th>Order No</th>
         <th>Contact ID</th>
         <th>Center No</th>
         <th>ETA</th>
@@ -30,9 +22,7 @@ export default async () => {
       </tr>
       {items.map((entry) => (
         <tr>
-          <td style={{
-            padding: 4
-          }}>{entry.contactOrdNo}</td>
+          <td>{entry.contactOrdNo}</td>
           <td>{entry.contactId}</td>
           <td>{entry.centerNo}</td>
           <td>{entry.eta}</td>
@@ -47,20 +37,5 @@ export default async () => {
         </tr>
       ))}
     </table>
-    // <ul style={{
-    //   display: 'flex',
-    //   flexDirection: 'column',
-    //   gap: 24,
-    //   padding: 24
-    // }}>
-    //   {items.map((entry) => (
-    //     <li>
-    //       <h2>{entry.orderNo}</h2>
-    //       <p>{entry.contactOrdType}</p>
-    //       <p>{entry.contactId}</p>
-    //       <p>{entry.centerNo}</p>
-    //     </li>
-    //   ))}
-    // </ul>
   );
 }

@@ -5,20 +5,19 @@ export default async function ListFarm() {
   const database = client.db('ghg-master-api-v1');
   const items = await database.collection('farms').find().toArray();
   return (
-    <ul style={{
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 24,
-      padding: 24
-    }}
-    >
-      {items.map((entry) => (
-        <li>
-          <h2>{entry.name}</h2>
-          <p>{entry.description}</p>
-          <p>{entry.address}</p>
-        </li>
+    <table className="table">
+      <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Address</th>
+      </tr>
+      {items.map(entry => (
+        <tr>
+          <td>{entry.name}</td>
+          <td>{entry.description}</td>
+          <td>{entry.address}</td>
+        </tr>
       ))}
-    </ul>
+    </table>
   );
 }

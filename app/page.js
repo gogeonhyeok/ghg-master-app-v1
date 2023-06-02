@@ -2,72 +2,45 @@ import Link from 'next/link';
 
 export default () => {
   return (
-    <nav style={{
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 24,
-      padding: 24
-    }}>
-      
+    <nav className="nav">
       <Link href="/menu">Menu</Link>
       <Link href="/farm">Farm</Link>
       <Link href="/restaurant">Restaurant</Link>
       <Link href="/hotel">Hotel</Link>
+      <Link href="/company">Company</Link>
+      <Link href="/product">Product</Link>
       <section>
         <h1>ITSM</h1>
-        <ul style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 24,
-          padding: 24
-        }}>
-          <li><Link href="/request">Request</Link></li>
-          <li><Link href="/system">System</Link></li>
-          <li><Link href="/standard-code">Standard Code</Link></li>
-          <li><Link href="/support-type">Support Type</Link></li>
-          <li><Link href="/request-type">Request Type</Link></li>
-          <li><Link href="/role">Role</Link></li>
-        </ul>
+        <Link href="/request">Request</Link>
+        <Link href="/system">System</Link>
+        <Link href="/standard-code">Standard Code</Link>
+        <Link href="/support-type">Support Type</Link>
+        <Link href="/request-type">Request Type</Link>
+        <Link href="/role">Role</Link>
       </section>
       <section>
         <h1>WMS Master</h1>
-        <ul style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 24,
-          padding: 24
-        }}>
-          <li><Link href="/company">Company</Link></li>
-          <li><Link href="/center">Center</Link></li>
-          <li><Link href="/contact">Contact</Link></li>
-          <li><Link href="/product">Product</Link></li>
-          <li><Link href="/contact-code">Contact Code</Link></li>
-          <li><Link href="/contact-setting">Contact Setting</Link></li>
-          <li><Link href="/location">Location</Link></li>
-          <li><Link href="/lot">Lot</Link></li>
-          <li><Link href="/pallet">Pallet</Link></li>
-          <li><Link href="/plan-rule">Plan Rule</Link></li>
-          <li><Link href="/serial">Serial</Link></li>
-          <li><Link href="/sku">SKU</Link></li>
-        </ul>
+        <Link href="/center">Center</Link>
+        <Link href="/contact">Contact</Link>
+        <Link href="/contact-code">Contact Code</Link>
+        <Link href="/contact-setting">Contact Setting</Link>
+        <Link href="/location">Location</Link>
+        <Link href="/lot">Lot</Link>
+        <Link href="/pallet">Pallet</Link>
+        <Link href="/plan-rule">Plan Rule</Link>
+        <Link href="/serial">Serial</Link>
+        <Link href="/sku">SKU</Link>
       </section>
       <section>
-        <h1>WMS Transactions</h1>
-        <ul style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 24,
-          padding: 24
-        }}>
-          <li><Link href="/order">Order</Link></li>
-          <li><Link href="/picking-plan">Picking Plan</Link></li>
-          <li><Link href="/picking">Picking</Link></li>
-          <li><Link href="/gi">GI (Good Issuing)</Link></li>
-          <li><Link href="/gr">GR (Good Receiving)</Link></li>
-          <li><Link href="/put-away-plan">Put-Away Plan</Link></li>
-          <li><Link href="/put-away">Put-Away</Link></li>
-          <li><Link href="/inventory">Inventory</Link></li>
-        </ul>
+        <h1>WMS</h1>
+        <Link href="/order">Order</Link>
+        <Link href="/picking-plan">Picking Plan</Link>
+        <Link href="/picking">Picking</Link>
+        <Link href="/gi">GI (Good Issuing)</Link>
+        <Link href="/gr">GR (Good Receiving)</Link>
+        <Link href="/put-away-plan">Put-Away Plan</Link>
+        <Link href="/put-away">Put-Away</Link>
+        <Link href="/inventory">Inventory</Link>
       </section>
     </nav>
   );

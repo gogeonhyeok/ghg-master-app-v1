@@ -5,21 +5,23 @@ export default async () => {
   const database = client.db('ghg-master-api-v1');
   const items = await database.collection('putAwayPlans').find().limit(100).toArray();
   return (
-    <ul style={{
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 24,
-      margin: 24
-    }}>
-      {items.map((entry) => (
-        <li>
-          <h2>{entry.pwPlanNo}</h2>
-          <p>{entry.contactId}</p>
-          <p>{entry.centerNo}</p>
-          <p>{entry.invenNo}</p>
-          <p>{entry.qty}</p>
-        </li>
+    <table className="table">
+      <tr>
+        <th>ID</th>
+        <th>Contact ID</th>
+        <th>Center No</th>
+        <th>Inventory No</th>
+        <th>Qty</th>
+      </tr>
+      {items.map(entry => (
+        <tr>
+          <td>{entry.pwPlanNo}</td>
+          <td>{entry.contactId}</td>
+          <td>{entry.centerNo}</td>
+          <td>{entry.invenNo}</td>
+          <td>{entry.qty}</td>
+        </tr>
       ))}
-    </ul>
+    </table>
   );
 }

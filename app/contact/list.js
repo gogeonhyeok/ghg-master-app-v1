@@ -5,18 +5,17 @@ export default async function ListContact() {
   const database = client.db('ghg-master-api-v1');
   const items = await database.collection('contacts').find().toArray();
   return (
-    <ul style={{
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 24,
-      padding: 24
-    }}>
-      {items.map((entry) => (
-        <li>
-          <h2>{entry.contactId}</h2>
-          <p>{entry.contactName}</p>
-        </li>
+    <table className="table">
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+      </tr>
+      {items.map(entry => (
+        <tr>
+          <td>{entry.contactId}</td>
+          <td>{entry.contactName}</td>
+        </tr>
       ))}
-    </ul>
+    </table>
   );
 }
