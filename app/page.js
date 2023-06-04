@@ -18,6 +18,7 @@ export default () => {
         <Link href="/request-type">Request Type</Link>
         <Link href="/role">Role</Link>
         <Link href="/itsm-company">Company</Link>
+        <Link href="/employee">Employee</Link>
       </section>
       <section>
         <h1>WMS Master</h1>
@@ -32,6 +33,11 @@ export default () => {
         <Link href="/plan-rule">Plan Rule</Link>
         <Link href="/serial">Serial</Link>
         <Link href="/sku">SKU</Link>
+        <Link href="/wms-user">User</Link>
+        <Link href="/party">Party</Link>
+        <Link href="/wms-product">Product</Link>
+        <Link href="/order-type">Order Type</Link>
+        <Link href="/workflow">Workflow</Link>
       </section>
       <section>
         <h1>WMS</h1>

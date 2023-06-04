@@ -37,6 +37,11 @@ a {
   font-weight: bold;
 }
 
+.nav section a {
+  flex-basis: content;
+}
+
+
 .table {
   table-layout: 'fixed';
   width: 100%;

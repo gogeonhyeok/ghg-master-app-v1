@@ -3,7 +3,59 @@ import { MongoClient } from 'mongodb';
 export default async () => {
   const client = new MongoClient("mongodb+srv://gogeonhyeok:qTAB0aDdtRBKocyx@cluster0.smqlq.mongodb.net/?retryWrites=true&w=majority");
   const database = client.db('ghg-master-api-v1');
-  const items = await database.collection('masterCompanies').find().limit(100).toArray();
+  const items = await database.collection('masterCompanies').aggregate([
+    {
+      '$lookup': {
+        'from': 'masterEmployees',
+        'localField': 'createUser',
+        'foreignField': 'empId',
+        'as': 'masterEmployees'
+      }
+    },
+    {
+      '$addFields': {
+        'createUser': {
+          '$getField': {
+            'field': 'displayName',
+            'input': {
+              '$arrayElemAt': [
+                '$masterEmployees',
+                0
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      '$lookup': {
+        'from': 'masterEmployees',
+        'localField': 'updateUser',
+        'foreignField': 'empId',
+        'as': 'masterEmployees'
+      }
+    },
+    {
+      '$addFields': {
+        'updateUser': {
+          '$getField': {
+            'field': 'displayName',
+            'input': {
+              '$arrayElemAt': [
+                '$masterEmployees',
+                0
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      '$project': {
+        'masterEmployees': 0
+      }
+    }
+  ]).limit(100).toArray();
   return (
     <table className="table">
       <tr>

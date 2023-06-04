@@ -3,22 +3,22 @@ import { MongoClient } from 'mongodb';
 export default async () => {
   const client = new MongoClient("mongodb+srv://gogeonhyeok:qTAB0aDdtRBKocyx@cluster0.smqlq.mongodb.net/?retryWrites=true&w=majority");
   const database = client.db('ghg-master-api-v1');
-  const items = await database.collection('masterSystems').aggregate([
+  const items = await database.collection('masterEmployees').aggregate([
     {
       '$lookup': {
-        'from': 'masterSystems',
-        'localField': 'parentSystemId',
-        'foreignField': 'systemId',
-        'as': 'masterSystems'
+        'from': 'masterCompanies',
+        'localField': 'companyId',
+        'foreignField': 'companyId',
+        'as': 'masterCompanies'
       }
     },
     {
       '$addFields': {
-        'parentSystemName': {
+        'companyName': {
           '$getField': {
-            'field': 'systemName',
+            'field': 'companyName',
             'input': {
-              '$arrayElemAt': ['$masterSystems', 0]
+              '$arrayElemAt': ['$masterCompanies', 0]
             }
           }
         }
@@ -66,16 +66,20 @@ export default async () => {
     },
     {
       '$project': {
-        'masterSystems': 0,
+        'masterCompanies': 0,
         'masterEmployees': 0
       }
     }
-  ]).toArray();
+  ]).limit(100).toArray();
   return (
     <table className="table">
       <tr>
-        <th>Name</th>
-        <th>Parent System</th>
+        <th>ID</th>
+        <th>User ID</th>
+        <th>Display Name</th>
+        <th>Company</th>
+        <th>Language</th>
+        <th>Time Zone</th>
         <th>Cancel Tag</th>
         <th>Create Date</th>
         <th>Create User</th>
@@ -84,8 +88,13 @@ export default async () => {
       </tr>
       {items.map(entry => (
         <tr>
-          <td>{entry.systemName}</td>
-          <td>{entry.parentSystemName}</td>
+          <td>{entry.empId}</td>
+          <td>{entry.userId}</td>
+          <td>{entry.displayName}</td>
+          <td>{entry.companyName}</td>
+          <td>{entry.language}</td>
+          <td>{entry.timezone}</td>
+          <td>{entry.cancelTag}</td>
           <td>{entry.createDate}</td>
           <td>{entry.createUser}</td>
           <td>{entry.updateDate}</td>

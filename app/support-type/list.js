@@ -3,19 +3,63 @@ import { MongoClient } from 'mongodb';
 export default async () => {
   const client = new MongoClient("mongodb+srv://gogeonhyeok:qTAB0aDdtRBKocyx@cluster0.smqlq.mongodb.net/?retryWrites=true&w=majority");
   const database = client.db('ghg-master-api-v1');
-  const items = await database.collection('requestSupportTypes').find().toArray();
+  const items = await database.collection('requestSupportTypes').aggregate([
+    {
+      '$lookup': {
+        'from': 'masterEmployees',
+        'localField': 'createUser',
+        'foreignField': 'empId',
+        'as': 'masterEmployees'
+      }
+    },
+    {
+      '$addFields': {
+        'createUser': {
+          '$getField': {
+            'field': 'displayName',
+            'input': {
+              '$arrayElemAt': [
+                '$masterEmployees',
+                0
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      '$lookup': {
+        'from': 'masterEmployees',
+        'localField': 'updateUser',
+        'foreignField': 'empId',
+        'as': 'masterEmployees'
+      }
+    },
+    {
+      '$addFields': {
+        'updateUser': {
+          '$getField': {
+            'field': 'displayName',
+            'input': {
+              '$arrayElemAt': [
+                '$masterEmployees',
+                0
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      '$project': {
+        'masterEmployees': 0
+      }
+    }
+  ]).limit(100).toArray();
   return (
-    <table style={{
-      tableLayout: 'fixed',
-      width: '100%',
-      margin: 24
-    }}>
-      <tr style={{
-        textAlign: 'left'
-      }}>
-        <th style={{
-          padding: 4
-        }}>ID</th>
+    <table className="table">
+      <tr>
+        <th>ID</th>
         <th>Description</th>
         <th>Create Date</th>
         <th>Create User</th>
@@ -24,9 +68,7 @@ export default async () => {
       </tr>
       {items.map(entry => (
         <tr>
-          <td style={{
-            padding: 4
-          }}>{entry.supportTypeId}</td>
+          <td>{entry.supportTypeId}</td>
           <td>{entry.supportTypeDescription}</td>
           <td>{entry.createDate}</td>
           <td>{entry.createUser}</td>
