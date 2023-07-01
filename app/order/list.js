@@ -8,13 +8,14 @@ export default async () => {
     <table className="table">
       <tr>
         <th>Order No</th>
+        <th>Order Type</th>
         <th>Contact ID</th>
         <th>Center No</th>
         <th>ETA</th>
         <th>Due Date</th>
         <th>Receipt Date</th>
         <th>Urgent</th>
-        <th>Inventory Ownership</th>
+        <th>Ownership</th>
         <th>Collect Bill Amount</th>
         <th>Cancel Tag</th>
         <th>Create Date</th>
@@ -23,6 +24,7 @@ export default async () => {
       {items.map((entry) => (
         <tr>
           <td>{entry.contactOrdNo}</td>
+          <td>{entry.contactOrdType}</td>
           <td>{entry.contactId}</td>
           <td>{entry.centerNo}</td>
           <td>{entry.eta}</td>

@@ -1,6 +1,5 @@
-import List from './list';
 import Link from 'next/link';
-
+import Create from '../create';
 export default () => {
   return (
     <>
@@ -12,9 +11,9 @@ export default () => {
         }}
       >
         <Link href="/">Home</Link>
-        <Link href="/sku/create">Create</Link>
+        <Link href="/order">List</Link>
       </nav>
-      <List />
+      <Create />
     </>
   );
 }

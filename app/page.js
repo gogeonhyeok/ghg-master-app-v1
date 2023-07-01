@@ -42,6 +42,7 @@ export default () => {
       <section>
         <h1>WMS</h1>
         <Link href="/order">Order</Link>
+        <Link href="/order-item">Order Item</Link>
         <Link href="/picking-plan">Picking Plan</Link>
         <Link href="/picking">Picking</Link>
         <Link href="/gi">GI (Good Issuing)</Link>

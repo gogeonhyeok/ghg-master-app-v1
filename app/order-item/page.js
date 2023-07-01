@@ -12,9 +12,9 @@ export default () => {
         }}
       >
         <Link href="/">Home</Link>
-        <Link href="/sku/create">Create</Link>
+        <Link href="/order/create">Create</Link>
       </nav>
       <List />
     </>
-  );
+  )
 }
