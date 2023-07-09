@@ -15,7 +15,7 @@ export default function Layout({ children }) {
         }}>
           <SideBar />
           <div>
-            {children}
+          {children}
           </div>
         </div>
       </body>
