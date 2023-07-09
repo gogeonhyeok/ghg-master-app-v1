@@ -1,22 +1,24 @@
-import { MongoClient } from 'mongodb';
+'use client'
 
-export default async () => {
-  async function onAction(data) {
-    'use server';
-    const client = new MongoClient("mongodb+srv://gogeonhyeok:qTAB0aDdtRBKocyx@cluster0.smqlq.mongodb.net/?retryWrites=true&w=majority");
-    const database = client.db('ghg-master-api-v1');
-    const result = await database.collection('articles').insertOne({
-      subject: data.get('subject'),
-      body: data.get('body'),
-    });
+import { addItem } from './actions'
+import { useRouter } from 'next/navigation'
+
+export default () => {
+  const router = useRouter()
+
+  const onAction = async (data) => {
+    await addItem(data)
+    router.back()
   }
+
   return (
     <form
       action={onAction}
       style={{ 
         display: 'flex', 
         flexDirection: 'column', 
-        gap: 4
+        gap: 4,
+        margin: 24
       }}
     >
       <input name="subject" placeholder="Subject" />
