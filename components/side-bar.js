@@ -156,18 +156,6 @@ export default () => {
       groupName: 'WMS'
     },
   ];
-
-  <section>
-  <h1>WMS</h1>
-  <Link href="/order">Order</Link>
-  <Link href="/picking-plan">Picking Plan</Link>
-  <Link href="/picking">Picking</Link>
-  <Link href="/gi">GI (Good Issuing)</Link>
-  <Link href="/gr">GR (Good Receiving)</Link>
-  <Link href="/put-away-plan">Put-Away Plan</Link>
-  <Link href="/put-away">Put-Away</Link>
-  <Link href="/inventory">Inventory</Link>
-</section>
   const groupBy = viewModel.reduce((prev, curr) => {
     const { groupName } = curr
     prev[groupName] = prev[groupName] ?? []
