@@ -1,4 +1,5 @@
 import '../styles/globals.css'
+import SideBar from '../components/side-bar'
 
 export default function Layout({ children }) {
   return (
@@ -7,7 +8,16 @@ export default function Layout({ children }) {
         <title>Next.jsx</title>
       </head>
       <body>
-        {children}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 4
+        }}>
+          <SideBar />
+          <div>
+            {children}
+          </div>
+        </div>
       </body>
     </html>
   )

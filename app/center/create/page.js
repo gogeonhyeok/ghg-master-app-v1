@@ -1,5 +1,5 @@
-import Link from 'next/link';
-import Create from '../create';
+import Link from 'next/link'
+import Create from '../create'
 export default () => {
   return (
     <>
