@@ -23,24 +23,35 @@ a {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding: 24px;
+  padding-top: 24px;
+  padding-left: 16px;
+  width: 160px;
 }
 
 .nav section {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding: 24px;
 }
 
 .nav section h1 {
   font-weight: bold;
 }
 
-.nav section a {
+.nav a {
   flex-basis: content;
 }
 
+.nav section a {
+  flex-basis: content;
+  padding-left: 8px;
+}
+
+.navbar {
+  display: flex;
+  gap: 24px;
+  margin: 24px;
+}
 
 .table {
   table-layout: 'fixed';

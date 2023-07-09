@@ -51,17 +51,9 @@ export default async () => {
     }
   ]).limit(100).toArray();
   return (
-    <table style={{
-      tableLayout: 'fixed',
-      width: '100%',
-      margin: 24
-    }}>
-      <tr style={{
-        textAlign: 'left'
-      }}>
-        <th style={{
-          padding: 4
-        }}>ID</th>
+    <table className='table'>
+      <tr>
+        <th>ID</th>
         <th>Subject</th>
         <th>Content</th>
         <th>Create Date</th>
@@ -71,9 +63,7 @@ export default async () => {
       </tr>
       {items.map(entry => (
         <tr>
-          <td style={{
-            padding: 4
-          }}>{entry.requestId}</td>
+          <td>{entry.requestId}</td>
           <td>{entry.subject}</td>
           <td>{entry.content}</td>
           <td>{entry.createDate}</td>

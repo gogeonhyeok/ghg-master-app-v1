@@ -149,6 +149,7 @@ export default () => {
           if (groupName !== 'undefined') {
             return (
               <section>
+                <hr style={{ borderTop: '1px solid #bbb' }} />
                 <h1>{groupName}</h1>
                 {groupBy[groupName].map(model => (
                   <Link href={model.href}>{model.displayName}</Link>
