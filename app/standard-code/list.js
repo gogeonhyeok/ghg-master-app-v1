@@ -1,93 +1,92 @@
-import { MongoClient } from 'mongodb';
+'use client'
+import { listItems } from './actions'
+import { useEffect, useState } from 'react'
 
-export default async () => {
-  const client = new MongoClient("mongodb+srv://gogeonhyeok:qTAB0aDdtRBKocyx@cluster0.smqlq.mongodb.net/?retryWrites=true&w=majority");
-  const database = client.db('ghg-master-api-v1');
-  const items = await database.collection('masterStandardCodes').aggregate([
+export default () => {
+  const [items, setItems] = useState([])
+  useEffect(() => {
+    listItems().then(response => setItems(response))
+  }, [])
+
+  const onAction = async (data) => {
+    listItems(data).then(response => setItems(response))
+  }
+  let viewModel = [
     {
-      '$lookup': {
-        'from': 'masterEmployees',
-        'localField': 'createUser',
-        'foreignField': 'empId',
-        'as': 'masterEmployees'
-      }
+      header: 'Type',
+      key: 'codeType'
     },
     {
-      '$addFields': {
-        'createUser': {
-          '$getField': {
-            'field': 'displayName',
-            'input': {
-              '$arrayElemAt': [
-                '$masterEmployees',
-                0
-              ]
-            }
-          }
-        }
-      }
+      header: 'ID',
+      key: 'codeId'
     },
     {
-      '$lookup': {
-        'from': 'masterEmployees',
-        'localField': 'updateUser',
-        'foreignField': 'empId',
-        'as': 'masterEmployees'
-      }
+      header: 'Description',
+      key: 'codeDescription'
     },
     {
-      '$addFields': {
-        'updateUser': {
-          '$getField': {
-            'field': 'displayName',
-            'input': {
-              '$arrayElemAt': [
-                '$masterEmployees',
-                0
-              ]
-            }
-          }
-        }
-      }
+      header: 'Create Date',
+      key: 'createDate'
     },
     {
-      '$project': {
-        'masterEmployees': 0
-      }
+      header: 'Create User',
+      key: 'createUser'
+    },
+    {
+      header: 'Update Date',
+      key: 'updateDate'
+    },
+    {
+      header: 'Update User',
+      key: 'updateUser'
     }
-  ]).limit(100).toArray();
+  ]
   return (
-    <table style={{
-      tableLayout: 'fixed',
-      width: '100%',
-      margin: 24
-    }}>
-      <tr style={{
-        textAlign: 'left'
-      }}>
-        <th style={{
-          padding: 4
-        }}>Type</th>
-        <th>ID</th>
-        <th>Description</th>
-        <th>Create Date</th>
-        <th>Create User</th>
-        <th>Update Date</th>
-        <th>Update User</th>
-      </tr>
-      {items.map(entry => (
+    <>
+      <form
+        action={onAction}
+        style={{
+          paddingLeft: 24,
+          display: 'flex',
+          gap: 16
+        }}
+      >
+        <select name="searchType">
+          <option value="codeType">Type</option>
+          <option value="codeId">ID</option>
+        </select>
+        <input name="searchText" />
+        <button type="submit">Search</button>
+      </form>
+      <table className="table">
         <tr>
-          <td style={{
-            padding: 4
-          }}>{entry.codeType}</td>
-          <td>{entry.codeId}</td>
-          <td>{entry.codeDescription}</td>
-          <td>{entry.createDate}</td>
-          <td>{entry.createUser}</td>
-          <td>{entry.updateDate}</td>
-          <td>{entry.updateUser}</td>
+          {viewModel.map(item => <th>{item.header}</th>)}
         </tr>
-      ))}
-    </table>
+        {items.map(entry => (
+          <tr>
+            {viewModel.map(item => <td>{entry[item.key]}</td>)}
+          </tr>
+        ))}
+      </table>
+      <ul style={{
+        display: 'flex',
+        gap: 24,
+        justifyContent: 'center',
+        marginBottom: 16
+      }}>
+        <li><button>Prev</button></li>
+        <li><button>1</button></li>
+        <li><button>2</button></li>
+        <li><button>3</button></li>
+        <li><button>4</button></li>
+        <li><button>5</button></li>
+        <li><button>6</button></li>
+        <li><button>7</button></li>
+        <li><button>8</button></li>
+        <li><button>9</button></li>
+        <li><button>10</button></li>
+        <li><button>Next</button></li>
+      </ul>
+    </>
   );
 }
