@@ -163,18 +163,25 @@ export default () => {
     return prev
   }, {});
   return (
-    <nav className="nav">
+    <nav className="nav" style={{
+      minWidth: 300,
+      overflowY: 'scroll',
+      maxHeight: 'calc(100vh)',
+      position: 'fixed'
+    }}>
       {
         Object.keys(groupBy).map(groupName => {
           if (groupName !== 'undefined') {
             return (
-              <section>
+              <>
                 <hr style={{ borderTop: '1px solid #bbb' }} />
-                <h1>{groupName}</h1>
-                {groupBy[groupName].map(model => (
-                  <Link href={model.href}>{model.displayName}</Link>
-                ))}
-              </section>
+                <section>
+                  <h1>{groupName}</h1>
+                  {groupBy[groupName].map(model => (
+                    <Link href={model.href}>{model.displayName}</Link>
+                  ))}
+                </section>
+              </>
             )
           } else {
             return (
