@@ -1,7 +1,7 @@
 import List from './list';
 import Link from 'next/link';
 
-export default () => {
+export default async () => {
   return (
     <>
       <nav
