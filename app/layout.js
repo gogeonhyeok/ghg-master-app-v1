@@ -14,7 +14,7 @@ export default function Layout({ children }) {
           gap: 4
         }}>
           <SideBar />
-          <div>
+          <div style={{marginLeft: 300}}>
           {children}
           </div>
         </div>
