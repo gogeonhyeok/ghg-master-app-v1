@@ -8,22 +8,24 @@ let viewModel = [
     displayName: 'Menu'
   }, {
     href: '/farm',
-    displayName: 'Farm'
+    displayName: 'Farm',
+    groupName: 'Portfolio'
   }, {
     href: '/restaurant',
-    displayName: 'Restaurant'
+    displayName: 'Restaurant',
+    groupName: 'Portfolio'
   }, {
     href: '/hotel',
-    displayName: 'Hotel'
+    displayName: 'Hotel',
+    groupName: 'Portfolio'
   }, {
     href: '/company',
-    displayName: 'Company'
-  }, {
-    href: '/product',
-    displayName: 'Product'
+    displayName: 'Company',
+    groupName: 'Portfolio'
   }, {
     href: '/article',
-    displayName: 'Article'
+    displayName: 'Article',
+    groupName: 'Portfolio'
   }, {
     href: '/portfolio/product',
     displayName: 'Product',
