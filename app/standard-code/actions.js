@@ -2,6 +2,17 @@
 
 import { MongoClient } from 'mongodb';
 
+export async function addItem(data) {
+  const client = new MongoClient("mongodb+srv://gogeonhyeok:qTAB0aDdtRBKocyx@cluster0.smqlq.mongodb.net/?retryWrites=true&w=majority");
+  const database = client.db('ghg-master-api-v1');
+  await database.collection('masterStandardCodes').insertOne({
+    codeId: data.get('codeId'),
+    codeType: data.get('codeType'),
+    codeDescription: data.get('codeDescription'),
+    codeVariant: data.get('codeVariant'),
+  });
+}
+
 export async function listItems(data) {
   const client = new MongoClient("mongodb+srv://gogeonhyeok:qTAB0aDdtRBKocyx@cluster0.smqlq.mongodb.net/?retryWrites=true&w=majority");
   const database = client.db('ghg-master-api-v1');
@@ -59,7 +70,7 @@ export async function listItems(data) {
     }
   ]
 
-  if(data !== undefined) {
+  if(data !== undefined && data instanceof FormData && data.has('searchType') && data.has('searchText') && data.get('searchText') !== '') {
     stages.unshift({
       '$match': {
         [data.get('searchType')]: data.get('searchText')

@@ -1,21 +1,79 @@
-import { MongoClient } from 'mongodb';
+'use client'
 
-export default async () => {
-  const client = new MongoClient("mongodb+srv://gogeonhyeok:qTAB0aDdtRBKocyx@cluster0.smqlq.mongodb.net/?retryWrites=true&w=majority");
-  const database = client.db('ghg-master-api-v1');
-  const items = await database.collection('articles').find().toArray();
+import { listItems } from './actions'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+
+export default () => {
+  const [items, setItems] = useState([])
+  useEffect(() => {
+    listItems().then(response => setItems(response))
+  }, [])
+
+  const onAction = async (data) => {
+    listItems(data).then(response => setItems(response))
+  }
+  let viewModel = [
+    {
+      header: 'Subject',
+      key: 'subject'
+    },
+    {
+      header: 'Body',
+      key: 'body'
+    },
+  ]
   return (
-    <table className="table">
-      <tr>
-        <th>Subject</th>
-        <th>Body</th>
-      </tr>
-      {items.map(entry => (
+    <>
+      <form
+        action={onAction}
+        style={{
+          paddingLeft: 24,
+          display: 'flex',
+          justifyContent: 'flex-end',
+          marginRight: 24,
+          marginTop: 24,
+          gap: 16
+        }}
+      >
+        <select name="searchType">
+          <option value="subject">Subject</option>
+          <option value="body">Body</option>
+        </select>
+        <input name="searchText" />
+        <button type="submit">Search</button>
+        <Link href="/standard-code/create">Create</Link>
+      </form>
+      <table className="table">
         <tr>
-          <td>{entry.subject}</td>
-          <td>{entry.body}</td>
+          {viewModel.map(item => <th>{item.header}</th>)}
         </tr>
-      ))}
-    </table>
+        {items.map(entry => (
+          <tr>
+            {viewModel.map(item => <td>{entry[item.key]}</td>)}
+          </tr>
+        ))}
+      </table>
+      <ul style={{
+        display: 'flex',
+        gap: 24,
+        justifyContent: 'flex-end',
+        marginBottom: 16,
+        marginRight: 24
+      }}>
+        <li><button>Prev</button></li>
+        <li><button>1</button></li>
+        <li><button>2</button></li>
+        <li><button>3</button></li>
+        <li><button>4</button></li>
+        <li><button>5</button></li>
+        <li><button>6</button></li>
+        <li><button>7</button></li>
+        <li><button>8</button></li>
+        <li><button>9</button></li>
+        <li><button>10</button></li>
+        <li><button>Next</button></li>
+      </ul>
+    </>
   );
 }
