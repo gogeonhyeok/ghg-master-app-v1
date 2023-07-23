@@ -1,12 +1,12 @@
 import '../styles/globals.css'
-import SideBar from '../components/side-bar'
+import SideBar from '../components/sidebar'
 import Link from 'next/link'
 
 export default function Layout({ children }) {
   return (
     <html lang="en">
       <head>
-        <title>Next.jsx</title>
+        <title>Main</title>
       </head>
       <body>
         <div style={{
