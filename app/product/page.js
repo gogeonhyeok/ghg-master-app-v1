@@ -1,20 +1,9 @@
-import ProductList from './list';
-import Link from 'next/link';
+import List from './list';
 
 export default () => {
   return (
     <>
-      <nav
-        style={{
-          display: 'flex',
-          gap: 4,
-          margin: 16
-        }}
-      >
-        <Link href="/product/create">Create</Link>
-        <Link href="/">Home</Link>
-      </nav>
-      <ProductList />
+      <List />
     </>
   )
 }
