@@ -3,16 +3,6 @@ import Create from '../create';
 export default () => {
   return (
     <>
-      <nav
-        style={{
-          display: 'flex',
-          gap: 24,
-          margin: 24
-        }}
-      >
-        <Link href="/">Home</Link>
-        <Link href="/standard-code">List</Link>
-      </nav>
       <Create />
     </>
   );

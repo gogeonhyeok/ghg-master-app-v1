@@ -1,6 +1,7 @@
 'use client'
 import { listItems } from './actions'
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 export default () => {
   const [items, setItems] = useState([])
@@ -48,6 +49,9 @@ export default () => {
         style={{
           paddingLeft: 24,
           display: 'flex',
+          justifyContent: 'flex-end',
+          marginRight: 24,
+          marginTop: 24,
           gap: 16
         }}
       >
@@ -57,6 +61,7 @@ export default () => {
         </select>
         <input name="searchText" />
         <button type="submit">Search</button>
+        <Link href="/standard-code/create">Create</Link>
       </form>
       <table className="table">
         <tr>
@@ -71,8 +76,9 @@ export default () => {
       <ul style={{
         display: 'flex',
         gap: 24,
-        justifyContent: 'center',
-        marginBottom: 16
+        justifyContent: 'flex-end',
+        marginBottom: 16,
+        marginRight: 24
       }}>
         <li><button>Prev</button></li>
         <li><button>1</button></li>
