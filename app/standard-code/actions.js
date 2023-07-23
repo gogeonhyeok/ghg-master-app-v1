@@ -71,7 +71,6 @@ export async function listItems(data) {
   ]
 
   if(data !== undefined && data instanceof FormData && data.has('searchType') && data.has('searchText') && data.get('searchText') !== '') {
-    console.log(data)
     stages.unshift({
       '$match': {
         [data.get('searchType')]: data.get('searchText')
