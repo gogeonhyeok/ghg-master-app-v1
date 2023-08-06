@@ -10,26 +10,31 @@ export default () => {
     await addItem(data)
     router.back()
   }
+  const viewModel = [
+    {
+      name: 'codeId',
+      placeholder: 'ID'
+    },
+    {
+      name: 'codeType',
+      placeholder: 'Type'
+    },
+    {
+      name: 'codeDescription',
+      placeholder: 'Description'
+    },
+    {
+      name: 'codeVariant',
+      placeholder: 'Variant'
+    }
+  ]
   return (
     <form
       action={onAction}
-      style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        gap: 4,
-        margin: 24
-      }}
+      className='form'
     >
-      <input name="codeId" placeholder="ID" />
-      <input name="codeType" placeholder="Type" />
-      <input name="codeDescription" placeholder="Description" />
-      <input name="codeVariant" placeholder="Variant" />
-      <div style={{
-        display: 'flex',
-        justifyContent: 'flex-end',
-        gap: 16,
-        marginRight: 24
-      }}>
+      {viewModel.map(model => (<input name={model.name} placeholder={model.placeholder} />))}
+      <div>
         <button type="submit">Submit</button>
         <Link href="/standard-code">Cancel</Link>
       </div>

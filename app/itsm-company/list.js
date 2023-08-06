@@ -1,99 +1,132 @@
-import { MongoClient } from 'mongodb';
+'use client'
+import { listItems } from './actions'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
-export default async () => {
-  const client = new MongoClient("mongodb+srv://gogeonhyeok:qTAB0aDdtRBKocyx@cluster0.smqlq.mongodb.net/?retryWrites=true&w=majority");
-  const database = client.db('ghg-master-api-v1');
-  const items = await database.collection('masterCompanies').aggregate([
+export default () => {
+  const [items, setItems] = useState([])
+  const [index, setIndex] = useState(1)
+  const [formData, setFormData] = useState({})
+  useEffect(() => {
+    listItems().then(response => setItems(response))
+  }, [])
+
+  const onAction = async (data) => {
+    setFormData(data)
+    listItems(formData).then(response => setItems(response))
+  }
+
+  const onPrev = async () => {
+    setIndex(index > 0 ? index - 1 : 0)
+    listItems(formData, index, 100).then(response => setItems(response))
+  }
+
+  const onNext = async () => {
+    setIndex(index + 1)
+    listItems(formData, index, 100).then(response => setItems(response))
+  }
+  let viewModel = [
     {
-      '$lookup': {
-        'from': 'masterEmployees',
-        'localField': 'createUser',
-        'foreignField': 'empId',
-        'as': 'masterEmployees'
-      }
+      key: 'companyId',
+      displayName: 'ID'
     },
     {
-      '$addFields': {
-        'createUser': {
-          '$getField': {
-            'field': 'displayName',
-            'input': {
-              '$arrayElemAt': [
-                '$masterEmployees',
-                0
-              ]
-            }
-          }
-        }
-      }
+      key: 'companyName',
+      displayName: 'Name'
     },
     {
-      '$lookup': {
-        'from': 'masterEmployees',
-        'localField': 'updateUser',
-        'foreignField': 'empId',
-        'as': 'masterEmployees'
-      }
+      key: 'companyCode',
+      displayName: 'Code'
     },
     {
-      '$addFields': {
-        'updateUser': {
-          '$getField': {
-            'field': 'displayName',
-            'input': {
-              '$arrayElemAt': [
-                '$masterEmployees',
-                0
-              ]
-            }
-          }
-        }
-      }
+      key: 'addressCity',
+      displayName: 'City'
     },
     {
-      '$project': {
-        'masterEmployees': 0
-      }
+      key: 'addressStreet',
+      displayName: 'Street'
+    },
+    {
+      key: 'addressEtc',
+      displayName: 'Etc'
+    },
+    {
+      key: 'countryCode',
+      displayName: 'Country'
+    },
+    {
+      key: 'parentCompanyId',
+      displayName: 'Parent'
+    },
+    {
+      key: 'faxNo',
+      displayName: 'Fax'
+    },
+    {
+      key: 'telNo',
+      displayName: 'Tel'
+    },
+    {
+      key: 'zipCode',
+      displayName: 'Zip'
+    },
+    {
+      key: 'createUser',
+      displayName: 'Create User'
+    },
+    {
+      key: 'createDate',
+      displayName: 'Create Date'
+    },
+    {
+      key: 'updateUser',
+      displayName: 'Update User'
+    },
+    {
+      key: 'updateDate',
+      displayName: 'Update Date'
     }
-  ]).limit(100).toArray();
+  ]
   return (
-    <table className="table">
-      <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Code</th>
-        <th>Address 1</th>
-        <th>Address 2</th>
-        <th>Address 3</th>
-        <th>Country</th>
-        <th>Parent</th>
-        <th>Fax</th>
-        <th>Tel</th>
-        <th>Zip</th>
-        <th>Create User</th>
-        <th>Create Date</th>
-        <th>Update User</th>
-        <th>Update Date</th>
-      </tr>
-      {items.map(entry => (
+    <>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        alignContent: 'center',
+        marginRight: 24,
+        marginTop: 24,
+        gap: 16
+      }}>
+        <form
+          action={onAction}
+          style={{
+            paddingLeft: 24,
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: 16
+          }}
+        >
+          <select name="searchType">
+            <option value="companyName">Name</option>
+            <option value="companyCode">Code</option>
+          </select>
+          <input name="searchText" />
+          <button type="submit">Search</button>
+        </form>
+        <Link href="/itsm-company/create">Create</Link>
+        <button onClick={onPrev}>Prev</button>
+        <button onClick={onNext}>Next</button>
+      </div>
+      <table className="table">
         <tr>
-          <td>{entry.companyId}</td>
-          <td>{entry.companyName}</td>
-          <td>{entry.companyCode}</td>
-          <td>{entry.addressCity}</td>
-          <td>{entry.addressStreet}</td>
-          <td>{entry.addressEtc}</td>
-          <td>{entry.countryCode}</td>
-          <td>{entry.parentCompanyId}</td>
-          <td>{entry.faxNo}</td>
-          <td>{entry.telNo}</td>
-          <td>{entry.zipCode}</td>
-          <td>{entry.createUser}</td>
-          <td>{entry.createDate}</td>
-          <td>{entry.updateUser}</td>
-          <td>{entry.updateDate}</td>
+          {viewModel.map(item => <th>{item.displayName}</th>)}
         </tr>
-      ))}
-    </table>
+        {items.map(entry => (
+          <tr>
+            {viewModel.map(item => <td>{entry[item.key]}</td>)}
+          </tr>
+        ))}
+      </table>
+    </>
   );
 }

@@ -5,17 +5,36 @@ import { MongoClient } from 'mongodb';
 export async function addItem(data) {
   const client = new MongoClient("mongodb+srv://gogeonhyeok:qTAB0aDdtRBKocyx@cluster0.smqlq.mongodb.net/?retryWrites=true&w=majority");
   const database = client.db('ghg-master-api-v1');
-  const result = await database.collection('requestHeaders').insertOne({
-    subject: data.get('subject'),
-    body: data.get('body'),
+  await database.collection('masterSystems').insertOne({
+    systemName: data.get('systemName'),
+    parentSystemId: data.get('parentSystemId'),
   });
 }
 
-
-export async function listItems(data, curr, size) {
+export async function listItems(data) {
   const client = new MongoClient("mongodb+srv://gogeonhyeok:qTAB0aDdtRBKocyx@cluster0.smqlq.mongodb.net/?retryWrites=true&w=majority");
   const database = client.db('ghg-master-api-v1');
   let stages = [
+    {
+      '$lookup': {
+        'from': 'masterSystems',
+        'localField': 'parentSystemId',
+        'foreignField': 'systemId',
+        'as': 'masterSystems'
+      }
+    },
+    {
+      '$addFields': {
+        'parentSystemName': {
+          '$getField': {
+            'field': 'systemName',
+            'input': {
+              '$arrayElemAt': ['$masterSystems', 0]
+            }
+          }
+        }
+      }
+    },
     {
       '$lookup': {
         'from': 'masterEmployees',
@@ -58,6 +77,7 @@ export async function listItems(data, curr, size) {
     },
     {
       '$project': {
+        'masterSystems': 0,
         'masterEmployees': 0
       }
     }
@@ -70,11 +90,6 @@ export async function listItems(data, curr, size) {
       }
     })
   }
-
-  let items = await database.collection('requestHeaders')
-      .aggregate(stages)
-      .skip(curr !== undefined && size !== undefined ? curr * size : 0)
-      .limit(size !== undefined ? size : 100)
-      .toArray();
+  let items = await database.collection('masterSystems').aggregate(stages).limit(100).toArray();
   return JSON.parse(JSON.stringify(items))
 }

@@ -1,85 +1,101 @@
-import { MongoClient } from 'mongodb';
+'use client'
+import { listItems } from './actions'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
-export default async () => {
-  const client = new MongoClient("mongodb+srv://gogeonhyeok:qTAB0aDdtRBKocyx@cluster0.smqlq.mongodb.net/?retryWrites=true&w=majority");
-  const database = client.db('ghg-master-api-v1');
-  const items = await database.collection('masterRoles').aggregate([
+export default () => {
+  const [items, setItems] = useState([])
+  const [index, setIndex] = useState(1)
+  const [formData, setFormData] = useState({})
+  useEffect(() => {
+    listItems().then(response => setItems(response))
+  }, [])
+
+  const onAction = async (data) => {
+    setFormData(data)
+    listItems(formData).then(response => setItems(response))
+  }
+
+  const onPrev = async () => {
+    setIndex(index > 0 ? index - 1 : 0)
+    listItems(formData, index, 100).then(response => setItems(response))
+  }
+
+  const onNext = async () => {
+    setIndex(index + 1)
+    listItems(formData, index, 100).then(response => setItems(response))
+  }
+  let viewModel = [
     {
-      '$lookup': {
-        'from': 'masterEmployees',
-        'localField': 'createUser',
-        'foreignField': 'empId',
-        'as': 'masterEmployees'
-      }
+      key: 'roleId',
+      displayName: 'ID'
     },
     {
-      '$addFields': {
-        'createUser': {
-          '$getField': {
-            'field': 'displayName',
-            'input': {
-              '$arrayElemAt': [
-                '$masterEmployees',
-                0
-              ]
-            }
-          }
-        }
-      }
+      key: 'role',
+      displayName: 'Name'
     },
     {
-      '$lookup': {
-        'from': 'masterEmployees',
-        'localField': 'updateUser',
-        'foreignField': 'empId',
-        'as': 'masterEmployees'
-      }
+      key: 'roleDesc',
+      displayName: 'Description'
     },
     {
-      '$addFields': {
-        'updateUser': {
-          '$getField': {
-            'field': 'displayName',
-            'input': {
-              '$arrayElemAt': [
-                '$masterEmployees',
-                0
-              ]
-            }
-          }
-        }
-      }
+      key: 'createDate',
+      displayName: 'Create Date'
     },
     {
-      '$project': {
-        'masterEmployees': 0
-      }
+      key: 'createUser',
+      displayName: 'Create User'
+    },
+    {
+      key: 'updateDate',
+      displayName: 'Update Date'
+    },
+    {
+      key: 'updateUser',
+      displayName: 'Update User'
     }
-  ]).limit(100).toArray();
+  ]
   return (
-    <table className="table">
-      <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Description</th>
-        <th>Cancel Tag</th>
-        <th>Create Date</th>
-        <th>Create User</th>
-        <th>Update Date</th>
-        <th>Update User</th>
-      </tr>
-      {items.map(entry => (
+    <>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        alignContent: 'center',
+        marginRight: 24,
+        marginTop: 24,
+        gap: 16
+      }}>
+        <form
+          action={onAction}
+          style={{
+            paddingLeft: 24,
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: 16
+          }}
+        >
+          <select name="searchType">
+            <option value="roleId">ID</option>
+            <option value="role">Name</option>
+            <option value="roleDesc">Description</option>
+          </select>
+          <input name="searchText" />
+          <button type="submit">Search</button>
+        </form>
+        <Link href="/standard-code/create">Create</Link>
+        <button onClick={onPrev}>Prev</button>
+        <button onClick={onNext}>Next</button>
+      </div>
+      <table className="table">
         <tr>
-          <td>{entry.roleId}</td>
-          <td>{entry.role}</td>
-          <td>{entry.roleDesc}</td>
-          <td>{entry.cancelTag}</td>
-          <td>{entry.createDate}</td>
-          <td>{entry.createUser}</td>
-          <td>{entry.updateDate}</td>
-          <td>{entry.updateUser}</td>
+          {viewModel.map(item => <th>{item.displayName}</th>)}
         </tr>
-      ))}
-    </table>
+        {items.map(entry => (
+          <tr>
+            {viewModel.map(item => <td>{entry[item.key]}</td>)}
+          </tr>
+        ))}
+      </table>
+    </>
   );
 }

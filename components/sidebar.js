@@ -158,7 +158,23 @@ let viewModel = [
     href: '/inventory',
     displayName: 'Inventory',
     groupName: 'WMS'
-  },
+  }, {
+    href: '/flight',
+    displayName: 'Flight',
+    groupName: 'GDS'
+  }, {
+    href: '/airport',
+    displayName: 'Airport',
+    groupName: 'GDS'
+  }, {
+    href: '/partner',
+    displayName: 'Partner',
+    groupName: 'PFS'
+  }, {
+    href: '/payment-method',
+    displayName: 'Payment Method',
+    groupName: 'PFS'
+  }
 ];
 
 export default () => {
@@ -174,7 +190,8 @@ export default () => {
       minWidth: 300,
       overflowY: 'scroll',
       maxHeight: 'calc(100vh)',
-      position: 'fixed'
+      position: 'fixed',
+      paddingBottom: 24
     }}>
       {
         Object.keys(groupBy).map(groupName => {

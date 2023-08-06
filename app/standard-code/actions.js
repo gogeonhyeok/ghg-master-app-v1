@@ -13,7 +13,7 @@ export async function addItem(data) {
   });
 }
 
-export async function listItems(data) {
+export async function listItems(data, curr, size) {
   const client = new MongoClient("mongodb+srv://gogeonhyeok:qTAB0aDdtRBKocyx@cluster0.smqlq.mongodb.net/?retryWrites=true&w=majority");
   const database = client.db('ghg-master-api-v1');
   let stages = [
@@ -77,6 +77,10 @@ export async function listItems(data) {
       }
     })
   }
-  let items = await database.collection('masterStandardCodes').aggregate(stages).limit(100).toArray();
+  let items = await database.collection('masterStandardCodes')
+      .aggregate(stages)
+      .skip(curr !== undefined && size !== undefined ? curr * size : 0)
+      .limit(size !== undefined ? size : 100)
+      .toArray();
   return JSON.parse(JSON.stringify(items))
 }
