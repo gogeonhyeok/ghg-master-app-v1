@@ -1,97 +1,73 @@
-import { MongoClient } from 'mongodb';
+'use client'
+import { listItems } from './actions'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
-export default async () => {
-  const client = new MongoClient("mongodb+srv://gogeonhyeok:qTAB0aDdtRBKocyx@cluster0.smqlq.mongodb.net/?retryWrites=true&w=majority");
-  const database = client.db('ghg-master-api-v1');
-  const items = await database.collection('masterSystems').aggregate([
+export default () => {
+  const [items, setItems] = useState([])
+  useEffect(() => {
+    listItems().then(response => setItems(response))
+  }, [])
+
+  const onAction = async (data) => {
+    listItems(data).then(response => setItems(response))
+  }
+  const viewModel = [
     {
-      '$lookup': {
-        'from': 'masterSystems',
-        'localField': 'parentSystemId',
-        'foreignField': 'systemId',
-        'as': 'masterSystems'
-      }
+      key: 'systemName',
+      displayName: 'Name'
     },
     {
-      '$addFields': {
-        'parentSystemName': {
-          '$getField': {
-            'field': 'systemName',
-            'input': {
-              '$arrayElemAt': ['$masterSystems', 0]
-            }
-          }
-        }
-      }
+      key: 'parentSystemName',
+      displayName: 'Parent System'
     },
     {
-      '$lookup': {
-        'from': 'masterEmployees',
-        'localField': 'createUser',
-        'foreignField': 'empId',
-        'as': 'masterEmployees'
-      }
+      key: 'updateDate',
+      displayName: 'Update Date'
     },
     {
-      '$addFields': {
-        'createUser': {
-          '$getField': {
-            'field': 'displayName',
-            'input': {
-              '$arrayElemAt': ['$masterEmployees', 0]
-            }
-          }
-        }
-      }
-    },
-    {
-      '$lookup': {
-        'from': 'masterEmployees',
-        'localField': 'updateUser',
-        'foreignField': 'empId',
-        'as': 'masterEmployees'
-      }
-    },
-    {
-      '$addFields': {
-        'updateUser': {
-          '$getField': {
-            'field': 'displayName',
-            'input': {
-              '$arrayElemAt': ['$masterEmployees', 0]
-            }
-          }
-        }
-      }
-    },
-    {
-      '$project': {
-        'masterSystems': 0,
-        'masterEmployees': 0
-      }
+      key: 'updateUser',
+      displayName: 'Update User'
     }
-  ]).toArray();
+  ]
   return (
-    <table className="table">
-      <tr>
-        <th>Name</th>
-        <th>Parent System</th>
-        <th>Cancel Tag</th>
-        <th>Create Date</th>
-        <th>Create User</th>
-        <th>Update Date</th>
-        <th>Update User</th>
-      </tr>
-      {items.map(entry => (
-        <tr>
-          <td>{entry.systemName}</td>
-          <td>{entry.parentSystemName}</td>
-          <td>{entry.createDate}</td>
-          <td>{entry.createUser}</td>
-          <td>{entry.updateDate}</td>
-          <td>{entry.updateUser}</td>
-        </tr>
-      ))}
-    </table>
+    <>
+      <form
+        action={onAction}
+        style={{
+          paddingLeft: 24,
+          display: 'flex',
+          justifyContent: 'flex-end',
+          marginRight: 24,
+          marginTop: 24,
+          gap: 16
+        }}
+      >
+        <select name="searchType">
+          <option value="systemName">Name</option>
+        </select>
+        <input name="searchText" />
+        <button type="submit">Search</button>
+        <Link href="/system/create">Create</Link>
+        <Link href="/system/create">Prev</Link>
+        <Link href="/system/create">Next</Link>
+      </form>
+      <table className="table">
+        <thead>
+          <tr>
+            {viewModel.map(model => <th key={model.key}>{model.displayName}</th>)}
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map(entry => (
+            <tr key={entry._id}>
+              {viewModel.map(model => <td key={entry._id + model.key}>{entry[model.key]}</td>)}
+              <td>Modify</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
   );
 }

@@ -17,6 +17,7 @@ export default function Layout({ children }) {
           <SideBar />
           <div style={{
             marginLeft: 300,
+            overflowX: 'scroll',
             display: 'flex',
             flexDirection: 'column',
             width: '100%'
@@ -30,7 +31,7 @@ export default function Layout({ children }) {
               }}
             >
               <Link href="/">Login</Link>
-              <Link href="/">Menu</Link>
+              <Link href="/">Setting</Link>
             </nav>
             <hr style={{ borderTop: '1px solid #bbb' }} />
             {children}

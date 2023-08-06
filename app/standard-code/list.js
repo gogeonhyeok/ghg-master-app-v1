@@ -3,96 +3,99 @@ import { listItems } from './actions'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
+
+let viewModel = [
+  {
+    key: 'codeType',
+    displayName: 'Type'
+  },
+  {
+    key: 'codeId',
+    displayName: 'ID'
+  },
+  {
+    key: 'codeDescription',
+    displayName: 'Description'
+  },
+  {
+    key: 'updateDate',
+    displayName: 'Update Date'
+  },
+  {
+    key: 'updateUser',
+    displayName: 'Update User'
+  }
+]
+
 export default () => {
   const [items, setItems] = useState([])
+  const [index, setIndex] = useState(1)
+  const [formData, setFormData] = useState({})
   useEffect(() => {
     listItems().then(response => setItems(response))
   }, [])
 
   const onAction = async (data) => {
-    listItems(data).then(response => setItems(response))
+    setFormData(data)
+    listItems(formData).then(response => setItems(response))
   }
-  let viewModel = [
-    {
-      header: 'Type',
-      key: 'codeType'
-    },
-    {
-      header: 'ID',
-      key: 'codeId'
-    },
-    {
-      header: 'Description',
-      key: 'codeDescription'
-    },
-    {
-      header: 'Create Date',
-      key: 'createDate'
-    },
-    {
-      header: 'Create User',
-      key: 'createUser'
-    },
-    {
-      header: 'Update Date',
-      key: 'updateDate'
-    },
-    {
-      header: 'Update User',
-      key: 'updateUser'
-    }
-  ]
+
+  const onPrev = async () => {
+    setIndex(index > 0 ? index - 1 : 0)
+    listItems(formData, index, 100).then(response => setItems(response))
+  }
+
+  const onNext = async () => {
+    setIndex(index + 1)
+    listItems(formData, index, 100).then(response => setItems(response))
+  }
+
   return (
     <>
-      <form
-        action={onAction}
-        style={{
-          paddingLeft: 24,
-          display: 'flex',
-          justifyContent: 'flex-end',
-          marginRight: 24,
-          marginTop: 24,
-          gap: 16
-        }}
-      >
-        <select name="searchType">
-          <option value="codeType">Type</option>
-          <option value="codeId">ID</option>
-        </select>
-        <input name="searchText" />
-        <button type="submit">Search</button>
-        <Link href="/standard-code/create">Create</Link>
-      </form>
-      <table className="table">
-        <tr>
-          {viewModel.map(item => <th>{item.header}</th>)}
-        </tr>
-        {items.map(entry => (
-          <tr>
-            {viewModel.map(item => <td>{entry[item.key]}</td>)}
-          </tr>
-        ))}
-      </table>
-      <ul style={{
+      <div style={{
         display: 'flex',
-        gap: 24,
         justifyContent: 'flex-end',
-        marginBottom: 16,
-        marginRight: 24
+        alignContent: 'center',
+        marginRight: 24,
+        marginTop: 24,
+        gap: 16
       }}>
-        <li><button>Prev</button></li>
-        <li><button>1</button></li>
-        <li><button>2</button></li>
-        <li><button>3</button></li>
-        <li><button>4</button></li>
-        <li><button>5</button></li>
-        <li><button>6</button></li>
-        <li><button>7</button></li>
-        <li><button>8</button></li>
-        <li><button>9</button></li>
-        <li><button>10</button></li>
-        <li><button>Next</button></li>
-      </ul>
+        <form
+          action={onAction}
+          style={{
+            paddingLeft: 24,
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: 16
+          }}
+        >
+          <select name="searchType">
+            <option value="codeType">Type</option>
+            <option value="codeId">ID</option>
+          </select>
+          <input name="searchText" />
+          <button type="submit">Search</button>
+        </form>
+        <Link href="/standard-code/create">Create</Link>
+        <button onClick={onPrev}>Prev</button>
+        <button onClick={onNext}>Next</button>
+      </div>
+      <table className="table">
+        <thead>
+          <tr>
+            {viewModel.map(model => <th key={model.key}>{model.displayName}</th>)}
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map(entry => (
+            <tr key={entry._id}>
+              {viewModel.map(model => <td key={entry._id + model.key}>{entry[model.key]}</td>)}
+              <td>Modify</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </>
   );
 }

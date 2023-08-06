@@ -5,13 +5,12 @@ import { MongoClient } from 'mongodb';
 export async function addItem(data) {
   const client = new MongoClient("mongodb+srv://gogeonhyeok:qTAB0aDdtRBKocyx@cluster0.smqlq.mongodb.net/?retryWrites=true&w=majority");
   const database = client.db('ghg-master-api-v1');
-  await database.collection('masterStandardCodes').insertOne({
-    codeId: data.get('codeId'),
-    codeType: data.get('codeType'),
-    codeDescription: data.get('codeDescription'),
-    codeVariant: data.get('codeVariant'),
+  const result = await database.collection('masterCompanies').insertOne({
+    subject: data.get('subject'),
+    body: data.get('body'),
   });
 }
+
 
 export async function listItems(data, curr, size) {
   const client = new MongoClient("mongodb+srv://gogeonhyeok:qTAB0aDdtRBKocyx@cluster0.smqlq.mongodb.net/?retryWrites=true&w=majority");
@@ -93,7 +92,8 @@ export async function listItems(data, curr, size) {
       }
     })
   }
-  let items = await database.collection('masterStandardCodes')
+
+  let items = await database.collection('masterCompanies')
       .aggregate(stages)
       .skip(curr !== undefined && size !== undefined ? curr * size : 0)
       .limit(size !== undefined ? size : 100)

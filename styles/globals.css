@@ -57,7 +57,13 @@ a {
 .table {
   table-layout: 'fixed';
   width: 100%;
-  margin: 24px;
+  border-top: 1px solid #bbb;
+  margin-top: 24px;
+}
+
+.table tr {
+  border-bottom: 1px solid #bbb;
+  border-collapse: collapse;
 }
 
 .table tr:first-child {
@@ -66,8 +72,39 @@ a {
 
 .table tr th {
   padding: 4px;
+  height: 56px;
 }
 
 .table tr td {
   padding: 4px;
+  height: 52px;
+  max-height: 52px;
+  max-width: 300px;
+  word-wrap: break-word;
+  text-overflow: ellipsis;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 24px;
+}
+
+.form input {
+  margin-left: 24px;
+  margin-right: 24px;
+}
+
+.form div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 24px;
+  margin-right: 24px;
+}
+
+.form label {
+  display: inline-block;
+  margin-left: 24px;
+  margin-right: 24px;
 }
