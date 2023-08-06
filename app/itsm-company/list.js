@@ -71,14 +71,6 @@ export default () => {
       displayName: 'Zip'
     },
     {
-      key: 'createUser',
-      displayName: 'Create User'
-    },
-    {
-      key: 'createDate',
-      displayName: 'Create Date'
-    },
-    {
       key: 'updateUser',
       displayName: 'Update User'
     },
@@ -118,14 +110,20 @@ export default () => {
         <button onClick={onNext}>Next</button>
       </div>
       <table className="table">
-        <tr>
-          {viewModel.map(item => <th>{item.displayName}</th>)}
-        </tr>
-        {items.map(entry => (
+        <thead>
           <tr>
-            {viewModel.map(item => <td>{entry[item.key]}</td>)}
+            {viewModel.map(model => <th key={model.key}>{model.displayName}</th>)}
+            <th>Actions</th>
           </tr>
-        ))}
+        </thead>
+        <tbody>
+          {items.map(entry => (
+            <tr key={entry._id}>
+              {viewModel.map(model => <td key={entry._id + model.key}>{entry[model.key]}</td>)}
+              <td>Modify</td>
+            </tr>
+          ))}
+        </tbody>
       </table>
     </>
   );

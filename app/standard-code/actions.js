@@ -18,6 +18,22 @@ export async function listItems(data, curr, size) {
   const database = client.db('ghg-master-api-v1');
   let stages = [
     {
+      '$addFields': {
+        'updateDate': {
+          '$ifNull': [
+            '$updateDate',
+            '$createDate'
+          ]
+        },
+        'updateUser': {
+          '$ifNull': [
+            '$updateUser',
+            '$createUser'
+          ]
+        }
+      }
+    },
+    {
       '$lookup': {
         'from': 'masterEmployees',
         'localField': 'createUser',

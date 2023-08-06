@@ -3,6 +3,30 @@ import { listItems } from './actions'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
+
+let viewModel = [
+  {
+    key: 'codeType',
+    displayName: 'Type'
+  },
+  {
+    key: 'codeId',
+    displayName: 'ID'
+  },
+  {
+    key: 'codeDescription',
+    displayName: 'Description'
+  },
+  {
+    key: 'updateDate',
+    displayName: 'Update Date'
+  },
+  {
+    key: 'updateUser',
+    displayName: 'Update User'
+  }
+]
+
 export default () => {
   const [items, setItems] = useState([])
   const [index, setIndex] = useState(1)
@@ -25,36 +49,7 @@ export default () => {
     setIndex(index + 1)
     listItems(formData, index, 100).then(response => setItems(response))
   }
-  let viewModel = [
-    {
-      key: 'codeType',
-      displayName: 'Type'
-    },
-    {
-      key: 'codeId',
-      displayName: 'ID'
-    },
-    {
-      key: 'codeDescription',
-      displayName: 'Description'
-    },
-    {
-      key: 'createDate',
-      displayName: 'Create Date'
-    },
-    {
-      key: 'createUser',
-      displayName: 'Create User'
-    },
-    {
-      key: 'updateDate',
-      displayName: 'Update Date'
-    },
-    {
-      key: 'updateUser',
-      displayName: 'Update User'
-    }
-  ]
+
   return (
     <>
       <div style={{
@@ -86,14 +81,20 @@ export default () => {
         <button onClick={onNext}>Next</button>
       </div>
       <table className="table">
-        <tr>
-          {viewModel.map(item => <th>{item.displayName}</th>)}
-        </tr>
-        {items.map(entry => (
+        <thead>
           <tr>
-            {viewModel.map(item => <td>{entry[item.key]}</td>)}
+            {viewModel.map(model => <th key={model.key}>{model.displayName}</th>)}
+            <th>Actions</th>
           </tr>
-        ))}
+        </thead>
+        <tbody>
+          {items.map(entry => (
+            <tr key={entry._id}>
+              {viewModel.map(model => <td key={entry._id + model.key}>{entry[model.key]}</td>)}
+              <td>Modify</td>
+            </tr>
+          ))}
+        </tbody>
       </table>
     </>
   );

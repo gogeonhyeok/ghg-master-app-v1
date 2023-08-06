@@ -22,14 +22,6 @@ export default () => {
       displayName: 'Parent System'
     },
     {
-      key: 'createDate',
-      displayName: 'Create Date'
-    },
-    {
-      key: 'createUser',
-      displayName: 'Create User'
-    },
-    {
       key: 'updateDate',
       displayName: 'Update Date'
     },
@@ -61,16 +53,20 @@ export default () => {
         <Link href="/system/create">Next</Link>
       </form>
       <table className="table">
-        <tr>
-          {viewModel.map(item => <th>{item.displayName}</th>)}
-          <th>Actions</th>
-        </tr>
-        {items.map(entry => (
+        <thead>
           <tr>
-            {viewModel.map(item => <td>{entry[item.key]}</td>)}
-            <td>Details</td>
+            {viewModel.map(model => <th key={model.key}>{model.displayName}</th>)}
+            <th>Actions</th>
           </tr>
-        ))}
+        </thead>
+        <tbody>
+          {items.map(entry => (
+            <tr key={entry._id}>
+              {viewModel.map(model => <td key={entry._id + model.key}>{entry[model.key]}</td>)}
+              <td>Modify</td>
+            </tr>
+          ))}
+        </tbody>
       </table>
     </>
   );
