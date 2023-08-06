@@ -27,10 +27,6 @@ export default () => {
   }
   let viewModel = [
     {
-      key: 'roleId',
-      displayName: 'ID'
-    },
-    {
       key: 'role',
       displayName: 'Name'
     },
@@ -67,14 +63,13 @@ export default () => {
           }}
         >
           <select name="searchType">
-            <option value="roleId">ID</option>
             <option value="role">Name</option>
             <option value="roleDesc">Description</option>
           </select>
           <input name="searchText" />
           <button type="submit">Search</button>
         </form>
-        <Link href="/standard-code/create">Create</Link>
+        <Link href="/role/create">Create</Link>
         <button onClick={onPrev}>Prev</button>
         <button onClick={onNext}>Next</button>
       </div>

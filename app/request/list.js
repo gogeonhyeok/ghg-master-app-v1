@@ -3,6 +3,29 @@ import { listItems } from './actions'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
+let viewModel = [
+  {
+    key: 'requestId',
+    displayName: 'ID'
+  },
+  {
+    key: 'subject',
+    displayName: 'Subject'
+  },
+  {
+    key: 'content',
+    displayName: 'Content'
+  },
+  {
+    key: 'updateDate',
+    displayName: 'Update Date'
+  },
+  {
+    key: 'updateUser',
+    displayName: 'Update User'
+  }
+]
+
 export default () => {
   const [items, setItems] = useState([])
   const [index, setIndex] = useState(1)
@@ -25,29 +48,6 @@ export default () => {
     setIndex(index + 1)
     listItems(formData, index, 100).then(response => setItems(response))
   }
-
-  let viewModel = [
-    {
-      key: 'requestId',
-      displayName: 'ID'
-    },
-    {
-      key: 'subject',
-      displayName: 'Subject'
-    },
-    {
-      key: 'content',
-      displayName: 'Content'
-    },
-    {
-      key: 'updateDate',
-      displayName: 'Update Date'
-    },
-    {
-      key: 'updateUser',
-      displayName: 'Update User'
-    }
-  ]
   return (
     <>
       <div style={{

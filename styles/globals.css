@@ -78,6 +78,10 @@ a {
 .table tr td {
   padding: 4px;
   height: 52px;
+  max-height: 52px;
+  max-width: 300px;
+  word-wrap: break-word;
+  text-overflow: ellipsis;
 }
 
 .form {
@@ -96,5 +100,11 @@ a {
   display: flex;
   justify-content: flex-end;
   gap: 24px;
+  margin-right: 24px;
+}
+
+.form label {
+  display: inline-block;
+  margin-left: 24px;
   margin-right: 24px;
 }

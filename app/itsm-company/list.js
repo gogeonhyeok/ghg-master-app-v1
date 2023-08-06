@@ -27,10 +27,6 @@ export default () => {
   }
   let viewModel = [
     {
-      key: 'companyId',
-      displayName: 'ID'
-    },
-    {
       key: 'companyName',
       displayName: 'Name'
     },

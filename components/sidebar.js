@@ -3,10 +3,7 @@ let viewModel = [
   {
     href: '/',
     displayName: 'Home'
-  }, {
-    href: '/menu',
-    displayName: 'Menu'
-  }, {
+  },{
     href: '/farm',
     displayName: 'Farm',
     groupName: 'Portfolio'
@@ -39,11 +36,11 @@ let viewModel = [
     displayName: 'System',
     groupName: 'ITSM'
   }, {
-    href: 'standard-code',
+    href: '/standard-code',
     displayName: 'Standard Code',
     groupName: 'ITSM'
   }, {
-    href: 'support-type',
+    href: '/support-type',
     displayName: 'Support Type',
     groupName: 'ITSM'
   }, {
@@ -57,6 +54,10 @@ let viewModel = [
   }, {
     href: '/itsm-company',
     displayName: 'Company',
+    groupName: 'ITSM'
+  }, {
+    href: '/department',
+    displayName: 'Department',
     groupName: 'ITSM'
   }, {
     href: '/employee',
@@ -174,7 +175,15 @@ let viewModel = [
     href: '/payment-method',
     displayName: 'Payment Method',
     groupName: 'PFS'
-  }
+  }, {
+    href: '/user',
+    displayName: 'User',
+    groupName: 'Setting'
+  }, {
+    href: '/menu',
+    displayName: 'Menu',
+    groupName: 'Setting'
+  }, 
 ];
 
 export default () => {

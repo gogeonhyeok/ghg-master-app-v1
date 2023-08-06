@@ -27,12 +27,8 @@ export default () => {
   }
   let viewModel = [
     {
-      key: 'supportTypeId',
-      displayName: 'ID'
-    },
-    {
       key: 'supportTypeDescription',
-      displayName: 'Description'
+      displayName: 'Name'
     },
     {
       key: 'updateDate',
@@ -63,8 +59,7 @@ export default () => {
           }}
         >
           <select name="searchType">
-            <option value="supportTypeId">ID</option>
-            <option value="supportTypeDescription">Description</option>
+            <option value="supportTypeDescription">Name</option>
           </select>
           <input name="searchText" />
           <button type="submit">Search</button>
