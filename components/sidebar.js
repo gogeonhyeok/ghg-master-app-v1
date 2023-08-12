@@ -1,9 +1,13 @@
 import Link from 'next/link';
-let viewModel = [
+const viewModel = [
   {
     href: '/',
     displayName: 'Home'
-  },{
+  }, {
+    href: '/baozhi/article',
+    displayName: 'Article',
+    groupName: 'BaoZhi'
+  }, {
     href: '/farm',
     displayName: 'Farm',
     groupName: 'Portfolio'
@@ -183,17 +187,17 @@ let viewModel = [
     href: '/menu',
     displayName: 'Menu',
     groupName: 'Setting'
-  }, 
+  },
 ];
 
-export default () => {
+const groupBy = viewModel.reduce((prev, curr) => {
+  const { groupName } = curr
+  prev[groupName] = prev[groupName] ?? []
+  prev[groupName].push(curr)
+  return prev
+}, {});
 
-  const groupBy = viewModel.reduce((prev, curr) => {
-    const { groupName } = curr
-    prev[groupName] = prev[groupName] ?? []
-    prev[groupName].push(curr)
-    return prev
-  }, {});
+export default () => {
   return (
     <nav className="nav" style={{
       minWidth: 300,

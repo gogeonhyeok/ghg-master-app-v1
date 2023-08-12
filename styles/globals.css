@@ -92,8 +92,11 @@ a {
 }
 
 .form input {
-  margin-left: 24px;
-  margin-right: 24px;
+  width: 100%
+}
+
+.form textarea {
+  width: 100%
 }
 
 .form div {
@@ -106,5 +109,4 @@ a {
 .form label {
   display: inline-block;
   margin-left: 24px;
-  margin-right: 24px;
 }
