@@ -8,6 +8,10 @@ const viewModel = [
     displayName: 'Article',
     groupName: 'BaoZhi'
   }, {
+    href: '/baozhi/comment',
+    displayName: 'Comment',
+    groupName: 'BaoZhi'
+  }, {
     href: '/farm',
     displayName: 'Farm',
     groupName: 'Portfolio'
