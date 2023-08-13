@@ -14,11 +14,11 @@ let viewModel = [
   },
   {
     key: 'createUser',
-    displayName: 'CreateUser'
+    displayName: 'Create User'
   },
   {
     key: 'createDate',
-    displayName: 'CreateDate'
+    displayName: 'Create Date'
   },
 ]
 

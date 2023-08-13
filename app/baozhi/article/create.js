@@ -29,6 +29,10 @@ export default () => {
       action={onAction}
       className='form'
     >
+      <div>
+        <button type="submit">Submit</button>
+        <Link href="/baozhi/article">Cancel</Link>
+      </div>
       {viewModel.map(model => {
         switch(model.displayType) {
           case 'textarea':
@@ -47,10 +51,6 @@ export default () => {
             )
         }
       })}
-      <div>
-        <button type="submit">Submit</button>
-        <Link href="/baozhi/article">Cancel</Link>
-      </div>
     </form>
   );
 }

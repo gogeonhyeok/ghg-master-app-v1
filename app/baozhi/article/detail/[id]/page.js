@@ -1,8 +1,8 @@
-import Modify from '../../modify';
+import Detail from '../../detail';
 export default ({ params }) => {
   return (
     <>
-      <Modify id={params.id}/>
+      <Detail id={params.id}/>
     </>
   );
 }

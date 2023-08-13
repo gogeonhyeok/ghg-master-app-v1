@@ -9,9 +9,9 @@ let viewModel = [
     displayName: 'Subject'
   },
   {
-    key: 'content',
-    displayName: 'Content'
-  },
+    key: 'createDate',
+    displayName: 'Create Date'
+  }
 ]
 
 export default () => {
@@ -85,6 +85,7 @@ export default () => {
               {viewModel.map(model => <td key={entry._id + model.key}>{entry[model.key]}</td>)}
               <td>
                 <ul>
+                  <li><Link href={"/baozhi/article/detail/" + entry._id}>Detail</Link></li>
                   <li><Link href={"/baozhi/article/modify/" + entry._id}>Modify</Link></li>
                   <li><button onClick={() => onDelete(entry._id)}>Delete</button></li>
                 </ul>

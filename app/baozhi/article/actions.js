@@ -5,7 +5,10 @@ import { MongoClient, ObjectId } from 'mongodb';
 export async function addItem(data) {
   const client = new MongoClient("mongodb+srv://gogeonhyeok:qTAB0aDdtRBKocyx@cluster0.smqlq.mongodb.net/?retryWrites=true&w=majority")
   const database = client.db('ghg-baozhi-api-v1')
-  await database.collection('articles').insertOne(Object.fromEntries(data.entries()))
+  await database.collection('articles').insertOne({
+    ...Object.fromEntries(data.entries()),
+    createDate: new Date()
+  })
 }
 
 export async function listItems(data, curr, size) {
@@ -36,14 +39,16 @@ export async function listItemDetails(id) {
 }
 
 export async function modifyItemDetails(id, data) {
-  console.log(id)
   const client = new MongoClient("mongodb+srv://gogeonhyeok:qTAB0aDdtRBKocyx@cluster0.smqlq.mongodb.net/?retryWrites=true&w=majority");
   const database = client.db('ghg-baozhi-api-v1');
   await database.collection('articles').updateOne({
     _id: new ObjectId(id)
   }, {
-    $set: data instanceof FormData
-      ? Object.fromEntries(data.entries())
-      : data
+    $set: {
+      ...data instanceof FormData
+        ? Object.fromEntries(data.entries())
+        : data,
+      updateDate: new Date()
+    }
   });
 }
