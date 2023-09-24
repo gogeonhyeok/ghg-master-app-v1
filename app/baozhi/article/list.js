@@ -1,6 +1,8 @@
 'use client'
 import { listItems, modifyItemDetails } from './actions'
 import { useEffect, useState } from 'react'
+import Table from '../../../components/table'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 let viewModel = [
@@ -18,6 +20,7 @@ export default () => {
   const [items, setItems] = useState([])
   const [index, setIndex] = useState(1)
   const [formData, setFormData] = useState({})
+  const router = useRouter()
   useEffect(() => {
     listItems().then(response => setItems(response))
   }, [])
@@ -40,6 +43,14 @@ export default () => {
   const onDelete = async (id) => {
     modifyItemDetails(id, {cancelFlag: true})
     listItems().then(response => setItems(response))
+  }
+
+  const onModify = async (id) => {
+    router.push('/baozhi/article/modify/' + id)
+  }
+
+  const onDetail = async (id) => {
+    router.push('/baozhi/article/detail/' + id)
   }
 
   return (
@@ -72,28 +83,13 @@ export default () => {
         <button onClick={onPrev}>Prev</button>
         <button onClick={onNext}>Next</button>
       </div>
-      <table className="table">
-        <thead>
-          <tr>
-            {viewModel.map(model => <th key={model.key}>{model.displayName}</th>)}
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map(entry => (
-            <tr key={entry._id}>
-              {viewModel.map(model => <td key={entry._id + model.key}>{entry[model.key]}</td>)}
-              <td>
-                <ul>
-                  <li><Link href={"/baozhi/article/detail/" + entry._id}>Detail</Link></li>
-                  <li><Link href={"/baozhi/article/modify/" + entry._id}>Modify</Link></li>
-                  <li><button onClick={() => onDelete(entry._id)}>Delete</button></li>
-                </ul>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <Table
+        viewModel={viewModel}
+        dataSource={items}
+        onModify={onModify}
+        onDelete={onDelete}
+        onDetail={onDetail}
+      />
     </>
   );
 }
