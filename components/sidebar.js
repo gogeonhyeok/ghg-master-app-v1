@@ -13,7 +13,9 @@ export default ({ entry }) => {
         Object.keys(groupBy).map(groupName => {
           if (groupName !== 'undefined') {
             return (
-              <>
+              <section key={groupName} style={{
+                paddingLeft: 0
+              }}>
                 <hr />
                 <section>
                   <h1>{groupName}</h1>
@@ -21,7 +23,7 @@ export default ({ entry }) => {
                     <Link key={model.href} href={model.href}>{model.displayName}</Link>
                   ))}
                 </section>
-              </>
+              </section>
             )
           } else {
             return (
