@@ -1,35 +1,37 @@
 import List from '../../../components/list';
-import { listItems, modifyItemDetails } from './actions';
+import { listItems, modifyItemDetails } from '../../actions';
+
+const viewModel = {
+  db: 'ghg-baozhi-api-v1',
+  collection: 'articles',
+  modifyUrl: '/baozhi/article/modify',
+  createUrl: '/baozhi/article/create',
+  detailUrl: '/baozhi/article/detail',
+  searchModel: [
+    {
+      value: 'subject',
+      displayName: 'Subject'
+    }
+  ],
+  listModel: [
+    {
+      key: 'subject',
+      displayName: 'Subject'
+    },
+    {
+      key: 'createDate',
+      displayName: 'Create Date'
+    }
+  ]
+}
 
 export default () => {
   return (
     <>
       <List
-        viewModel={[
-          {
-            key: 'subject',
-            displayName: 'Subject'
-          },
-          {
-            key: 'createDate',
-            displayName: 'Create Date'
-          }
-        ]}
-        searchModel={[
-          {
-            value: 'subject',
-            displayName: 'Subject'
-          },
-          {
-            value: 'content',
-            displayName: 'Content'
-          }
-        ]}
+        viewModel={viewModel}
         listItems={listItems}
         modifyItemDetails={modifyItemDetails}
-        modifyUrl='/baozhi/article/modify'
-        detailUrl='/baozhi/article/detail'
-        createUrl='/baozhi/article/create'
       />
     </>
   )
