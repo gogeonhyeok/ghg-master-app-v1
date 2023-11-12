@@ -1,10 +1,14 @@
 import '../styles/globals.css'
 import SideBar from '../components/sidebar'
 import Link from 'next/link'
-import { promises as fs } from 'fs'
+import { MongoClient, ObjectId } from 'mongodb';
+import 'dotenv/config'
 
 export default async function Layout({ children }) {
-  const sidebar = await fs.readFile(process.cwd() + '/app/sidebar.json', 'utf8').then(res => JSON.parse(res));
+  const client = new MongoClient(process.env.MONGODB_URL)
+  const database = client.db('ghg-settings-api-v1')
+  let items = await database.collection('menus').find().toArray()
+  const sidebar = JSON.parse(JSON.stringify(items))
 
   return (
     <html lang="en">

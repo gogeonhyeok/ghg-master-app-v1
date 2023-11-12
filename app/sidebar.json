@@ -229,13 +229,13 @@
     "groupName": "PFS"
   },
   {
-    "href": "/user",
+    "href": "/settings/user",
     "displayName": "User",
-    "groupName": "Setting"
+    "groupName": "Settings"
   },
   {
-    "href": "/menu",
+    "href": "/settings/menu",
     "displayName": "Menu",
-    "groupName": "Setting"
+    "groupName": "Settings"
   }
 ]
