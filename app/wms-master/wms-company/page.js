@@ -94,17 +94,15 @@ const viewModel = {
       key: 'www',
       displayName: 'WWW'
     },
-  ]
+  ],
+  listItems,
+  modifyItemDetails
 }
 
 export default () => {
   return (
     <>
-      <List
-        viewModel={viewModel}
-        listItems={listItems}
-        modifyItemDetails={modifyItemDetails}
-      />
+      <List viewModel={viewModel} />
     </>
   )
 }

@@ -3,8 +3,8 @@
 import { MongoClient, ObjectId } from 'mongodb';
 import 'dotenv/config'
 
+const client = new MongoClient(process.env.MONGODB_URL)
 export async function addItem(db, collection, data) {
-  const client = new MongoClient(process.env.MONGODB_URL)
   const database = client.db(db)
   await database.collection(collection).insertOne({
     ...Object.fromEntries(data.entries()),
@@ -13,7 +13,6 @@ export async function addItem(db, collection, data) {
 }
 
 export async function listItems(db, collection, data, curr, size) {
-  const client = new MongoClient(process.env.MONGODB_URL)
   const database = client.db(db)
   let stages = []
 
@@ -33,14 +32,12 @@ export async function listItems(db, collection, data, curr, size) {
 }
 
 export async function listItemDetails(db, collection, id) {
-  const client = new MongoClient(process.env.MONGODB_URL);
   const database = client.db(db);
   let item = await database.collection(collection).findOne({ _id: new ObjectId(id) });
   return JSON.parse(JSON.stringify(item))
 }
 
 export async function modifyItemDetails(db, collection, id, data) {
-  const client = new MongoClient(process.env.MONGODB_URL);
   const database = client.db(db);
   await database.collection(collection).updateOne({
     _id: new ObjectId(id)

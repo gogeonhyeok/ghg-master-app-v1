@@ -54,17 +54,15 @@ const viewModel = {
       key: 'updateUser',
       displayName: 'Update User'
     }
-  ]
+  ],
+  listItems,
+  modifyItemDetails
 }
 
 export default () => {
   return (
     <>
-      <List
-        viewModel={viewModel}
-        listItems={listItems}
-        modifyItemDetails={modifyItemDetails}
-      />
+      <List viewModel={viewModel} />
     </>
   )
 }

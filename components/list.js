@@ -4,33 +4,33 @@ import Table from './table'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
-export default ({ viewModel, listItems, modifyItemDetails}) => {
+export default ({ viewModel }) => {
   const [items, setItems] = useState([])
   const [index, setIndex] = useState(1)
   const [formData, setFormData] = useState({})
   const router = useRouter()
   useEffect(() => {
-    listItems(viewModel.db, viewModel.collection).then(response => setItems(response))
+    viewModel.listItems(viewModel.db, viewModel.collection).then(response => setItems(response))
   }, [])
 
   const onAction = async (data) => {
     setFormData(data)
-    listItems(viewModel.db, viewModel.collection, formData).then(response => setItems(response))
+    viewModel.listItems(viewModel.db, viewModel.collection, formData).then(response => setItems(response))
   }
 
   const onPrev = async () => {
     setIndex(index > 0 ? index - 1 : 0)
-    listItems(viewModel.db, viewModel.collection, formData, index, 100).then(response => setItems(response))
+    viewModel.listItems(viewModel.db, viewModel.collection, formData, index, 100).then(response => setItems(response))
   }
 
   const onNext = async () => {
     setIndex(index + 1)
-    listItems(viewModel.db, viewModel.collection, formData, index, 100).then(response => setItems(response))
+    viewModel.listItems(viewModel.db, viewModel.collection, formData, index, 100).then(response => setItems(response))
   }
 
   const onDelete = async (id) => {
     modifyItemDetails(id, { cancelFlag: true })
-    listItems(viewModel.db, viewModel.collection).then(response => setItems(response))
+    viewModel.listItems(viewModel.db, viewModel.collection).then(response => setItems(response))
   }
 
   const onModify = async (id) => {
