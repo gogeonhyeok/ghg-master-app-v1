@@ -1,9 +1,9 @@
-import List from '../../components/list';
-import { listItems, modifyItemDetails } from '../actions';
+import List from '../../../components/list';
+import { listItems, modifyItemDetails } from '../../actions';
 
 const viewModel = {
   db:"ghg-master-api-v1",
-  collection:"wmsMasterWorkflows",
+  collection:"masterWorkflows",
   modifyUrl: '/workflow/modify',
   detailUrl: '/workflow/detail',
   createUrl: '/workflow/create',
