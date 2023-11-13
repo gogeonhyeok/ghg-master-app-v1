@@ -36,7 +36,7 @@ export default async ({ searchParams }) => {
           }
         ]}
         db='ghg-master-api-v1'
-        collection='masterSerials'
+        collection='masterWmsSerials'
         baseUrl='/wms-master/serial'
       />
     </>

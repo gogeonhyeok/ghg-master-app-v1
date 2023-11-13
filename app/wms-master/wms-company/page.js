@@ -101,7 +101,7 @@ export default async ({ searchParams }) => {
         ]}
         db='ghg-master-api-v1'
         collection='masterWmsCompanies'
-        baseUrl='/wms-master/wms-product'
+        baseUrl='/wms-master/wms-company'
       />
     </>
   )

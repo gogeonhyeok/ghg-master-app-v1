@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-export default ({ viewModel, dataSource, detailUrl }) => {
+export default ({ viewModel, dataSource, baseUrl }) => {
   return (
     <table className="table">
       <thead>
@@ -15,7 +15,7 @@ export default ({ viewModel, dataSource, detailUrl }) => {
             {viewModel.map(model => <td key={entry._id + model.key}>{entry[model.key]}</td>)}
             <td>
               <ul>
-                <li><Link href={`${detailUrl}/${entry._id}`}>Detail</Link></li>
+                <li><Link href={`${baseUrl}/detail/${entry._id}`}>Detail</Link></li>
               </ul>
             </td>
           </tr>

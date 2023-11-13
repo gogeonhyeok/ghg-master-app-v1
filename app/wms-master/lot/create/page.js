@@ -1,21 +1,27 @@
-import Create from '../create';
-import Link from 'next/link';
-
-export default () => {
+import Create from "../../../../components/server-create"
+const viewModel = {
+  db: 'ghg-master-api-v1',
+  collection: 'masterLots',
+  baseUrl: '/wms-master/lot',
+  listModel: [
+    {
+      key: 'lotId',
+      displayName: 'ID'
+    },
+    {
+      key: 'lotNo',
+      displayName: 'NO'
+    },
+    {
+      key: 'status',
+      displayName: 'Status'
+    },
+  ],
+}
+export default async () => {
   return (
     <>
-      <nav
-        style={{
-          display: 'flex',
-          gap: 4,
-          margin: 16
-        }}
-      >
-        <Link href="/lot">List</Link>
-        <Link href="/">Home</Link>
-
-      </nav>
-      <Create />
+      <Create viewModel={viewModel} />
     </>
-  );
+  )
 }

@@ -1,9 +1,8 @@
-import { addItem } from "../../../actions";
-import Create from "../../../../components/create"
+import Create from "../../../../components/server-create"
 const viewModel = {
   db: 'ghg-master-api-v1',
-  collection: 'orders',
-  listUrl: '/wms-master/workflow',
+  collection: 'masterWmsUsers',
+  baseUrl: '/wms-master/wms-user',
   listModel: [
     {
       name: 'userId',
@@ -98,7 +97,6 @@ const viewModel = {
       displayName: 'Update User'
     }
   ],
-  addItem
 }
 export default async () => {
   return (

@@ -1,20 +1,8 @@
-'use client'
-
-import { useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { listItemDetails } from '../app/actions'
 import Link from 'next/link'
 
-export default ({ viewModel }) => {
-  const [itemDetails, setItemDetails] = useState({ subject: '', content: '' })
-  useEffect(() => {
-    viewModel.listItemDetails(viewModel.db, viewModel.collection, viewModel.id).then(response => setItemDetails(response))
-  }, [])
-
-  const router = useRouter()
-  const onDelete = async (id) => {
-    await viewModel.modifyItemDetails(viewModel.db, viewModel.collection, id, { cancelTag: true })
-    router.back()
-  }
+export default async ({ viewModel }) => {
+  const itemDetails = await listItemDetails(viewModel.db, viewModel.collection, viewModel.id)
 
   return (
     <>
@@ -26,17 +14,16 @@ export default ({ viewModel }) => {
         marginTop: 24,
         gap: 16
       }}>
-        <Link href={viewModel.listUrl}>List</Link>
-        <Link href={`${viewModel.modifyUrl}/${viewModel.id}`}>Modify</Link>
-        <button onClick={() => onDelete(viewModel.id)}>Delete</button>
+        <Link href={viewModel.baseUrl}>List</Link>
+        <Link href={`${viewModel.baseUrl}/modify/${viewModel.id}`}>Modify</Link>
       </div>
       <dl style={{
         margin: 24
       }}>
         {viewModel.listModel.map(model => (
-          <section key={model._id}>
+          <section key={model.key}>
             <dt>{model.displayName}</dt>
-            <dd>{itemDetails[model.name]}</dd>
+            <dd>{itemDetails[model.key]}</dd>
           </section>
         ))}
       </dl>

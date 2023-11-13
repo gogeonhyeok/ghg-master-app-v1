@@ -1,21 +1,27 @@
-import Create from '../create';
-import Link from 'next/link';
-
-export default function LocationCreate() {
+import Create from "../../../../components/server-create"
+const viewModel = {
+  db: 'ghg-master-api-v1',
+  collection: 'locations',
+  baseUrl: '/wms-master/location',
+  listModel: [
+    {
+      key: 'centerNo',
+      displayName: 'Center'
+    },
+    {
+      key: 'locationNo',
+      displayName: 'NO'
+    },
+    {
+      key: 'locationType',
+      displayName: 'Type'
+    },
+  ],
+}
+export default async () => {
   return (
     <>
-      <nav
-        style={{
-          display: 'flex',
-          gap: 4,
-          margin: 16
-        }}
-      >
-        <Link href="/location">List</Link>
-        <Link href="/">Home</Link>
-
-      </nav>
-      <Create />
+      <Create viewModel={viewModel} />
     </>
-  );
+  )
 }

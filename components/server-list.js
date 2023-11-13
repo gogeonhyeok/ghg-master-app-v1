@@ -37,7 +37,7 @@ export default async ({ page, searchData, listModel, searchModel, db, collection
       <Table
         viewModel={listModel}
         dataSource={items}
-        detailUrl='${baseUrl}/detail'
+        baseUrl={baseUrl}
       />
     </>
   )
