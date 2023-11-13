@@ -1,9 +1,19 @@
-import Link from 'next/link';
-import Create from '../create';
-export default () => {
+import Create from "../../../../components/server-create"
+const viewModel = {
+  db: 'ghg-itsm-api-v1',
+  collection: 'requestTypes',
+  baseUrl: '/itsm/request-type',
+  listModel: [
+    {
+      key: 'requestTypeDescription',
+      displayName: 'Name'
+    },
+  ],
+}
+export default async () => {
   return (
     <>
-      <Create />
+      <Create viewModel={viewModel} />
     </>
-  );
+  )
 }

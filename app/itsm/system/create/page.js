@@ -1,19 +1,23 @@
-import Link from 'next/link';
-import Create from '../create';
-export default () => {
+import Create from "../../../../components/server-create"
+const viewModel = {
+  db: 'ghg-itsm-api-v1',
+  collection: 'systems',
+  baseUrl: '/itsm/system',
+  listModel: [
+    {
+      key: 'systemName',
+      displayName: 'Name'
+    },
+    {
+      key: 'parentSystemName',
+      displayName: 'Parent System'
+    },
+  ],
+}
+export default async () => {
   return (
     <>
-      <nav
-        style={{
-          display: 'flex',
-          gap: 24,
-          margin: 24
-        }}
-      >
-        <Link href="/">Home</Link>
-        <Link href="/system">List</Link>
-      </nav>
-      <Create />
+      <Create viewModel={viewModel} />
     </>
-  );
+  )
 }

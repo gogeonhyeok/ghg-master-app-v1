@@ -1,19 +1,23 @@
-import Link from 'next/link';
-import Create from '../create';
-export default () => {
+import Create from "../../../../components/server-create"
+const viewModel = {
+  db: 'ghg-portfolio-api-v1',
+  collection: 'hotels',
+  baseUrl: '/portfolio/hotel',
+  listModel: [
+    {
+      key: 'name',
+      displayName: 'Name'
+    },
+    {
+      key: 'address',
+      displayName: 'Address'
+    },
+  ],
+}
+export default async () => {
   return (
     <>
-      <nav
-        style={{
-          display: 'flex',
-          gap: 24,
-          margin: 24
-        }}
-      >
-        <Link href="/">Home</Link>
-        <Link href="/hotel">List</Link>
-      </nav>
-      <Create />
+      <Create viewModel={viewModel} />
     </>
-  );
+  )
 }

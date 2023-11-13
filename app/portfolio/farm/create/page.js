@@ -1,21 +1,27 @@
-import Create from '../create';
-import Link from 'next/link';
-
-export default function FarmCreate() {
+import Create from "../../../../components/server-create"
+const viewModel = {
+  db: 'ghg-portfolio-api-v1',
+  collection: 'farms',
+  baseUrl: '/portfolio/farm',
+  listModel: [
+    {
+      key: 'name',
+      displayName: 'Name'
+    },
+    {
+      key: 'description',
+      displayName: 'Description'
+    },
+    {
+      key: 'address',
+      displayName: 'Address'
+    },
+  ],
+}
+export default async () => {
   return (
     <>
-      <nav
-        style={{
-          display: 'flex',
-          gap: 4,
-          margin: 16
-        }}
-      >
-        <Link href="/farm">List</Link>
-        <Link href="/">Home</Link>
-
-      </nav>
-      <Create />
+      <Create viewModel={viewModel} />
     </>
-  );
+  )
 }
