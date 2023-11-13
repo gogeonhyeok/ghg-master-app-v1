@@ -1,20 +1,40 @@
-import List from './list';
-import Link from 'next/link';
+import List from '../../../components/server-list'
 
-export default () => {
+export default async ({ searchParams }) => {
+  const page = parseInt(searchParams.page)
+  const searchData = {
+    searchType: searchParams.searchType,
+    searchText: searchParams.searchText
+  }
   return (
     <>
-      <nav
-        style={{
-          display: 'flex',
-          gap: 24,
-          margin: 24
-        }}
-      >
-        <Link href="/">Home</Link>
-        <Link href="/location/create">Create</Link>
-      </nav>
-      <List />
+      <List
+        page={page}
+        searchData={searchData}
+        listModel={[
+          {
+            key: 'centerNo',
+            displayName: 'Center'
+          },
+          {
+            key: 'locationNo',
+            displayName: 'NO'
+          },
+          {
+            key: 'locationType',
+            displayName: 'Type'
+          },
+        ]}
+        searchModel={[
+          {
+            value: 'locationNo',
+            displayName: 'NO'
+          }
+        ]}
+        db='ghg-master-api-v1'
+        collection='locations'
+        baseUrl='/wms-master/location'
+      />
     </>
-  );
+  )
 }

@@ -1,68 +1,68 @@
-import List from '../../../components/list';
-import { listItems, modifyItemDetails } from '../../actions';
+import List from '../../../components/server-list'
 
-const viewModel = {
-  db:"ghg-master-api-v1",
-  collection:"masterWorkflows",
-  modifyUrl: '/workflow/modify',
-  detailUrl: '/workflow/detail',
-  createUrl: '/workflow/create',
-  searchModel: [
-    {
-      value: 'workflowName',
-      displayName: 'Name'
-    }
-  ],
-  listModel: [
-    {
-      key: 'workflowId',
-      displayName: 'ID'
-    },
-    {
-      key: 'workflowName',
-      displayName: 'Name'
-    },
-    {
-      key: 'workflowType',
-      displayName: 'Type'
-    },
-    {
-      key: 'contactId',
-      displayName: 'Contact'
-    },
-    {
-      key: 'fromDate',
-      displayName: 'From'
-    },
-    {
-      key: 'thruDate',
-      displayName: 'Thru'
-    },
-    {
-      key: 'createDate',
-      displayName: 'Create Date'
-    },
-    {
-      key: 'createUser',
-      displayName: 'Create User'
-    },
-    {
-      key: 'updateDate',
-      displayName: 'Update Date'
-    },
-    {
-      key: 'updateUser',
-      displayName: 'Update User'
-    }
-  ],
-  listItems,
-  modifyItemDetails
-}
-
-export default () => {
+export default async ({ searchParams }) => {
+  const page = parseInt(searchParams.page)
+  const searchData = {
+    searchType: searchParams.searchType,
+    searchText: searchParams.searchText
+  }
   return (
     <>
-      <List viewModel={viewModel} />
+      <List
+        page={page}
+        searchData={searchData}
+        listModel={[
+          {
+            key: 'workflowId',
+            displayName: 'ID'
+          },
+          {
+            key: 'workflowName',
+            displayName: 'Name'
+          },
+          {
+            key: 'workflowType',
+            displayName: 'Type'
+          },
+          {
+            key: 'contactId',
+            displayName: 'Contact'
+          },
+          {
+            key: 'fromDate',
+            displayName: 'From'
+          },
+          {
+            key: 'thruDate',
+            displayName: 'Thru'
+          },
+          {
+            key: 'createDate',
+            displayName: 'Create Date'
+          },
+          {
+            key: 'createUser',
+            displayName: 'Create User'
+          },
+          {
+            key: 'updateDate',
+            displayName: 'Update Date'
+          },
+          {
+            key: 'updateUser',
+            displayName: 'Update User'
+          }
+        ]}
+        searchModel={[
+          {
+            value: 'workflowName',
+            displayName: 'Name'
+          }
+        ]}
+        db='ghg-master-api-v1'
+        collection='masterWorkflows'
+        baseUrl='/wms-master/workflow'
+      />
     </>
   )
 }

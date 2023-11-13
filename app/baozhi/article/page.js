@@ -22,17 +22,15 @@ const viewModel = {
       key: 'createDate',
       displayName: 'Create Date'
     }
-  ]
+  ],
+  listItems,
+  modifyItemDetails
 }
 
 export default () => {
   return (
     <>
-      <List
-        viewModel={viewModel}
-        listItems={listItems}
-        modifyItemDetails={modifyItemDetails}
-      />
+      <List viewModel={viewModel} />
     </>
   )
 }

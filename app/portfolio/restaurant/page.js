@@ -1,20 +1,36 @@
-import List from './list';
-import Link from 'next/link';
+import List from '../../../components/server-list'
 
-export default () => {
+export default async ({ searchParams }) => {
+  const page = parseInt(searchParams.page)
+  const searchData = {
+    searchType: searchParams.searchType,
+    searchText: searchParams.searchText
+  }
   return (
     <>
-      <nav
-        style={{
-          display: 'flex',
-          gap: 24,
-          margin: 24
-        }}
-      >
-        <Link href="/">Home</Link>
-        <Link href="/restaurant/create">Create</Link>
-      </nav>
-      <List />
+      <List
+        page={page}
+        searchData={searchData}
+        listModel={[
+          {
+            key: 'name',
+            displayName: 'Name'
+          },
+          {
+            key: 'address',
+            displayName: 'Address'
+          },
+        ]}
+        searchModel={[
+          {
+            value: 'name',
+            displayName: 'Name'
+          }
+        ]}
+        db='ghg-portfolio-api-v1'
+        collection='restaurants'
+        baseUrl='/portfolio/restaurant'
+      />
     </>
   )
 }

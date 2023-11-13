@@ -1,20 +1,48 @@
-import List from './list';
-import Link from 'next/link';
+import List from '../../../components/server-list'
 
-export default () => {
+export default async ({ searchParams }) => {
+  const page = parseInt(searchParams.page)
+  const searchData = {
+    searchType: searchParams.searchType,
+    searchText: searchParams.searchText
+  }
   return (
     <>
-      <nav
-        style={{
-          display: 'flex',
-          gap: 24,
-          margin: 24
-        }}
-      >
-        <Link href="/">Home</Link>
-        <Link href="/put-away/create">Create</Link>
-      </nav>
-      <List />
+      <List
+        page={page}
+        searchData={searchData}
+        listModel={[
+          {
+            key: 'pwNo',
+            displayName: 'ID'
+          },
+          {
+            key: 'centerNo',
+            displayName: 'Center'
+          },
+          {
+            key: 'contactId',
+            displayName: 'Contact'
+          },
+          {
+            key: 'invenNo',
+            displayName: 'Inven'
+          },
+          {
+            key: 'qty',
+            displayName: 'QTY'
+          },
+        ]}
+        searchModel={[
+          {
+            value: 'centerNo',
+            displayName: 'Center'
+          }
+        ]}
+        db='ghg-master-api-v1'
+        collection='putAways'
+        baseUrl='/wms/put-away'
+      />
     </>
-  );
+  )
 }

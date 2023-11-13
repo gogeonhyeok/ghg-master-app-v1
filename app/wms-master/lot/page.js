@@ -1,20 +1,56 @@
-import List from './list';
-import Link from 'next/link';
+import List from '../../../components/server-list'
 
-export default () => {
+export default async ({ searchParams }) => {
+  const page = parseInt(searchParams.page)
+  const searchData = {
+    searchType: searchParams.searchType,
+    searchText: searchParams.searchText
+  }
   return (
     <>
-      <nav
-        style={{
-          display: 'flex',
-          gap: 4,
-          margin: 16
-        }}
-      >
-        <Link href="/lot/create">Create</Link>
-        <Link href="/">Home</Link>
-      </nav>
-      <List />
+      <List
+        page={page}
+        searchData={searchData}
+        listModel={[
+          {
+            key: 'lotId',
+            displayName: 'ID'
+          },
+          {
+            key: 'lotNo',
+            displayName: 'NO'
+          },
+          {
+            key: 'status',
+            displayName: 'Status'
+          },
+          {
+            key: 'createDate',
+            displayName: 'Create Date'
+          },
+          {
+            key: 'createUser',
+            displayName: 'Create User'
+          },
+          {
+            key: 'updateDate',
+            displayName: 'Update Date'
+          },
+          {
+            key: 'updateUser',
+            displayName: 'Update User'
+          },
+        ]}
+        searchModel={[
+          {
+            value: 'lotNo',
+            displayName: 'NO'
+          }
+        ]}
+        db='ghg-master-api-v1'
+        collection='masterLots'
+        baseUrl='/wms-master/lot'
+      />
     </>
-  );
+  )
 }

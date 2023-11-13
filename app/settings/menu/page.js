@@ -1,41 +1,39 @@
-import List from '../../../components/list';
-import { listItems, modifyItemDetails } from '../../actions';
+import List from '../../../components/server-list'
 
-const viewModel = {
-  db: 'ghg-settings-api-v1',
-  collection: 'menus',
-  modifyUrl: '/settings/menu/modify',
-  detailUrl: '/settings/menu/detail',
-  createUrl: '/settings/menu/create',
-  searchModel: [
-    {
-      value: 'name',
-      displayName: 'Name'
-    }
-  ],
-  listModel: [
-    {
-      key: 'href',
-      displayName: 'HREF'
-    },
-    {
-      key: 'displayName',
-      displayName: 'Name'
-    },
-    {
-      key: 'groupName',
-      displayName: 'Group'
-    },
-  ]
-}
-
-export default () => {
+export default async ({ searchParams }) => {
+  const page = parseInt(searchParams.page)
+  const searchData = {
+    searchType: searchParams.searchType,
+    searchText: searchParams.searchText
+  }
   return (
     <>
       <List
-        viewModel={viewModel}
-        listItems={listItems}
-        modifyItemDetails={modifyItemDetails}
+        page={page}
+        searchData={searchData}
+        listModel={[
+          {
+            key: 'href',
+            displayName: 'HREF'
+          },
+          {
+            key: 'displayName',
+            displayName: 'Name'
+          },
+          {
+            key: 'groupName',
+            displayName: 'Group'
+          },
+        ]}
+        searchModel={[
+          {
+            value: 'name',
+            displayName: 'Name'
+          }
+        ]}
+        db='ghg-settings-api-v1'
+        collection='menus'
+        baseUrl='/settings/menu'
       />
     </>
   )

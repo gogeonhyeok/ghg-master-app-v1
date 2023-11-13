@@ -4,12 +4,11 @@ import Link from 'next/link'
 import { MongoClient, ObjectId } from 'mongodb';
 import 'dotenv/config'
 
+const client = new MongoClient(process.env.MONGODB_URL)
+const database = client.db('ghg-settings-api-v1')
+let items = await database.collection('menus').find().toArray()
+const sidebar = JSON.parse(JSON.stringify(items))
 export default async function Layout({ children }) {
-  const client = new MongoClient(process.env.MONGODB_URL)
-  const database = client.db('ghg-settings-api-v1')
-  let items = await database.collection('menus').find().toArray()
-  const sidebar = JSON.parse(JSON.stringify(items))
-
   return (
     <html lang="en">
       <head>
