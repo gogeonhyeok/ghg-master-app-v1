@@ -1,5 +1,6 @@
 import Detail from '../../../../../components/server-detail'
-export default ({ params }) => {
+export default async props => {
+  const params = await props.params;
   const viewModel = {
     id: params.id,
     db: 'ghg-master-api-v1',
@@ -53,4 +54,4 @@ export default ({ params }) => {
       <Detail viewModel={viewModel} />
     </>
   )
-}
+};

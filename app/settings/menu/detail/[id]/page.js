@@ -1,7 +1,8 @@
 import Detail from '../../../../../components/detail';
 import { listItemDetails } from '../../../../actions';
 
-export default ({ params }) => {
+export default async props => {
+  const params = await props.params;
   const viewModel = {
     id: params.id,
     db: 'ghg-settings-api-v1',
@@ -29,4 +30,4 @@ export default ({ params }) => {
       <Detail viewModel={viewModel}/>
     </>
   );
-}
+};

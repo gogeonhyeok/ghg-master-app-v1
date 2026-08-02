@@ -1,9 +1,11 @@
-'use client'
+'use client';
+import { use } from "react";
 
 import Modify from '../../../../../components/modify';
 import { listItemDetails, modifyItemDetails } from '../../../../actions';
 
-export default ({ params }) => {
+export default props => {
+  const params = use(props.params);
   const viewModel = {
     id: params.id,
     db: 'ghg-settings-api-v1',
@@ -34,4 +36,4 @@ export default ({ params }) => {
       <Modify viewModel={viewModel}/>
     </>
   );
-}
+};

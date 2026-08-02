@@ -1,5 +1,6 @@
 import Modify from '../../../../../components/server-modify'
-export default ({ params }) => {
+export default async props => {
+  const params = await props.params;
   const viewModel = {
     id: params.id,
     db: 'ghg-master-api-v1',
@@ -37,4 +38,4 @@ export default ({ params }) => {
       <Modify viewModel={viewModel} />
     </>
   )
-}
+};

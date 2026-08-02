@@ -1,6 +1,7 @@
 import List from '../../../components/server-list'
 
-export default async ({ searchParams }) => {
+export default async props => {
+  const searchParams = await props.searchParams;
   const page = parseInt(searchParams.page)
   const searchData = {
     searchType: searchParams.searchType,
@@ -49,4 +50,4 @@ export default async ({ searchParams }) => {
       />
     </>
   )
-}
+};

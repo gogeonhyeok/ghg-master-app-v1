@@ -1,0 +1,55 @@
+import mermaid from 'mermaid'
+import { useEffect } from 'react'
+
+# Singapore Airlines
+
+Good service, a bit expensive price.
+
+Kind colleagues, less competitive environment, more collaborative working cluture.
+
+Less salary, but more stable job
+
+I'm not sure this can be replacement for glossaries
+
+The fact is that I should be familiar enough to use the tools to make money and help people and help myself.
+
+My professionalism was the fluency to use certain tools. I confused whether I'm really good at programming, however most of the illusional fluency in programming was actually capability to use certain tools such as Visual Studio.
+
+When I'm thrown to use real languages and design in web development such as html and css, and javascript, I was stucked and realized that I have nothing that I can do from myself. I couldn't stop reading but I wouldn't be able to write any products.
+
+Perhaps I can practice to write here and post the contents to other channels such as Medium or Facebook. I will see the moment that I should prove for my own sentences that I like to become a writer or cartoonist.
+
+<pre className="mermaid">
+sequenceDiagram
+    Alice->>John: Hello John, how are you?
+    John-->>Alice: Great!
+    Alice-)John: See you later!
+
+</pre>
+
+
+export default ({children}) => {
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    securityLevel: 'loose',
+    fontFamily: 'monospace'
+  })
+
+  useEffect(() => {
+    mermaid.contentLoaded()
+  }, [])
+
+  let something = `
+  sequenceDiagram
+        Alice->>John: Hello John, how are you?
+        John-->>Alice: Great!
+        Alice-)John: See you later!
+  `
+  return (<>
+    <pre className="mermaid">
+    {something}
+    </pre>
+    {children}
+  </>)
+}

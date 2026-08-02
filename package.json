@@ -3,24 +3,34 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start"
   },
   "dependencies": {
+    "@mdx-js/loader": "^3.1.0",
+    "@mdx-js/react": "^3.1.0",
+    "@next/mdx": "16.2.12",
+    "@tailwindcss/postcss": "^4.0.3",
+    "@types/mdx": "^2.0.13",
     "dotenv": "^16.3.1",
-    "eslint-config-next": "^14.0.1",
+    "eslint-config-next": "^16.2.12",
+    "mdx-mermaid": "^2.0.3",
+    "mermaid": "^11.4.1",
     "mongodb": "5.4",
-    "next": "^14.0.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "next": "^16.2.12",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
   },
   "devDependencies": {
     "@types/node": "18.13.0",
-    "@types/react": "18.0.28",
+    "@types/react": "19.2.18",
     "autoprefixer": "^10.4.14",
-    "postcss": "^8.4.14",
-    "tailwindcss": "^3.3.2",
+    "postcss": "^8.5.1",
+    "tailwindcss": "^4.0.0",
     "typescript": "4.9.5"
+  },
+  "overrides": {
+    "@types/react": "19.2.18"
   }
 }
