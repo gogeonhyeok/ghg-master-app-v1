@@ -1,0 +1,31 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono&family=Manrope:wght@400;500;600;700;800&display=swap");
+
+.page { --ink: #17221c; --muted: #68736b; --line: #d8dfd7; --leaf: #315a42; --lime: #d8ef65; min-height: 100vh; color: var(--ink); background: #f3f6ef; font-family: Manrope, sans-serif; }
+.hero, .catalog, .footer { width: min(1080px, calc(100% - 48px)); margin-inline: auto; }
+.hero { display: flex; justify-content: space-between; gap: 64px; padding: 92px 0 88px; border-bottom: 1px solid var(--line); }
+.eyebrow { margin: 0 0 18px; color: var(--leaf); font: 700 11px/1 "DM Mono", monospace; letter-spacing: .14em; text-transform: uppercase; }
+.hero h1 { max-width: 720px; margin: 0; font-size: clamp(54px, 9vw, 108px); line-height: .93; letter-spacing: -.08em; font-weight: 800; }
+.hero h1 em { color: var(--leaf); font-style: normal; }
+.intro { max-width: 520px; margin: 28px 0 0; color: var(--muted); font-size: 16px; line-height: 1.7; }
+.summary { flex: 0 0 160px; align-self: end; padding: 12px 0 0 24px; border-left: 1px solid var(--line); }
+.summary strong { display: block; color: var(--leaf); font: 800 42px/1 Manrope, sans-serif; letter-spacing: -.07em; }
+.summary span { display: block; margin-top: 6px; color: var(--muted); font: 11px/1.3 "DM Mono", monospace; text-transform: uppercase; }
+.summaryLine { width: 100%; height: 1px; margin: 25px 0; background: var(--line); }
+.catalog { padding: 78px 0 100px; }
+.sectionHeading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 46px; }
+.sectionHeading .eyebrow { margin: 0; }
+.sectionHeading h2 { margin: 0; color: var(--leaf); font-size: 32px; letter-spacing: -.06em; }
+.timeline { border-top: 1px solid var(--line); }
+.year { position: relative; display: grid; grid-template-columns: 112px 1fr; gap: 34px; padding: 27px 0; border-bottom: 1px solid var(--line); }
+.yearMarker { position: absolute; top: -4px; left: -3px; width: 7px; height: 7px; border-radius: 50%; background: var(--leaf); box-shadow: 0 0 0 5px #f3f6ef; }
+.yearNumber { margin: 0; color: var(--leaf); font: 700 18px/1 "DM Mono", monospace; }
+.yearContent { display: grid; grid-template-columns: minmax(180px, .65fr) 1fr; gap: 32px; }
+.yearTitle h3 { margin: 0; font-size: 22px; letter-spacing: -.05em; }
+.yearTitle p { margin: 7px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.year ul { display: flex; flex-wrap: wrap; gap: 8px; align-content: start; margin: 0; padding: 0; list-style: none; }
+.year li { padding: 8px 11px; border: 1px solid var(--line); border-radius: 2px; background: rgba(255, 255, 255, .44); font-size: 13px; font-weight: 600; }
+.year:last-child { background: var(--lime); margin-inline: -20px; padding-inline: 20px; border-color: transparent; }
+.year:last-child .yearMarker { left: 17px; box-shadow: 0 0 0 5px var(--lime); }
+.footer { padding: 20px 0 42px; color: var(--muted); font: 11px "DM Mono", monospace; text-transform: uppercase; letter-spacing: .08em; }
+.footer span { padding: 0 8px; color: var(--leaf); }
+@media (max-width: 680px) { .hero { display: block; padding: 58px 0 60px; }.hero h1 { font-size: clamp(50px, 16vw, 82px); }.summary { margin-top: 54px; padding-left: 0; border-left: 0; }.summaryLine { width: 160px; }.catalog { padding: 58px 0 72px; }.sectionHeading { display: block; margin-bottom: 34px; }.sectionHeading h2 { margin-top: 12px; }.year { grid-template-columns: 72px 1fr; gap: 16px; padding: 23px 0; }.yearContent { display: block; }.year ul { margin-top: 17px; }.year:last-child { margin-inline: -12px; padding-inline: 12px; }.year:last-child .yearMarker { left: 9px; } }
