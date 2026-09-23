@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import styles from "./coffee.module.css";
 
 type CoffeeEntry = {
@@ -17,6 +17,15 @@ type MachineEntry = {
   category: string;
   fact: string;
   bestFor: string;
+};
+
+type ApiCoffee = {
+  id: number;
+  title: string;
+  description: string;
+  ingredients: string[];
+  image: string;
+  source: "Hot" | "Iced";
 };
 
 const coffees: CoffeeEntry[] = [
@@ -67,9 +76,42 @@ export default function CoffeePage() {
   const [coffeeFilter, setCoffeeFilter] = useState("All");
   const [machineFilter, setMachineFilter] = useState("All");
   const [query, setQuery] = useState("");
+  const [apiCoffees, setApiCoffees] = useState<ApiCoffee[]>([]);
+  const [apiStatus, setApiStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [featuredIndex, setFeaturedIndex] = useState(0);
   const normalizedQuery = query.trim().toLowerCase();
   const filteredCoffees = useMemo(() => coffees.filter((coffee) => matches(coffee, coffeeFilter, normalizedQuery)), [coffeeFilter, normalizedQuery]);
   const filteredMachines = useMemo(() => machines.filter((machine) => matches(machine, machineFilter, normalizedQuery)), [machineFilter, normalizedQuery]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadApiCoffees() {
+      try {
+        const responses = await Promise.all([
+          fetch("https://api.sampleapis.com/coffee/hot", { signal: controller.signal }),
+          fetch("https://api.sampleapis.com/coffee/iced", { signal: controller.signal }),
+        ]);
+
+        if (responses.some((response) => !response.ok)) throw new Error("Coffee API request failed");
+
+        const [hot, iced] = await Promise.all(responses.map((response) => response.json()));
+        const entries = [
+          ...hot.slice(0, 4).map((coffee: Omit<ApiCoffee, "source">) => ({ ...coffee, source: "Hot" as const })),
+          ...iced.slice(0, 4).map((coffee: Omit<ApiCoffee, "source">) => ({ ...coffee, source: "Iced" as const })),
+        ];
+        setApiCoffees(entries);
+        setApiStatus("ready");
+      } catch {
+        if (!controller.signal.aborted) setApiStatus("error");
+      }
+    }
+
+    void loadApiCoffees();
+    return () => controller.abort();
+  }, []);
+
+  const featuredCoffee = apiCoffees[featuredIndex % apiCoffees.length];
 
   return (
     <main className={styles.page}>
@@ -81,6 +123,13 @@ export default function CoffeePage() {
         <label className={styles.search}><span aria-hidden="true">⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search coffee, origin, or fact" /></label>
         <span className={styles.count}>{filteredCoffees.length + filteredMachines.length} entries</span>
       </div>
+
+      <ApiCoffeeSection
+        coffees={apiCoffees}
+        featuredCoffee={featuredCoffee}
+        status={apiStatus}
+        onShuffle={() => setFeaturedIndex((index) => index + 1)}
+      />
 
       <section className={styles.section} aria-labelledby="coffee-title">
         <SectionHeading number="01" title="Coffee drinks" description="Recipes, traditions, and useful ordering language." />
@@ -104,6 +153,53 @@ export default function CoffeePage() {
       </footer>
     </main>
   );
+}
+
+function ApiCoffeeSection({
+  coffees: apiCoffees,
+  featuredCoffee,
+  status,
+  onShuffle,
+}: {
+  coffees: ApiCoffee[];
+  featuredCoffee?: ApiCoffee;
+  status: "loading" | "ready" | "error";
+  onShuffle: () => void;
+}) {
+  return (
+    <section className={styles.apiSection} aria-labelledby="api-coffee-title">
+      <div className={styles.apiHeading}>
+        <div>
+          <p className={styles.eyebrow}>Live from the coffee API</p>
+          <h2 id="api-coffee-title">A fresh pour.</h2>
+          <p>New drink ideas with ingredients and images, pulled from a free public source.</p>
+        </div>
+        <button className={styles.shuffleButton} type="button" onClick={onShuffle} disabled={!apiCoffees.length}>
+          Shuffle pick <span aria-hidden="true">↻</span>
+        </button>
+      </div>
+
+      {status === "loading" && <p className={styles.apiMessage}>Finding a few drinks...</p>}
+      {status === "error" && <p className={styles.apiMessage}>The live menu is taking a break. The glossary is still available below.</p>}
+      {featuredCoffee && (
+        <div className={styles.apiFeature}>
+          <div className={styles.apiImage} role="img" aria-label={`${featuredCoffee.title} coffee`} style={{ backgroundImage: `url("${featuredCoffee.image}")` }} />
+          <div className={styles.apiFeatureCopy}>
+            <div className={styles.cardTop}><span className={styles.category}>{featuredCoffee.source} pick</span><span className={styles.origin}>#{featuredCoffee.id}</span></div>
+            <h3>{featuredCoffee.title}</h3>
+            <p>{featuredCoffee.description}</p>
+            <footer>{featuredCoffee.ingredients.join(" · ")}</footer>
+          </div>
+        </div>
+      )}
+
+      {apiCoffees.length > 1 && <div className={styles.apiGrid}>{apiCoffees.filter((coffee) => coffee.id !== featuredCoffee?.id || coffee.source !== featuredCoffee.source).map((coffee) => <ApiCoffeeCard key={`${coffee.source}-${coffee.id}`} coffee={coffee} />)}</div>}
+    </section>
+  );
+}
+
+function ApiCoffeeCard({ coffee }: { coffee: ApiCoffee }) {
+  return <article className={styles.apiCard}><div className={styles.apiThumbnail} role="img" aria-label={`${coffee.title} coffee`} style={{ backgroundImage: `url("${coffee.image}")` }} /><div><div className={styles.cardTop}><span className={styles.category}>{coffee.source}</span><span className={styles.origin}>API pick</span></div><h3>{coffee.title}</h3><footer>{coffee.ingredients.slice(0, 3).join(" · ")}</footer></div></article>;
 }
 
 function matches(entry: CoffeeEntry | MachineEntry, category: string, query: string) {
