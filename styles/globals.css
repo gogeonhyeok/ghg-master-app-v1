@@ -22,8 +22,20 @@ html,
 body {
   padding: 0;
   margin: 0;
+  min-height: 100%;
+  background: #121411;
+  color: #f6f5f0;
+  color-scheme: dark;
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+}
+
+html {
+  background: #121411;
+}
+
+body {
+  min-height: 100vh;
 }
 
 a {

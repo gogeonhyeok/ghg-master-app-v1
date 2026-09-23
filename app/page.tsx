@@ -148,7 +148,7 @@ const css = `
   :root { color-scheme: dark; }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
-  .resume-page { --ink:#f6f5f0; --muted:#a9aaa8; --line:rgba(246,245,240,.17); --accent:#c8ff63; min-height:100vh; overflow:hidden; position:relative; background:#121411; color:var(--ink); font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  .resume-page { --ink:#f6f5f0; --muted:#a9aaa8; --line:rgba(246,245,240,.17); --accent:#c8ff63; min-height:100vh; overflow-x:hidden; position:relative; background:#121411; color:var(--ink); font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
   .grain { position:absolute; inset:0; opacity:.14; pointer-events:none; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E"); }
   .topbar,.hero,.section,.footer { width:min(1200px, calc(100% - 48px)); margin-inline:auto; position:relative; }
   .topbar { height:88px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); }
