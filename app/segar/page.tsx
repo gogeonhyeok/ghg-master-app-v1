@@ -1,11 +1,41 @@
-import type { Metadata } from "next";
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { foodOptions } from "./food-options";
+import { medicalOptions } from "./medical-options";
 import styles from "./page.module.css";
 
-export const metadata: Metadata = {
-  title: "Segar Living | Singapore",
-  description:
-    "Explore the everyday rhythm, green spaces, and property opportunities around Segar in Singapore.",
-};
+function ThemeToggle() {
+  const [dark, setDark] = useState(true);
+  const button = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    let saved = true;
+    try {
+      saved = localStorage.getItem("segar-theme") !== "light";
+    } catch { /* Keep dark mode when storage is unavailable. */ }
+    button.current?.closest("[data-segar-theme]")?.setAttribute("data-segar-theme", saved ? "dark" : "light");
+    // Restore a browser-only preference after hydration.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDark(saved);
+  }, []);
+
+  function toggleTheme() {
+    const next = !dark;
+    const theme = next ? "dark" : "light";
+    setDark(next);
+    button.current?.closest("[data-segar-theme]")?.setAttribute("data-segar-theme", theme);
+    try {
+      localStorage.setItem("segar-theme", theme);
+    } catch { /* Switching still works without persistent storage. */ }
+  }
+
+  return (
+    <button ref={button} type="button" className={styles.themeToggle} onClick={toggleTheme} aria-label="Dark mode" aria-pressed={dark}>
+      <span aria-hidden="true">{dark ? "☀" : "☾"}</span> {dark ? "Light mode" : "Dark mode"}
+    </button>
+  );
+}
 
 const neighbourhoods = [
   {
@@ -36,47 +66,91 @@ const reasons = [
   ["Room to grow", "A considered setting for first homes, growing families, and long-term value."],
 ];
 
+type DirectoryOption = { name: string; location: string; detail: string; source: string; phone?: string };
+
+function SearchableOptions({ kind, title, intro, placeholder, options }: {
+  kind: string;
+  title: string;
+  intro: string;
+  placeholder: string;
+  options: DirectoryOption[];
+}) {
+  const [query, setQuery] = useState("");
+  const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const matches = options.filter((option) => {
+    const text = `${option.name} ${option.location} ${option.detail} ${option.phone ?? ""}`.toLowerCase();
+    return terms.every((term) => text.includes(term));
+  });
+
+  return (
+    <section className={`${styles.areaSection} ${styles.foodSection}`} id={`${kind}-options`} aria-labelledby={`${kind}-heading`}>
+      <h2 id={`${kind}-heading`}>{title}</h2>
+      <p className={styles.foodIntro}>{intro}</p>
+      <div className={styles.searchPanel}>
+      <label className={styles.searchLabel} htmlFor={`${kind}-search`}>Search {title.toLowerCase()}</label>
+      <div className={styles.searchBar}>
+        <input id={`${kind}-search`} type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={placeholder} aria-controls={`${kind}-results`} aria-describedby={`${kind}-search-hint`} />
+        {query && <button type="button" onClick={() => setQuery("")}>Clear search</button>}
+      </div>
+      <p className={styles.searchHint} id={`${kind}-search-hint`}>Search by name, description, or location. Results update as you type.</p>
+      </div>
+      <p className={styles.resultCount} role="status">{matches.length} of {options.length} places</p>
+      <ul className={styles.foodList} id={`${kind}-results`}>
+        {matches.map((option) => (
+          <li className={styles.foodRow} key={option.source}>
+            <div>
+              <h3>{option.name}</h3>
+              <p>{option.location}</p>
+              <p>{option.detail}</p>
+              {option.phone && <p><a href={`tel:${option.phone.replace(/\s/g, "")}`}>Call {option.phone}</a></p>}
+            </div>
+            <a className={styles.foodSource} href={option.source} target="_blank" rel="noopener noreferrer" aria-label={`View listing for ${option.name} (opens in a new tab)`}>
+              View listing <span aria-hidden="true">↗</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+      {matches.length === 0 && <p className={styles.foodIntro}>No matching places. Try another name, description, or location.</p>}
+    </section>
+  );
+}
+
+function FoodOptions() {
+  return <SearchableOptions kind="food" title="Food options" intro="Places in Segar and nearby Fajar, with links to their online listings." placeholder="Try cakes, biryani, or Fajar" options={foodOptions} />;
+}
+
+function MedicalOptions() {
+  return <SearchableOptions kind="medical" title="Medical options" intro="Family clinics around Segar, Fajar, and Senja. Check the clinic listing or call for current hours and appointments." placeholder="Try Segar, Fajar, or family clinic" options={medicalOptions} />;
+}
+
 export default function SegarPage() {
   return (
-    <main className={styles.page}>
+    <div className={styles.page} data-segar-theme="dark">
+    <main>
       <div className={styles.topbar}>
         <a className={styles.logo} href="#top" aria-label="Segar Living home">
           segar<span>.</span>
         </a>
         <nav className={styles.nav} aria-label="Main navigation">
+          <ThemeToggle />
           <a href="#the-area">The area</a>
+          <a href="#food-options">Food options</a>
+          <a href="#medical-options">Medical options</a>
           <a href="#why-segar">Why Segar</a>
-          <a className={styles.navCta} href="#discover">
-            Discover homes <span aria-hidden="true">↗</span>
+          <a className={styles.navCta} href="#food-options">
+            Find food <span aria-hidden="true">↗</span>
           </a>
         </nav>
       </div>
 
       <section className={styles.hero} id="top">
-        <div className={styles.heroCopy}>
-          <p className={styles.eyebrow}>Singapore · North West</p>
-          <h1>Closer to green. Closer to home.</h1>
-          <p className={styles.lede}>
-            Welcome to Segar, a quietly connected neighborhood where everyday
-            convenience meets the breathing room of Singapore&apos;s green belt.
-          </p>
-          <div className={styles.heroActions}>
-            <a className={styles.primaryButton} href="#discover">
-              Explore the neighborhood <span aria-hidden="true">↗</span>
-            </a>
-            <a className={styles.textLink} href="#the-area">
-              See what is nearby <span aria-hidden="true">↓</span>
-            </a>
-          </div>
-        </div>
-        <div className={styles.heroVisual} aria-label="Aerial view of greenery and homes around Segar" role="img">
-          <div className={styles.visualNote}>
-            <span>Live in the rhythm of</span>
-            <strong>everyday nature</strong>
-          </div>
-          <span className={styles.visualLabel}>1°23&apos;N · 103°46&apos;E</span>
-        </div>
+        <p className={styles.eyebrow}>Bukit Panjang · Singapore</p>
+        <h1>Segar</h1>
+        <p className={styles.lede}>Food and everyday places around the neighbourhood.</p>
       </section>
+
+      <FoodOptions />
+      <MedicalOptions />
 
       <section className={styles.introBand} id="discover">
         <p className={styles.sectionIndex}>A better everyday</p>
@@ -172,5 +246,6 @@ export default function SegarPage() {
         <span>Singapore · 2026</span>
       </footer>
     </main>
+    </div>
   );
 }
