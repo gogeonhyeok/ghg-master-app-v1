@@ -1,0 +1,391 @@
+[
+  {
+    "name": "Nginx Plus",
+    "price": 1500,
+    "currency": "USD",
+    "written": "2018-11-30",
+    "specifications": [
+      {
+        "key": "subscription-iteration",
+        "value": "1year"
+      }
+    ]
+  },
+  {
+    "name": "Office365 Personal",
+    "price": 89000,
+    "currency": "KRW",
+    "written": "2018-11-28",
+    "specifications": [
+      {
+        "key": "subscription-iteration",
+        "value": "1year"
+      }
+    ]
+  },
+  {
+    "name": "Office365 Home",
+    "written": "2018-11-28",
+    "specifications": [
+      {
+        "key": "subscription-iteration",
+        "value": "1year"
+      }
+    ]
+  },
+  {
+    "name": "IntelliJIDEA All Products Pack",
+    "manufacturers": [
+      "JetBrains"
+    ],
+    "price": 649,
+    "currency": "USD",
+    "written": "2018-08-04"
+  },
+  {
+    "name": "IntelliJIDEA Ultimate",
+    "price": 499,
+    "currency": "USD",
+    "manufacturers": [
+      "JetBrains"
+    ]
+  },
+  {
+    "name": "Visual Studio 2017 Professional",
+    "manufacturers": [
+      "Microsoft"
+    ],
+    "price": 499.99,
+    "currency": "USD",
+    "written": "2017-07-02"
+  },
+  {
+    "name": "DevExpress WPF",
+    "manufacturers": [
+      "DevExpress"
+    ],
+    "price": 899.99,
+    "currency": "USD",
+    "written": "2017-07-01"
+  },
+  {
+    "name": "DevExpress Windows 10 Apps",
+    "manufacturers": [
+      "DevExpress"
+    ],
+    "price": 499.99,
+    "currency": "USD",
+    "written": "2017-07-01"
+  },
+  {
+    "name": "DevExpress Universal",
+    "manufacturers": [
+      "DevExpress"
+    ],
+    "price": 1499.99,
+    "currency": "USD",
+    "written": "2017-07-01"
+  },
+  {
+    "name": "DevExpress Dxperience",
+    "manufacturers": [
+      "DevExpress"
+    ],
+    "price": 2199.99,
+    "currency": "USD",
+    "written": "2017-07-01"
+  },
+  {
+    "name": "Infragistics Ultimate UI for WPF",
+    "manufacturers": [
+      "Infragistics"
+    ],
+    "price": 899.0,
+    "currency": "USD",
+    "written": "2017-07-01"
+  },
+  {
+    "name": "Infragistics Professional",
+    "manufacturers": [
+      "Infragistics"
+    ],
+    "price": 1495.0,
+    "currency": "USD",
+    "written": "2017-07-01"
+  },
+  {
+    "name": "Infragistics Ultimate",
+    "manufacturers": [
+      "Infragistics"
+    ],
+    "price": 1995.0,
+    "currency": "USD",
+    "written": "2017-07-01"
+  },
+  {
+    "name": "Xceed DataGrid for WPF",
+    "manufacturers": [
+      "Xceed"
+    ],
+    "price": 749.95,
+    "currency": "USD",
+    "written": "2017-07-01"
+  },
+  {
+    "name": "Xceed Toolkit Plus for WPF",
+    "manufacturers": [
+      "Xceed"
+    ],
+    "price": 499.95,
+    "currency": "USD",
+    "written": "2017-07-01"
+  },
+  {
+    "name": "Xceed Pro Themes for WPF",
+    "manufacturers": [
+      "Xceed"
+    ],
+    "price": 499.95,
+    "currency": "USD",
+    "written": "2017-07-01"
+  },
+  {
+    "name": "Xceed Business Suite",
+    "manufacturers": [
+      "Xceed"
+    ],
+    "price": 1999.95,
+    "currency": "USD",
+    "written": "2017-07-01"
+  },
+  {
+    "name": "Xceed Ultimate Suite",
+    "manufacturers": [
+      "Xceed"
+    ],
+    "price": 2499.95,
+    "currency": "USD",
+    "written": "2017-07-01"
+  },
+  {
+    "name": "Pdfium dotnet for small business",
+    "manufacturers": [
+      "Patagames"
+    ],
+    "price": 190.0,
+    "currency": "USD",
+    "written": "2017-07-01"
+  },
+  {
+    "name": "Pdfium dotnet for multi developer",
+    "manufacturers": [
+      "Patagames"
+    ],
+    "price": 720.0,
+    "currency": "USD",
+    "written": "2017-07-01"
+  },
+  {
+    "name": "Pdfium dotnet for single developer",
+    "manufacturers": [
+      "Patagames"
+    ],
+    "price": 220.0,
+    "currency": "USD",
+    "written": "2017-07-01"
+  },
+  {
+    "name": "LiveCharts Geared For Single",
+    "manufacturers": [
+      "LiveCharts"
+    ],
+    "price": 99.0,
+    "currency": "USD",
+    "written": "2017-07-01"
+  },
+  {
+    "name": "LiveCharts Geared For Team",
+    "manufacturers": [
+      "LiveCharts"
+    ],
+    "price": 68.9,
+    "currency": "USD",
+    "written": "2017-07-01"
+  },
+  {
+    "name": "Visual Studio Professional",
+    "manufacturers": [
+      "Microsoft"
+    ],
+    "price": 499.0,
+    "currency": "USD",
+    "written": "2017-07-02"
+  },
+  {
+    "name": "Telerik UI for WPF",
+    "manufacturers": [
+      "Telerik"
+    ],
+    "price": 999.0,
+    "currency": "USD",
+    "written": "2017-07-02"
+  },
+  {
+    "name": "Telerik UI for UWP",
+    "manufacturers": [
+      "Telerik"
+    ],
+    "price": 599.0,
+    "currency": "USD",
+    "written": "2017-07-02"
+  },
+  {
+    "name": "Telerik UI for Winforms",
+    "manufacturers": [
+      "Telerik"
+    ],
+    "price": 999.0,
+    "currency": "USD",
+    "written": "2017-07-02"
+  },
+  {
+    "name": "Windows 10 Home",
+    "manufacturers": [
+      "Microsoft"
+    ],
+    "price": 119.99,
+    "currency": "USD",
+    "written": "2017-07-02"
+  },
+  {
+    "name": "Windows Server",
+    "manufacturers": [
+      "Microsoft"
+    ],
+    "currency": "USD",
+    "written": "2017-07-02"
+  },
+  {
+    "name": "Microsoft SQL Server 2016 Express",
+    "manufacturers": [
+      "Microsoft"
+    ],
+    "currency": "USD",
+    "written": "2017-07-02"
+  },
+  {
+    "name": "Microsoft SQL Server 2016 Web",
+    "manufacturers": [
+      "Microsoft"
+    ],
+    "currency": "USD",
+    "written": "2017-07-02"
+  },
+  {
+    "name": "Microsoft SQL Server 2016 Developer",
+    "manufacturers": [
+      "Microsoft"
+    ],
+    "currency": "USD",
+    "written": "2017-07-02"
+  },
+  {
+    "name": "Microsoft SQL Server 2016 Stnadard",
+    "manufacturers": [
+      "Microsoft"
+    ],
+    "price": 3717.0,
+    "currency": "USD",
+    "written": "2017-07-02"
+  },
+  {
+    "name": "Microsoft SQL Server 2016 Enterprise",
+    "manufacturers": [
+      "Microsoft"
+    ],
+    "price": 14256.0,
+    "currency": "USD",
+    "written": "2017-07-02"
+  },
+  {
+    "name": "Windows 10 Pro",
+    "manufacturers": [
+      "Microsoft"
+    ],
+    "price": 199.99,
+    "currency": "USD",
+    "written": "2017-10-19"
+  },
+  {
+    "name": "DevExpress Winforms",
+    "manufacturers": [
+      "DevExpress"
+    ],
+    "price": 999.99,
+    "currency": "USD",
+    "written": "2017-10-19"
+  },
+  {
+    "name": "Microsoft SQL Server 2017 Enterprise",
+    "description": "Tier-1 Workload",
+    "price": 14256,
+    "currency": "USD",
+    "written": "2017-11-16"
+  },
+  {
+    "name": "Microsoft SQL Server 2017 Standard",
+    "description": "Microsoft SQL Server 2017 Standard",
+    "price": 3717,
+    "currency": "USD",
+    "written": "2017-11-16"
+  },
+  {
+    "name": "Microsoft SQL Server 2017 Developer",
+    "description": "Microsoft SQL Server 2017 Developer",
+    "price": 0,
+    "currency": "USD",
+    "written": "2017-11-16"
+  },
+  {
+    "name": "Microsoft SQL Server 2017 Web",
+    "description": "Microsoft SQL Server 2017 Web",
+    "price": 0,
+    "currency": "USD",
+    "written": "2017-11-16"
+  },
+  {
+    "name": "Microsoft SQL Server 2017 Express",
+    "description": "Microsoft SQL Server 2017 Express",
+    "price": 0,
+    "currency": "USD",
+    "written": "2017-11-16"
+  },
+  {
+    "name": "GrapeCity ActiveReports Professional",
+    "description": "GrapeCity ActiveReports Professional",
+    "price": 1599,
+    "currency": "USD",
+    "written": "2017-11-21"
+  },
+  {
+    "name": "GrapeCity ActiveReports Developer Standard",
+    "description": "GrapeCity ActiveReports Developer Standard",
+    "price": 849,
+    "currency": "USD",
+    "written": "2017-11-21"
+  },
+  {
+    "name": "GrapeCity ActiveReports Server Core",
+    "description": "GrapeCity ActiveReports Server Core",
+    "price": 4999,
+    "currency": "USD",
+    "written": "2017-11-21"
+  },
+  {
+    "name": "GrapeCity ActiveReports Server",
+    "description": "GrapeCity ActiveReports Server",
+    "price": 12999,
+    "currency": "USD",
+    "written": "2017-11-21"
+  }
+]

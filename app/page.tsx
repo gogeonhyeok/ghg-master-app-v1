@@ -66,6 +66,7 @@ const certifications = [
 ];
 
 const pages: NavItem[] = [
+  { href: "/softwares", label: "Softwares", description: "Explore software options", accent: "#22c55e" },
   { href: "/camel", label: "Camel", description: "Explore Apache Camel", accent: "#22c55e" },
   { href: "/coffee", label: "Coffee", description: "Explore a coffee shop concept", accent: "#f59e0b" },
   { href: "/finance", label: "Finance", description: "Explore a personal finance dashboard", accent: "#06b6d4" },
