@@ -66,6 +66,7 @@ const certifications = [
 ];
 
 const pages: NavItem[] = [
+  { href: "/favicon", label: "Favicon", description: "Generate, preview, copy, and download website icons", accent: "#c6b6ff" },
   { href: "/softwares", label: "Softwares", description: "Explore software options", accent: "#22c55e" },
   { href: "/camel", label: "Camel", description: "Explore Apache Camel", accent: "#22c55e" },
   { href: "/coffee", label: "Coffee", description: "Explore a coffee shop concept", accent: "#f59e0b" },
