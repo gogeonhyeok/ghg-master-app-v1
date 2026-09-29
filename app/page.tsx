@@ -74,6 +74,9 @@ const pages: NavItem[] = [
   { href: "/netflix", label: "Netflix", description: "Explore a streaming interface concept", accent: "#ef4444" },
   { href: "/payment", label: "Payment", description: "Browse payment methods and providers", accent: "#10b981" },
   { href: "/segar", label: "Segar", description: "Explore a Singapore neighborhood", accent: "#a78bfa" },
+  { href: "/korea", label: "Korea", description: "Discover Korean cities, food, and cultural experiences", accent: "#eea6a5" },
+  { href: "/taiwan", label: "Taiwan", description: "Explore night markets, historic streets, and scenic escapes", accent: "#a8d4a9" },
+  { href: "/singapore", label: "Singapore", description: "Discover gardens, heritage neighborhoods, and hawker food", accent: "#f1b084" },
   { href: "/soonok", label: "Soonok", description: "Read a personal diary timeline", accent: "#f97316" },
   { href: "/test", label: "Test", description: "A simple development test page", accent: "#38bdf8" },
 ];
