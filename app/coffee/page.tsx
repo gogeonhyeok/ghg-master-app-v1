@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import styles from "./coffee.module.css";
+import OrderSection from "./OrderSection";
 
 type CoffeeEntry = {
   name: string;
@@ -115,6 +116,7 @@ export default function CoffeePage() {
 
   return (
     <main className={styles.page}>
+      <OrderSection />
       <div className={styles.controls}>
         <div className={styles.pageTitle}>
           <p className={styles.eyebrow}>Coffee menu builder</p>
