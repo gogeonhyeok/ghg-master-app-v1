@@ -1,6 +1,9 @@
-import { useState } from 'react';
-import Link from 'next/link';
-import styles from './Menu.module.css';
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import ThemeToggle from "../../components/ThemeToggle";
+import styles from "./Menu.module.css";
 
 const Menu = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,6 +14,9 @@ const Menu = () => {
 
   return (
     <nav className={styles.navbar}>
+      <div className={styles.navActions}>
+        <ThemeToggle />
+      </div>
       <button className={styles.hamburger} onClick={toggleMenu}>
         ☰
       </button>
