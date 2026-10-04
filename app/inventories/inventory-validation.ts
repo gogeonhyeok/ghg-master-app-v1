@@ -1,4 +1,4 @@
-export const MAX_PHOTO_BYTES = 512 * 1024;
+export const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
 export const ACCEPTED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"] as const;
 
 const DATA_URL_PATTERN = /^data:(image\/(?:jpeg|png|webp|gif));base64,([A-Za-z0-9+/]+={0,2})$/;
