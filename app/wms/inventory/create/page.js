@@ -68,6 +68,11 @@ const viewModel = {
       key: 'grNo',
       displayName: 'GR'
     },
+    {
+      key: 'photo',
+      displayName: 'Photo',
+      displayType: 'file'
+    },
   ],
 }
 export default async () => {
