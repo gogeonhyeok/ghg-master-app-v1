@@ -30,27 +30,19 @@ export default ({ viewModel }) => {
         <Link href={viewModel.baseUrl}>Cancel</Link>
       </div>
       {viewModel.listModel.map(model => {
-        const name = model.key || model.name;
         switch(model.displayType) {
           case 'textarea':
             return (
-              <label key={name}>
+              <label key={model.name}>
                 {model.displayName}
-                <textarea name={name} />
-              </label>
-            )
-          case 'file':
-            return (
-              <label key={name}>
-                {model.displayName}
-                <input type="file" accept="image/*" capture="environment" name={name} />
+                <textarea name={model.name} />
               </label>
             )
           default:
             return (
-              <label key={name}>
+              <label key={model.name}>
                 {model.displayName}
-                <input name={name} />
+                <input name={model.name} />
               </label>
             )
         }

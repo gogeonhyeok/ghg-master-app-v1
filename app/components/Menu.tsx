@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import ThemeToggle from "../../../components/ThemeToggle";
+import ThemeToggle from "../../components/ThemeToggle";
 import styles from "./Menu.module.css";
 
 const Menu = () => {
