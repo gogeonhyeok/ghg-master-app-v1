@@ -1,7 +1,7 @@
 import "server-only";
 
-import { MongoClient, type Db } from "mongodb";
-import { isValidPhotoDataUrl } from "./inventory-validation";
+import { Binary, MongoClient, ObjectId, type Db } from "mongodb";
+import { isValidPhotoDataUrl, isValidPhotoFile } from "./inventory-validation";
 import type { Inventory } from "./types";
 
 export const INVENTORIES_DATABASE = "ghg-master-api-v1";
@@ -17,6 +17,8 @@ type InventoryDocument = {
   createdDate?: unknown;
   updatedDate?: unknown;
   photo?: unknown;
+  photoContentType?: unknown;
+  hasPhoto?: boolean;
 };
 
 function toIsoDate(value: unknown): string {
@@ -55,7 +57,14 @@ export async function getInventories(): Promise<Inventory[]> {
   const documents = await database
     .collection<InventoryDocument>(INVENTORIES_COLLECTION)
     .find({}, {
-      projection: { name: 1, description: 1, createdDate: 1, updatedDate: 1, photo: 1 },
+      // Compute a flag in MongoDB so neither binary nor legacy Base64 bytes travel with the list.
+      projection: {
+        name: 1, description: 1, createdDate: 1, updatedDate: 1,
+        hasPhoto: { $and: [
+          { $in: [{ $type: "$photo" }, ["binData", "string"]] },
+          { $ne: ["$photo", ""] },
+        ] },
+      },
     })
     .sort({ updatedDate: -1, _id: -1 })
     .limit(100)
@@ -63,8 +72,8 @@ export async function getInventories(): Promise<Inventory[]> {
     .toArray();
 
   return documents.map((document) => {
-    const photo = typeof document.photo === "string" && isValidPhotoDataUrl(document.photo)
-      ? document.photo
+    const photo = document.hasPhoto
+      ? `/inventories/${encodeURIComponent(String(document._id))}/photo`
       : "";
 
     return {
@@ -76,4 +85,32 @@ export async function getInventories(): Promise<Inventory[]> {
       photo,
     };
   });
+}
+
+export async function getInventoryPhoto(id: string): Promise<{ bytes: Uint8Array; contentType: string } | null> {
+  if (!/^[a-f\d]{24}$/i.test(id)) return null;
+
+  const database = await getInventoriesDatabase();
+  const document = await database.collection<InventoryDocument>(INVENTORIES_COLLECTION).findOne(
+    { _id: new ObjectId(id) },
+    { projection: { photo: 1, photoContentType: 1 }, maxTimeMS: 5000 },
+  );
+  if (!document) return null;
+
+  if (document.photo instanceof Binary && typeof document.photoContentType === "string") {
+    const bytes = new Uint8Array(document.photo.read(0, document.photo.length()));
+    return isValidPhotoFile({ type: document.photoContentType, size: bytes.byteLength })
+      ? { bytes, contentType: document.photoContentType }
+      : null;
+  }
+
+  // Keep old records readable until their Base64 values have been migrated.
+  if (typeof document.photo === "string" && isValidPhotoDataUrl(document.photo)) {
+    const separator = document.photo.indexOf(",");
+    const bytes = new Uint8Array(Buffer.from(document.photo.slice(separator + 1), "base64"));
+    return bytes.byteLength > 0
+      ? { bytes, contentType: document.photo.slice(5, document.photo.indexOf(";")) }
+      : null;
+  }
+  return null;
 }

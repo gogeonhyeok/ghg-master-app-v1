@@ -1,8 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { Binary } from "mongodb";
 import { getInventoriesDatabase, INVENTORIES_COLLECTION } from "./data";
-import { isValidPhotoDataUrl } from "./inventory-validation";
+import { isValidPhotoFile } from "./inventory-validation";
 import type { CreateInventoryState } from "./types";
 
 export async function createInventory(
@@ -15,7 +16,6 @@ export async function createInventory(
 
   const name = typeof rawName === "string" ? rawName.trim() : "";
   const description = typeof rawDescription === "string" ? rawDescription.trim() : "";
-  const photo = typeof rawPhoto === "string" ? rawPhoto : "";
 
   if (!name || name.length > 120) {
     return { status: "error", message: "Enter a name of up to 120 characters." };
@@ -23,11 +23,14 @@ export async function createInventory(
   if (!description || description.length > 2000) {
     return { status: "error", message: "Enter a description of up to 2,000 characters." };
   }
-  if (photo && !isValidPhotoDataUrl(photo)) {
-    return { status: "error", message: "Choose a JPEG, PNG, WebP, or GIF image no larger than 512 KB." };
+  if (rawPhoto !== null && (!(rawPhoto instanceof File) || !isValidPhotoFile(rawPhoto))) {
+    return { status: "error", message: "Choose a JPEG, PNG, WebP, or GIF image no larger than 2 MB after compression." };
   }
 
   try {
+    const photo = rawPhoto instanceof File
+      ? new Binary(new Uint8Array(await rawPhoto.arrayBuffer()))
+      : null;
     const database = await getInventoriesDatabase();
     const now = new Date();
     await database.collection(INVENTORIES_COLLECTION).insertOne({
@@ -36,6 +39,7 @@ export async function createInventory(
       createdDate: now,
       updatedDate: now,
       photo,
+      photoContentType: rawPhoto instanceof File ? rawPhoto.type : null,
     });
   } catch {
     return { status: "error", message: "The inventory could not be saved. Your details are still in the form." };

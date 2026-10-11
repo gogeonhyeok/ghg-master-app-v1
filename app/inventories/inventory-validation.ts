@@ -3,6 +3,11 @@ export const ACCEPTED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp", "i
 
 const DATA_URL_PATTERN = /^data:(image\/(?:jpeg|png|webp|gif));base64,([A-Za-z0-9+/]+={0,2})$/;
 
+export function isValidPhotoFile(photo: { type: string; size: number }): boolean {
+  return ACCEPTED_PHOTO_TYPES.includes(photo.type as (typeof ACCEPTED_PHOTO_TYPES)[number])
+    && photo.size > 0 && photo.size <= MAX_PHOTO_BYTES;
+}
+
 export function isValidPhotoDataUrl(value: string): boolean {
   const match = DATA_URL_PATTERN.exec(value);
   if (!match) return false;
