@@ -7,6 +7,7 @@ export type Project = {
 
 export const projects: Project[] = [
   { href: "/inventories", label: "Inventories", description: "Create and browse MongoDB inventory records", accent: "#93c46e" },
+  { href: "/warehouse", label: "Warehouse", description: "Browse WMS inventories, products, locations, centers, and SKUs", accent: "#85b7c2" },
   { href: "/favicon", label: "Favicon", description: "Generate, preview, copy, and download website icons", accent: "#c6b6ff" },
   { href: "/softwares", label: "Softwares", description: "Explore software options", accent: "#22c55e" },
   { href: "/camel", label: "Camel", description: "Explore Apache Camel", accent: "#22c55e" },

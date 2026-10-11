@@ -37,7 +37,7 @@ test.each(["metaKey", "ctrlKey"])("opens, focuses search, and toggles closed wit
   fireEvent.keyDown(window, { key: "k", [modifier]: true });
   expect(screen.getByRole("dialog", { name: "Search projects" })).toBeInTheDocument();
   expect(screen.getByRole("combobox")).toHaveFocus();
-  expect(screen.getAllByRole("option")).toHaveLength(15);
+  expect(screen.getAllByRole("option")).toHaveLength(16);
   expect(document.body.style.overflow).toBe("hidden");
   fireEvent.keyDown(window, { key: "k", [modifier]: true });
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -67,6 +67,8 @@ test("navigates with arrows, wraps selection, and resets selection when filterin
   expect(screen.getByRole("option", { selected: true })).toHaveTextContent("Test");
   fireEvent.keyDown(input, { key: "ArrowDown" });
   expect(screen.getByRole("option", { selected: true })).toHaveTextContent("Inventories");
+  fireEvent.keyDown(input, { key: "ArrowDown" });
+  expect(screen.getByRole("option", { selected: true })).toHaveTextContent("Warehouse");
   fireEvent.keyDown(input, { key: "ArrowDown" });
   expect(screen.getByRole("option", { selected: true })).toHaveTextContent("Favicon");
   fireEvent.change(input, { target: { value: "inventory" } });
