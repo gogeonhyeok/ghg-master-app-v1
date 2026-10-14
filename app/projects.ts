@@ -6,6 +6,7 @@ export type Project = {
 };
 
 export const projects: Project[] = [
+  { href: "/frogchat", label: "Frogchat", description: "Hop into a shared pond and chat with other frogs", accent: "#8fb96a" },
   { href: "/inventories", label: "Inventories", description: "Create and browse MongoDB inventory records", accent: "#93c46e" },
   { href: "/warehouse", label: "Warehouse", description: "Browse WMS inventories, products, locations, centers, and SKUs", accent: "#85b7c2" },
   { href: "/favicon", label: "Favicon", description: "Generate, preview, copy, and download website icons", accent: "#c6b6ff" },

@@ -1,0 +1,143 @@
+.page {
+  min-height: 100dvh;
+  background: #f8f8ef;
+  color: #314b35;
+  color-scheme: light;
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.page * { box-sizing: border-box; }
+.page button, .page input { font: inherit; }
+.page button { cursor: pointer; }
+.page button:disabled { cursor: default; }
+.page button:focus-visible, .page a:focus-visible { outline: 3px solid #70965c; outline-offset: 4px; }
+.container { max-width: 1440px; margin: auto; padding: 0 56px; }
+.header { height: 100px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #dfe4d5; }
+.brand { display: flex; align-items: center; color: #314b35; text-decoration: none; font-weight: 750; font-size: 29px; letter-spacing: -1.5px; }
+.brandFrog { display: block; width: 47px; height: 42px; margin-right: 9px; overflow: hidden; }
+.brandFrog svg { width: 55px; margin-left: -4px; margin-top: -2px; animation: none; }
+.brandDot { color: #91af72; }
+.headerRight { display: flex; align-items: center; gap: 32px; font-size: 12px; }
+.openPond { display: flex; align-items: center; gap: 8px; color: #71816b; }
+.openPond > span, .liveDot, .connection > span, .statusDot, .pendingDot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #83a366; flex-shrink: 0; }
+.workspaceLink { color: #586e51; text-decoration: none; }
+.workspaceLink:hover { color: #293e28; }
+.main { padding: 46px 0 0; }
+.intro { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 35px; }
+.eyebrow { font-size: 9px; font-weight: 650; letter-spacing: 1.8px; color: #7d8c71; margin: 0 0 12px; }
+.intro h1 { font-family: Georgia, "Times New Roman", serif; font-weight: 400; font-size: clamp(30px, 3.1vw, 44px); letter-spacing: -1.6px; line-height: 1.2; margin: 0; }
+.intro h1 em { color: #839b68; font-weight: 400; }
+.intro > div > p:last-child { margin: 13px 0 0; font-size: 12px; color: #7c8574; line-height: 1.7; }
+.mobileBreak { display: none; }
+.inviteButton { display: flex; align-items: center; justify-content: center; gap: 18px; border: 1px solid #d8dfcb; border-radius: 100px; padding: 12px 17px; font-size: 11px !important; background: transparent; color: #4b6544; white-space: nowrap; transition: background .2s; }
+.inviteButton:hover { background: #eaf0dc; }
+.inviteButton svg { width: 16px; height: 16px; }
+.pondLayout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; border: 1px solid #dbe1d0; border-radius: 18px; overflow: hidden; background: #fdfdf7; box-shadow: 0 12px 32px #48633205; }
+.pondPanel { min-width: 0; }
+.pondToolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 17px 24px; height: 58px; }
+.pondToolbar > div { display: flex; align-items: center; gap: 9px; font-size: 12px; }
+.pondToolbar strong { font-weight: 550; }
+.liveDot { box-shadow: 0 0 0 4px #8cab6415; }
+.frogCount { padding: 3px 9px; border: 1px solid #e3e8d8; border-radius: 30px; font-size: 9px; color: #79886b; margin-left: 4px; }
+.soundButton { border: 0; background: transparent; display: flex; gap: 6px; align-items: center; color: #7d8a72; font-size: 10px !important; padding: 7px 0 7px 7px; }
+.soundButton svg { width: 17px; height: 17px; }
+.soundButton:hover { color: #334a32; }
+.scene { position: relative; isolation: isolate; min-height: 440px; background: #bbdac3; overflow: hidden; display: flex; align-items: stretch; flex-direction: column; }
+.landscape { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; }
+.pondSign { position: absolute; top: 24px; left: 24px; display: flex; align-items: center; gap: 10px; padding: 11px 14px; border: 1px solid #f7f8e786; border-radius: 8px; color: #576f43; background: #f9fbea86; backdrop-filter: blur(6px); font-size: 8px; font-weight: 600; letter-spacing: 1.6px; }
+.pondSign small { display: block; font-size: 9px; font-weight: 400; letter-spacing: 0; margin-top: 4px; color: #80916d; }
+.signFlower { font-size: 28px; font-weight: 400; color: #91a26f; line-height: 1; }
+.weather { position: absolute; top: 27px; right: 24px; color: #6b8053; font-size: 9px; }
+.weather > span { font-size: 16px; padding: 0 4px; color: #b6a660; }
+.residents { margin: 210px 36px 54px; display: grid; grid-template-columns: repeat(var(--frog-columns), minmax(0, 1fr)); justify-content: center; justify-items: center; align-items: end; gap: 155px 8px; flex: 1; }
+.resident { position: relative; width: 100%; max-width: 185px; display: flex; flex-direction: column; align-items: center; animation: land .7s ease-out both; }
+.frogOnPad { position: relative; height: 118px; width: 142px; }
+.lilyPad { position: absolute; bottom: -3px; left: -13px; width: 166px; height: 57px; }
+.frogDrawing { position: relative; width: 100%; height: auto; animation: breathe 3.8s ease-in-out infinite; transform-origin: 50% 90%; }
+.resident:nth-child(2n) .frogDrawing { animation-delay: -.9s; }
+.resident:nth-child(3n) .frogDrawing { animation-delay: -2s; }
+.frogName { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 5px; padding: 5px 10px; border: 1px solid #f5fae45c; border-radius: 20px; color: #4e7151; background: #eef6df99; font-size: 9px; text-align: center; line-height: 1.4; z-index: 1; }
+.selfResident .frogName { background: #fafbece0; border-color: #fafbec; }
+.frogName small { font-size: 8px; color: #92a180; padding-left: 3px; }
+.youDot { width: 4px; height: 4px; border-radius: 50%; background: #83a15f; }
+.bubble { position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%); background: #fffff6; box-shadow: 0 5px 16px #4967490b; border: 1px solid #d3dec3; border-radius: 14px 14px 14px 4px; padding: 10px 13px; font-size: 11px; line-height: 1.5; color: #486044; width: max-content; max-width: min(190px, 100%); overflow-wrap: anywhere; z-index: 3; animation: bubbleIn .25s ease-out; }
+.bubble::after { content: ""; position: absolute; bottom: -6px; left: calc(50% - 5px); width: 9px; height: 9px; background: #fffff6; border-bottom: 1px solid #d3dec3; border-right: 1px solid #d3dec3; transform: rotate(45deg); }
+.openMouth, .croakLines { opacity: 0; }
+.croaking .frogBody { animation: croakBody .28s ease-in-out 4; transform-origin: 80px 115px; }
+.croaking .throat { animation: croakThroat .28s ease-in-out 4; transform-origin: 80px 91px; }
+.croaking .closedMouth { opacity: 0; }
+.croaking .openMouth { opacity: 1; }
+.croaking .croakLines { animation: croakLines .28s ease-out 4; transform-origin: center; }
+.dragonfly { animation: drift 8s ease-in-out infinite; }
+.landing { position: absolute; top: 64%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #5b7e59; font-size: 12px; }
+.landingRipple { display: block; width: 92px; height: 26px; border: 1px solid #69996c; border-radius: 50%; margin: 0 auto 15px; animation: ripple 2s ease-out infinite; }
+.waitingNote { position: absolute; bottom: 28px; left: 20px; right: 20px; text-align: center; font-size: 10px; color: #5c8060; margin: 0; }
+.pondCaption { position: absolute; bottom: 12px; right: 18px; font-family: Georgia, serif; font-style: italic; font-size: 10px; color: #557851; opacity: .8; }
+.composerArea { padding: 17px 24px 13px; background: #fdfdf7; }
+.identity { display: flex; align-items: center; gap: 8px; margin-bottom: 13px; font-size: 9px; color: #8a967b; }
+.identityAvatar { height: 31px; width: 31px; background: #e9efd9; border-radius: 50%; display: block; overflow: hidden; }
+.identityAvatar svg { width: 34px; margin-top: 2px; margin-left: -1px; animation: none; }
+.identity strong { display: block; font-size: 10px; font-weight: 550; color: #526d45; margin-top: 3px; }
+.connection { display: flex; align-items: center; gap: 5px; margin-left: auto; font-size: 9px; }
+.connection > span { width: 4px; height: 4px; }
+.connecting > span { background: #c6aa6a; animation: pulse 1.5s ease-in-out infinite; }
+.composer { display: flex; gap: 10px; border: 1px solid #dbe2cd; border-radius: 10px; padding: 6px; background: #fafbf2; }
+.composer:focus-within { border-color: #86a367; box-shadow: 0 0 0 3px #92b07313; }
+.composer input { flex: 1; min-width: 0; color: #3b5838; outline: none; border: none; background: transparent; padding: 8px 10px; font-size: 12px; }
+.composer input::placeholder { color: #97a18a; }
+.composer button { display: flex; align-items: center; justify-content: center; gap: 12px; border: 0; border-radius: 7px; background: #577844; color: #f8f9ec; font-size: 11px; padding: 11px 15px; transition: background .2s; }
+.composer button:not(:disabled):hover { background: #3e6136; }
+.composer button:disabled { background: #bbc9a9; color: #fbfcee; }
+.composer button svg { width: 16px; height: 16px; }
+.composerHint { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; font-size: 8px; color: #949d88; }
+.composerHint p { margin: 0; }
+.composerHint > span { font-variant-numeric: tabular-nums; }
+.error { color: #9a593c; font-size: 11px; line-height: 1.5; margin: 10px 0 0; }
+.chatPanel { border-left: 1px solid #dbe1d0; background: #f5f6ec; display: flex; flex-direction: column; min-width: 0; max-height: 659px; }
+.chatHeading { padding: 25px 23px 19px; border-bottom: 1px solid #e1e5d6; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.chatHeading .eyebrow { font-size: 7px; letter-spacing: 1.2px; margin-bottom: 8px; }
+.chatHeading h2 { font: 400 25px/1.2 Georgia, serif; letter-spacing: -.6px; margin: 0; }
+.chatHeading svg { width: 25px; height: 25px; color: #98ab83; }
+.chatLog { padding: 24px 23px; overflow-y: auto; overscroll-behavior: contain; flex: 1; scrollbar-width: thin; scrollbar-color: #c6d3b5 transparent; }
+.welcome { padding-bottom: 23px; border-bottom: 1px dashed #d4ddc5; }
+.welcomeFlower { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #e9eed9; color: #91a371; font-size: 24px; border-radius: 50%; margin-bottom: 13px; }
+.welcome h3 { font: 400 21px/1.3 Georgia, serif; margin: 0; letter-spacing: -.3px; }
+.welcome p { font-size: 10px; line-height: 1.85; color: #869079; margin: 12px 0 14px; }
+.welcomeRule { font-size: 9px; color: #80946b; }
+.emptyChat { text-align: center; color: #8c9c7b; padding: 46px 0; }
+.emptyChat > span { font-size: 27px; color: #b5c3a3; }
+.emptyChat p { font: italic 16px Georgia, serif; margin: 12px 0 7px; }
+.emptyChat small { font-size: 9px; color: #a1aa96; }
+.chatMessage { display: flex; gap: 8px; margin-top: 21px; animation: messageIn .25s ease-out; }
+.messageAvatar { width: 28px; height: 28px; border-radius: 50%; background: #e8eedb; flex-shrink: 0; overflow: hidden; }
+.messageAvatar svg { width: 31px; margin-left: -1px; margin-top: 1px; animation: none; }
+.chatMessage > div { flex: 1; min-width: 0; }
+.messageMeta { display: flex; justify-content: space-between; gap: 6px; font-size: 8px; padding: 2px 0 7px; }
+.messageMeta strong { font-weight: 550; color: #6c825b; overflow-wrap: anywhere; }
+.messageMeta time { color: #a2ac96; white-space: nowrap; font-size: 7px; }
+.chatMessage p { background: #fcfdf5; border: 1px solid #e3e7d7; border-radius: 0 9px 9px 9px; padding: 9px 10px; font-size: 11px; line-height: 1.6; margin: 0; color: #586b4e; overflow-wrap: anywhere; white-space: pre-wrap; }
+.ownMessage p { background: #eaf0dc; border-color: #dde6ca; }
+.chatFooter { border-top: 1px solid #e1e5d6; padding: 17px 15px; display: flex; justify-content: center; align-items: center; gap: 8px; color: #8b987a; font: italic 11px Georgia, serif; }
+.littleLeaf { color: #96aa7a; font-size: 22px; }
+.belowPond { display: flex; justify-content: space-between; align-items: center; gap: 16px; color: #97a18c; font-size: 9px; padding: 17px 0; }
+.belowPond p { display: flex; align-items: center; gap: 7px; margin: 0; }
+.statusDot, .pendingDot { width: 5px; height: 5px; }
+.pendingDot { background: #c6aa6a; animation: pulse 1.5s ease-in-out infinite; }
+.footer { margin-top: 35px; padding: 21px 0 28px; border-top: 1px solid #e2e6d9; color: #98a28b; display: flex; align-items: center; justify-content: space-between; font-size: 9px; }
+.footer > span:last-child > span { color: #9cae7d; margin-left: 8px; font-size: 16px; vertical-align: middle; }
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+@keyframes breathe { 0%, 100% { transform: translateY(0) scaleY(1); } 50% { transform: translateY(-2px) scaleY(1.025); } }
+@keyframes land { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes bubbleIn { from { opacity: 0; transform: translateX(-50%) translateY(8px) scale(.95); } to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); } }
+@keyframes croakBody { 50% { transform: translateY(-3px) scaleY(1.06); } }
+@keyframes croakThroat { 50% { transform: scale(1.16, 1.2); } }
+@keyframes croakLines { 0% { opacity: 0; transform: scale(.9); } 35% { opacity: .8; } 100% { opacity: 0; transform: scale(1.12); } }
+@keyframes drift { 50% { transform: translate(28px, -10px); } }
+@keyframes ripple { from { opacity: .8; transform: scale(.7); } to { opacity: 0; transform: scale(1.7); } }
+@keyframes pulse { 50% { opacity: .4; } }
+@keyframes messageIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@media (min-width: 1500px) { .container { padding: 0 64px; } .scene { min-height: 490px; } .residents { margin-top: 240px; } .chatPanel { max-height: 709px; } }
+@media (max-width: 1100px) { .container { padding: 0 32px; } .pondLayout { grid-template-columns: minmax(0, 1fr) 260px; } .intro h1 { font-size: 34px; } .residents { margin-inline: 20px; grid-template-columns: repeat(min(var(--frog-columns), 3), minmax(0, 1fr)); } .frogOnPad { width: 120px; height: 100px; } .lilyPad { width: 142px; left: -11px; } .chatHeading, .chatLog { padding-inline: 19px; } .weather { font-size: 8px; } }
+@media (max-width: 850px) { .pondLayout { grid-template-columns: 1fr; } .chatPanel { border-left: 0; border-top: 1px solid #dbe1d0; max-height: 420px; } .chatLog { min-height: 180px; } .chatHeading { padding-block: 20px; } .welcome { display: none; } .emptyChat { padding: 20px 0; } .scene { min-height: 450px; } .residents { grid-template-columns: repeat(min(var(--frog-columns), 3), minmax(0, 1fr)); } .intro { align-items: flex-start; } .intro h1 { font-size: 32px; } .mobileBreak { display: block; } .inviteButton { margin-top: 28px; } }
+@media (max-width: 520px) { .container { padding: 0 18px; } .header { height: 77px; } .brand { font-size: 26px; } .headerRight { gap: 0; } .openPond { display: none; } .workspaceLink { font-size: 10px; } .main { padding-top: 30px; } .intro { flex-direction: column; gap: 16px; margin-bottom: 24px; } .intro h1 { font-size: 34px; letter-spacing: -1.4px; } .intro > div > p:last-child { font-size: 11px; max-width: 290px; } .eyebrow { font-size: 8px; } .inviteButton { margin-top: 0; padding: 9px 13px; font-size: 10px !important; } .pondToolbar { padding-inline: 14px; } .soundButton span { display: none; } .pondSign { top: 17px; left: 14px; padding: 8px 10px; font-size: 7px; } .pondSign small { font-size: 8px; } .signFlower { font-size: 24px; } .weather { top: 90px; right: 17px; font-size: 8px; } .scene { min-height: 420px; } .residents { margin: 215px 14px 60px; grid-template-columns: repeat(min(var(--frog-columns), 2), minmax(0, 1fr)); gap: 180px 10px; } .resident { max-width: 150px; } .frogName { font-size: 8px; padding-inline: 6px; } .bubble { font-size: 10px; padding: 9px 10px; } .waitingNote { font-size: 8px; bottom: 36px; } .composerArea { padding: 15px 14px 12px; } .composer { gap: 0; } .composer input { font-size: 16px; padding: 8px; } .composer button { padding: 10px 12px; gap: 7px; } .composerHint { font-size: 7px; } .belowPond { font-size: 8px; align-items: flex-start; } .belowPond > span { display: none; } .footer { margin-top: 23px; font-size: 8px; gap: 10px; align-items: flex-start; } .footer > span:last-child { text-align: right; } }
+@media (prefers-reduced-motion: reduce) { .page *, .page *::before, .page *::after { animation: none !important; transition: none !important; } .croaking .croakLines { opacity: .6; } }
