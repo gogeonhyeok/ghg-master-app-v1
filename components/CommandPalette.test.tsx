@@ -2,6 +2,7 @@ jest.mock("next/navigation", () => ({ useRouter: jest.fn() }));
 
 import { fireEvent, render, screen } from "@testing-library/react";
 import { useRouter } from "next/navigation";
+import { projects } from "../app/projects";
 import { CommandPaletteProvider, CommandPaletteTrigger } from "./CommandPalette";
 
 const push = jest.fn();
@@ -37,7 +38,7 @@ test.each(["metaKey", "ctrlKey"])("opens, focuses search, and toggles closed wit
   fireEvent.keyDown(window, { key: "k", [modifier]: true });
   expect(screen.getByRole("dialog", { name: "Search projects" })).toBeInTheDocument();
   expect(screen.getByRole("combobox")).toHaveFocus();
-  expect(screen.getAllByRole("option")).toHaveLength(16);
+  expect(screen.getAllByRole("option")).toHaveLength(projects.length);
   expect(document.body.style.overflow).toBe("hidden");
   fireEvent.keyDown(window, { key: "k", [modifier]: true });
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -64,13 +65,11 @@ test("navigates with arrows, wraps selection, and resets selection when filterin
   fireEvent.keyDown(window, { key: "k", metaKey: true });
   const input = screen.getByRole("combobox");
   fireEvent.keyDown(input, { key: "ArrowUp" });
-  expect(screen.getByRole("option", { selected: true })).toHaveTextContent("Test");
-  fireEvent.keyDown(input, { key: "ArrowDown" });
-  expect(screen.getByRole("option", { selected: true })).toHaveTextContent("Inventories");
-  fireEvent.keyDown(input, { key: "ArrowDown" });
-  expect(screen.getByRole("option", { selected: true })).toHaveTextContent("Warehouse");
-  fireEvent.keyDown(input, { key: "ArrowDown" });
-  expect(screen.getByRole("option", { selected: true })).toHaveTextContent("Favicon");
+  expect(screen.getByRole("option", { selected: true })).toHaveTextContent(projects[projects.length - 1].label);
+  for (const project of projects.slice(0, 4)) {
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    expect(screen.getByRole("option", { selected: true })).toHaveTextContent(project.label);
+  }
   fireEvent.change(input, { target: { value: "inventory" } });
   expect(screen.getByRole("option", { selected: true })).toHaveTextContent("Inventories");
   expect(input).toHaveAttribute("aria-activedescendant", screen.getByRole("option").id);
