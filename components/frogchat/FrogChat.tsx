@@ -6,6 +6,7 @@ import type { FormEvent } from "react";
 import { MAX_MESSAGE_LENGTH, type PondSession, type PondSnapshot } from "../../lib/frogchat/types";
 import { FrogPortrait } from "./Frog";
 import PondScene from "./PondScene";
+import { playCroak } from "./sound";
 import styles from "./frogchat.module.css";
 
 type Connection = "joining" | "connected" | "reconnecting";
@@ -52,10 +53,25 @@ export default function FrogChat() {
   const hasSnapshot = useRef(false);
   const audioRef = useRef<AudioContext | null>(null);
   const soundRef = useRef(false);
+  const stopSoundRef = useRef<(() => void) | null>(null);
+  const soundRequestRef = useRef(0);
   const messageRequest = useRef<{ text: string; id: string } | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
   const followLog = useRef(true);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const playSound = useCallback((voiceId?: string) => {
+    const context = audioRef.current;
+    if (!soundRef.current || context?.state !== "running") return;
+    try {
+      stopSoundRef.current?.();
+      stopSoundRef.current = playCroak(context, voiceId);
+    } catch {
+      soundRef.current = false;
+      setSound(false);
+      setError("Croak sounds aren’t available in this browser.");
+    }
+  }, []);
 
   const applySnapshot = useCallback((data: PondSnapshot) => {
     if (data.serverTime < newestSnapshot.current) return;
@@ -71,27 +87,14 @@ export default function FrogChat() {
           for (const message of animated) next[message.frogId] = data.serverTime + 1100;
           return next;
         });
-        const context = audioRef.current;
-        if (soundRef.current && context?.state === "running") {
-          const oscillator = context.createOscillator();
-          const volume = context.createGain();
-          oscillator.type = "sine";
-          oscillator.frequency.setValueAtTime(260, context.currentTime);
-          oscillator.frequency.exponentialRampToValueAtTime(100, context.currentTime + .16);
-          volume.gain.setValueAtTime(.0001, context.currentTime);
-          volume.gain.exponentialRampToValueAtTime(.1, context.currentTime + .025);
-          volume.gain.exponentialRampToValueAtTime(.0001, context.currentTime + .22);
-          oscillator.connect(volume); volume.connect(context.destination);
-          oscillator.start(); oscillator.stop(context.currentTime + .24);
-          oscillator.onended = () => { oscillator.disconnect(); volume.disconnect(); };
-        }
+        playSound(animated.at(-1)?.frogId);
       }
     }
     seenMessages.current = new Set(data.messages.map(message => message.id));
     hasSnapshot.current = true;
     setNow(data.serverTime);
     setSnapshot(data);
-  }, []);
+  }, [playSound]);
 
   useEffect(() => {
     let stopped = false;
@@ -151,7 +154,15 @@ export default function FrogChat() {
     return () => clearTimeout(timeout);
   }, [copied]);
 
-  useEffect(() => () => { void audioRef.current?.close().catch(() => undefined); }, []);
+  useEffect(() => () => {
+    soundRef.current = false;
+    soundRequestRef.current++;
+    stopSoundRef.current?.();
+    stopSoundRef.current = null;
+    const context = audioRef.current;
+    audioRef.current = null;
+    void context?.close().catch(() => undefined);
+  }, []);
 
   async function send(event: FormEvent) {
     event.preventDefault();
@@ -178,14 +189,27 @@ export default function FrogChat() {
   }
 
   async function toggleSound() {
-    if (!sound) {
-      try {
-        audioRef.current ??= new AudioContext();
-        await audioRef.current.resume();
-      } catch { setError("Croak sounds aren’t available in this browser."); return; }
+    const enabled = !soundRef.current;
+    const request = ++soundRequestRef.current;
+    soundRef.current = enabled;
+    setSound(enabled);
+    if (!enabled) {
+      stopSoundRef.current?.();
+      stopSoundRef.current = null;
+      return;
     }
-    soundRef.current = !sound;
-    setSound(!sound);
+    try {
+      if (!audioRef.current || audioRef.current.state === "closed") audioRef.current = new AudioContext();
+      await audioRef.current.resume();
+      if (request !== soundRequestRef.current) return;
+      if (audioRef.current.state !== "running") throw new Error("Audio is suspended");
+      playSound(selfId ?? undefined);
+    } catch {
+      if (request !== soundRequestRef.current) return;
+      soundRef.current = false;
+      setSound(false);
+      setError("Croak sounds aren’t available in this browser.");
+    }
   }
 
   async function invite() {

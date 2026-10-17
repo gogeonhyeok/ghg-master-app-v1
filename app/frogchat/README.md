@@ -4,7 +4,10 @@ Visit `/frogchat` to automatically join the single shared pond. Each visit gets 
 anonymous frog. The page polls `/api/frogchat` every two seconds; sending a croak
 updates your frog immediately and other visitors on their next poll. Bubbles last
 ten seconds, and every new croak animates the frog for about one second. Sound is
-optional and starts off. No simulated visitors or automated replies are used.
+optional and starts off. Enabling sound previews a soft, two-syllable synthesized
+croak; each frog has a slightly different voice. Muting fades out active audio.
+No audio files or external sound services are needed. No simulated visitors or
+automated replies are used.
 
 ## Shared storage
 
@@ -33,4 +36,7 @@ on the workspace homepage and in the command palette.
 
 This copy uses relative imports and supports this app’s MongoDB 5.4 driver,
 including its `findOneAndUpdate` result wrapper. The original implementation’s
-Jest tests remain in `glossaries/.nextjs`; this app has no Jest test runner.
+backend Jest tests remain in `glossaries/.nextjs`. Component and audio tests are
+copied alongside `components/frogchat`, but this app has no Jest test runner or
+installed Jest/Testing Library dependencies. Test tooling was not added as part
+of this promotion. Run `npm run build` for the production build check.

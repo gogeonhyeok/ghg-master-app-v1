@@ -53,7 +53,17 @@
 .resident { position: relative; width: 100%; max-width: 185px; display: flex; flex-direction: column; align-items: center; animation: land .7s ease-out both; }
 .frogOnPad { position: relative; height: 118px; width: 142px; }
 .lilyPad { position: absolute; bottom: -3px; left: -13px; width: 166px; height: 57px; }
-.frogDrawing { position: relative; width: 100%; height: auto; animation: breathe 3.8s ease-in-out infinite; transform-origin: 50% 90%; }
+.frogDrawing {
+  --frog-body: color-mix(in srgb, var(--frog-color) 85%, #367d1c);
+  --frog-leg-shadow: color-mix(in srgb, var(--frog-color) 75%, #245526);
+  --frog-shadow: color-mix(in srgb, var(--frog-color) 60%, #245526);
+  --frog-deep-shadow: color-mix(in srgb, var(--frog-color) 30%, #194125);
+  position: relative;
+  width: 100%;
+  height: auto;
+  animation: breathe 3.8s ease-in-out infinite;
+  transform-origin: 50% 90%;
+}
 .resident:nth-child(2n) .frogDrawing { animation-delay: -.9s; }
 .resident:nth-child(3n) .frogDrawing { animation-delay: -2s; }
 .frogName { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 5px; padding: 5px 10px; border: 1px solid #f5fae45c; border-radius: 20px; color: #4e7151; background: #eef6df99; font-size: 9px; text-align: center; line-height: 1.4; z-index: 1; }
@@ -64,7 +74,7 @@
 .bubble::after { content: ""; position: absolute; bottom: -6px; left: calc(50% - 5px); width: 9px; height: 9px; background: #fffff6; border-bottom: 1px solid #d3dec3; border-right: 1px solid #d3dec3; transform: rotate(45deg); }
 .openMouth, .croakLines { opacity: 0; }
 .croaking .frogBody { animation: croakBody .28s ease-in-out 4; transform-origin: 80px 115px; }
-.croaking .throat { animation: croakThroat .28s ease-in-out 4; transform-origin: 80px 91px; }
+.croaking .throat { animation: croakThroat .28s ease-in-out 4; transform-box: fill-box; transform-origin: 50% 65%; }
 .croaking .closedMouth { opacity: 0; }
 .croaking .openMouth { opacity: 1; }
 .croaking .croakLines { animation: croakLines .28s ease-out 4; transform-origin: center; }
