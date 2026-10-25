@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import FrogChat from "../../components/frogchat/FrogChat";
+import FrogChat from "./FrogChat";
 
 export const metadata: Metadata = {
   title: "Frogchat · A little pond, a little conversation",
