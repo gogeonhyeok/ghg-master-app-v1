@@ -7,6 +7,7 @@ import { MAX_MESSAGE_LENGTH, type PondSession, type PondSnapshot } from "../../l
 import { FrogPortrait } from "./Frog";
 import PondScene from "./PondScene";
 import { playCroak } from "./sound";
+import { connectPond } from "../../lib/frogchat/connection";
 import styles from "./frogchat.module.css";
 
 type Connection = "joining" | "connected" | "reconnecting";
@@ -35,7 +36,12 @@ function ArrowIcon() {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
 
+function ThemeIcon({ isNight }: { isNight: boolean }) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">{isNight ? <path d="M20.5 14A8.7 8.7 0 0 1 10 3.5 8.8 8.8 0 1 0 20.5 14Z" strokeLinejoin="round" /> : <><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" strokeLinecap="round" /></>}</svg>;
+}
+
 export default function FrogChat() {
+  const [themeOverride, setThemeOverride] = useState<boolean | null>(null);
   const [snapshot, setSnapshot] = useState<PondSnapshot>(emptyPond);
   const [selfId, setSelfId] = useState<string | null>(null);
   const [connection, setConnection] = useState<Connection>("joining");
@@ -43,10 +49,14 @@ export default function FrogChat() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [now, setNow] = useState(0);
+  // getHours uses the visitor's timezone; wait for the client clock to hydrate.
+  const localHour = new Date(now).getHours();
+  const isNight = themeOverride ?? (now > 0 && (localHour < 6 || localHour >= 18));
   const [croaks, setCroaks] = useState<Record<string, number>>({});
   const [sound, setSound] = useState(false);
   const [copied, setCopied] = useState(false);
   const tokenRef = useRef<string | null>(null);
+  const reconnectRef = useRef<(() => void) | null>(null);
   const clockOffset = useRef(0);
   const newestSnapshot = useRef(0);
   const seenMessages = useRef(new Set<string>());
@@ -98,45 +108,78 @@ export default function FrogChat() {
 
   useEffect(() => {
     let stopped = false;
+    let suspended = false;
     let inFlight = false;
-    let timer: ReturnType<typeof setTimeout>;
-    async function sync() {
-      if (stopped || inFlight) return;
+    let retry: ReturnType<typeof setTimeout>;
+    let retryDelay = 1000;
+    let subscription: ReturnType<typeof connectPond> | undefined;
+
+    async function connect() {
+      if (stopped || suspended || inFlight || subscription) return;
       inFlight = true;
       try {
         if (!tokenRef.current) {
           const session = await pondRequest<PondSession>("POST", undefined, { action: "join" });
-          if (stopped) { releasePad(session.token); return; }
+          if (stopped || suspended) { releasePad(session.token); return; }
           tokenRef.current = session.token;
           setSelfId(session.selfId);
           applySnapshot(session);
-        } else {
-          const data = await pondRequest<PondSnapshot>("GET", tokenRef.current);
-          if (stopped) return;
-          applySnapshot(data);
         }
-        setConnection("connected");
-      } catch (cause) {
         if (stopped) return;
-        if (cause instanceof RequestError && cause.status === 401) tokenRef.current = null;
+        const token = tokenRef.current;
+        subscription = connectPond(token, {
+          snapshot: data => { if (!stopped && tokenRef.current === token) applySnapshot(data); },
+          status: connected => {
+            if (stopped) return;
+            setConnection(connected ? "connected" : "reconnecting");
+            if (connected) setError("");
+          },
+          expired: () => {
+            if (stopped || tokenRef.current !== token) return;
+            subscription?.close();
+            subscription = undefined;
+            tokenRef.current = null;
+            void connect();
+          },
+        });
+        retryDelay = 1000;
+      } catch (cause) {
+        if (stopped || suspended) return;
         setConnection("reconnecting");
-      } finally {
-        inFlight = false;
-        if (!stopped) timer = setTimeout(sync, 2000);
-      }
+        setError(cause instanceof RequestError ? cause.message : "Couldn’t join the pond. Trying again…");
+        retry = setTimeout(() => { void connect(); }, retryDelay);
+        retryDelay = Math.min(retryDelay * 2, 30_000);
+      } finally { inFlight = false; }
     }
-    function wake() { if (!document.hidden) { clearTimeout(timer); void sync(); } }
+    function wake() {
+      if (document.hidden || stopped) return;
+      suspended = false;
+      if (subscription) subscription.refresh();
+      else { clearTimeout(retry); void connect(); }
+    }
     function leave() {
+      suspended = true;
+      clearTimeout(retry);
+      subscription?.close();
+      subscription = undefined;
       if (tokenRef.current) releasePad(tokenRef.current);
       tokenRef.current = null;
     }
-    void sync();
+    reconnectRef.current = () => {
+      subscription?.close();
+      subscription = undefined;
+      tokenRef.current = null;
+      setConnection("reconnecting");
+      void connect();
+    };
+    void connect();
     const clock = setInterval(() => setNow(Date.now() + clockOffset.current), 200);
     window.addEventListener("pagehide", leave);
     window.addEventListener("pageshow", wake);
     document.addEventListener("visibilitychange", wake);
     return () => {
-      stopped = true; clearTimeout(timer); clearInterval(clock); leave();
+      stopped = true; clearTimeout(retry); clearInterval(clock); leave();
+      reconnectRef.current = null;
       window.removeEventListener("pagehide", leave);
       window.removeEventListener("pageshow", wake);
       document.removeEventListener("visibilitychange", wake);
@@ -183,7 +226,7 @@ export default function FrogChat() {
     } catch (cause) {
       setError(cause instanceof RequestError ? cause.message : "Your croak didn’t reach the pond. Try sending it again.");
       if (cause instanceof RequestError && cause.status === 401) {
-        tokenRef.current = null; setConnection("reconnecting");
+        reconnectRef.current?.();
       }
     } finally { setSending(false); inputRef.current?.focus(); }
   }
@@ -222,11 +265,15 @@ export default function FrogChat() {
   const status = connection === "joining" ? "Finding your lily pad" : connection === "reconnecting" ? "Reconnecting to the pond…" : others ? `You’re sharing the pond with ${others} ${others === 1 ? "frog" : "frogs"}` : "You’re in! Waiting for more frogs to hop in";
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page} data-theme={isNight ? "dark" : "light"}>
       <div className={styles.container}>
         <header className={styles.header}>
           <Link href="/frogchat" className={styles.brand}><span className={styles.brandFrog}><FrogPortrait color="#88b76c" /></span>frogchat<span className={styles.brandDot}>.</span></Link>
-          <div className={styles.headerRight}><span className={styles.openPond}><span />A pond for everyone</span><Link href="/" className={styles.workspaceLink}>Workspace ↗</Link></div>
+          <div className={styles.headerRight}>
+            <span className={styles.openPond}><span />A pond for everyone</span>
+            <button type="button" className={styles.themeButton} aria-label="Dark mode" aria-pressed={isNight} title={`Switch to ${isNight ? "day" : "night"} mode`} onClick={() => setThemeOverride(!isNight)}><ThemeIcon isNight={isNight} /><span>{isNight ? "Night" : "Day"}</span></button>
+            <Link href="/" className={styles.workspaceLink}>Workspace ↗</Link>
+          </div>
         </header>
 
         <main className={styles.main}>
@@ -237,8 +284,8 @@ export default function FrogChat() {
 
           <div className={styles.pondLayout}>
             <div className={styles.pondPanel}>
-              <div className={styles.pondToolbar}><div><span className={styles.liveDot} /><strong>Sunny pond</strong><span className={styles.frogCount}>{snapshot.frogs.length} {snapshot.frogs.length === 1 ? "frog" : "frogs"} here</span></div><button type="button" aria-pressed={sound} onClick={toggleSound} className={styles.soundButton}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" strokeLinejoin="round" />{sound ? <path d="M16 8c3 2 3 6 0 8m3-11c5 4 5 10 0 14" strokeLinecap="round" /> : <path d="m17 9 5 6m0-6-5 6" strokeLinecap="round" />}</svg><span>Sound {sound ? "on" : "off"}</span></button></div>
-              <PondScene snapshot={snapshot} selfId={selfId} now={now} croaks={croaks} />
+              <div className={styles.pondToolbar}><div><span className={styles.liveDot} /><strong>{isNight ? "Moonlit pond" : "Sunny pond"}</strong><span className={styles.frogCount}>{snapshot.frogs.length} {snapshot.frogs.length === 1 ? "frog" : "frogs"} here</span></div><button type="button" aria-pressed={sound} onClick={toggleSound} className={styles.soundButton}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" strokeLinejoin="round" />{sound ? <path d="M16 8c3 2 3 6 0 8m3-11c5 4 5 10 0 14" strokeLinecap="round" /> : <path d="m17 9 5 6m0-6-5 6" strokeLinecap="round" />}</svg><span>Sound {sound ? "on" : "off"}</span></button></div>
+              <PondScene snapshot={snapshot} selfId={selfId} now={now} croaks={croaks} isNight={isNight} />
               <div className={styles.composerArea}>
                 <div className={styles.identity}><span className={styles.identityAvatar}><FrogPortrait color={me?.color || "#88b76c"} /></span><span>Your little frog<strong>{me?.name || "Landing soon…"}</strong></span><span className={`${styles.connection} ${connection !== "connected" ? styles.connecting : ""}`} role="status"><span />{connection === "connected" ? "Connected" : connection === "joining" ? "Joining" : "Reconnecting"}</span></div>
                 <form className={styles.composer} onSubmit={send}>

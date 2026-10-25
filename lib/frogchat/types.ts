@@ -26,3 +26,7 @@ export type PondSnapshot = {
 };
 
 export type PondSession = PondSnapshot & { token: string; selfId: string };
+
+export const HEARTBEAT_MS = 25_000;
+export type PondClientEvent = { type: "authenticate"; token: string } | { type: "heartbeat" };
+export type PondServerEvent = { type: "snapshot"; snapshot: PondSnapshot } | { type: "error"; status: number; message: string };

@@ -1,0 +1,127 @@
+/** @jest-environment node */
+import { afterEach, beforeEach, expect, it, jest } from "@jest/globals";
+import { EventEmitter } from "node:events";
+import type WebSocket from "ws";
+
+jest.mock("server-only", () => ({}));
+
+import { acceptPondSocket } from "./socket";
+import { publishPondChange } from "./realtime";
+import { joinPond, leavePond, speakInPond } from "./store";
+import { PRESENCE_MS, type PondServerEvent } from "./types";
+
+class Socket extends EventEmitter {
+  readyState = 1;
+  bufferedAmount = 0;
+  events: PondServerEvent[] = [];
+  closeCode?: number;
+  send(value: string) { this.events.push(JSON.parse(value)); }
+  close(code: number) { this.closeCode = code; this.readyState = 3; this.emit("close"); }
+  receive(value: unknown, binary = false) { this.emit("message", Buffer.from(JSON.stringify(value)), binary); }
+  latest() { return this.events.filter(event => event.type === "snapshot").at(-1)?.snapshot; }
+}
+const keys = ["MONGODB_URI", "MONGODB_URL", "REDIS_URL", "FROGCHAT_REDIS_URL", "VERCEL"] as const;
+const previous = keys.map(key => process.env[key]);
+const shared = globalThis as typeof globalThis & { frogchatMemory?: unknown };
+const sockets: Socket[] = [];
+function open() {
+  const socket = new Socket();
+  sockets.push(socket);
+  acceptPondSocket(socket as unknown as WebSocket);
+  return socket;
+}
+async function flush() { for (let i = 0; i < 30; i++) await Promise.resolve(); }
+
+beforeEach(() => {
+  keys.forEach(key => delete process.env[key]);
+  delete shared.frogchatMemory;
+  jest.useFakeTimers({ now: 100_000 });
+});
+afterEach(() => {
+  sockets.splice(0).forEach(socket => socket.close(1000));
+  jest.useRealTimers();
+  keys.forEach((key, i) => { if (previous[i] === undefined) delete process.env[key]; else process.env[key] = previous[i]; });
+});
+
+it("broadcasts saved croaks and departures to authenticated subscribers without exposing tokens", async () => {
+  const first = await joinPond();
+  const second = await joinPond();
+  const a = open(); const b = open();
+  a.receive({ type: "authenticate", token: first.token });
+  b.receive({ type: "authenticate", token: second.token });
+  await flush();
+  expect(a.latest()?.frogs).toHaveLength(2);
+  await speakInPond(first.token, "Hello from a socket pond", "one");
+  await publishPondChange();
+  await flush();
+  expect(b.latest()?.messages[0].text).toBe("Hello from a socket pond");
+  expect(JSON.stringify(b.events)).not.toContain(first.token);
+  expect(JSON.stringify(b.events)).not.toContain(second.token);
+  await leavePond(first.token);
+  await publishPondChange();
+  await flush();
+  expect(a.closeCode).toBe(4401);
+  expect(b.latest()?.frogs.map(frog => frog.id)).toEqual([second.selfId]);
+});
+
+it("keeps a session alive with heartbeats and reconciles expired residents", async () => {
+  const active = await joinPond();
+  const absent = await joinPond();
+  const socket = open();
+  socket.receive({ type: "authenticate", token: active.token });
+  await flush();
+  for (let i = 0; i < 4; i++) {
+    jest.advanceTimersByTime(25_000);
+    socket.receive({ type: "heartbeat" });
+    await flush();
+  }
+  expect(socket.latest()?.frogs.map(frog => frog.id)).toEqual([active.selfId]);
+  expect(socket.latest()?.frogs.some(frog => frog.id === absent.selfId)).toBe(false);
+  expect(socket.readyState).toBe(1);
+});
+
+it("rejects expired sessions and connections that never authenticate", async () => {
+  const session = await joinPond();
+  await leavePond(session.token);
+  const expired = open();
+  expired.receive({ type: "authenticate", token: session.token });
+  await flush();
+  expect(expired.closeCode).toBe(4401);
+  expect(expired.latest()).toBeUndefined();
+  const anonymous = open();
+  jest.advanceTimersByTime(10_001);
+  expect(anonymous.closeCode).toBe(1008);
+});
+
+it("closes stale and invalid connections and releases subscriptions", async () => {
+  const session = await joinPond();
+  const socket = open();
+  socket.receive({ type: "authenticate", token: session.token });
+  await flush();
+  const events = socket.events.length;
+  jest.advanceTimersByTime(PRESENCE_MS);
+  expect(socket.closeCode).toBe(1008);
+  await publishPondChange();
+  await flush();
+  expect(socket.events).toHaveLength(events);
+  const invalid = open();
+  invalid.receive({ type: "heartbeat" });
+  expect(invalid.closeCode).toBe(1008);
+  const binary = open();
+  binary.receive({}, true);
+  expect(binary.closeCode).toBe(1008);
+});
+
+it("recovers messages missed during a disconnect using a fresh initial snapshot", async () => {
+  const session = await joinPond();
+  const first = open();
+  first.receive({ type: "authenticate", token: session.token });
+  await flush();
+  first.close(1000);
+  await speakInPond(session.token, "Saved while disconnected", "one");
+  await publishPondChange();
+  const recovered = open();
+  recovered.receive({ type: "authenticate", token: session.token });
+  await flush();
+  expect(recovered.latest()?.messages[0].text).toBe("Saved while disconnected");
+});

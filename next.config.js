@@ -1,6 +1,7 @@
 const withMDX = require('@next/mdx')()
 
 const nextConfig = {
+  serverExternalPackages: ['ws', 'ioredis'],
   pageExtensions: ['js', 'jsx', 'mdx', 'ts', 'tsx'],
   reactStrictMode: true,
   async redirects() {
