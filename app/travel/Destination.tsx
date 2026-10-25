@@ -1,17 +1,13 @@
 import Link from "next/link";
 import TravelTheme, { ThemeToggle } from "./TravelTheme";
 import styles from "./travel.module.css";
+import { destinations, type DestinationData } from "./destinations";
 
-export type DestinationData = {
-  slug: string; name: string; local: string; tagline: string; intro: string; mood: string;
-  placesTitle: string; places: [string, string, string][];
-  foods: [string, string][]; experiences: [string, string][];
-  itinerary: [string, string][]; source: string; sourceName: string;
-};
+
 
 export default function Destination({ data }: { data: DestinationData }) {
   return <TravelTheme destination={data.slug}><main>
-    <header className={styles.topbar}><Link href={`/${data.slug}`} className={styles.brand}>elsewhere<span> / travel notes</span></Link><nav aria-label="Destinations">{["korea", "taiwan", "singapore"].map((slug) => <Link key={slug} href={`/${slug}`} aria-current={slug === data.slug ? "page" : undefined}>{slug}</Link>)}</nav><ThemeToggle /></header>
+    <header className={styles.topbar}><Link href="/travel" className={styles.brand}>elsewhere<span> / travel notes</span></Link><nav aria-label="Destinations">{destinations.map(({ slug, name }) => <Link key={slug} href={`/travel?destination=${slug}`} aria-current={slug === data.slug ? "page" : undefined}>{name}</Link>)}</nav><ThemeToggle /></header>
     <section className={styles.hero}>
       <div className={styles.heroCopy}><p className={styles.eyebrow}>A LITTLE CURIOSITY. A NEW DESTINATION.</p><h1>{data.name}<span>{data.local}</span></h1><h2>{data.tagline}</h2><p className={styles.intro}>{data.intro}</p><a className={styles.button} href="#places">Find your next stop <span aria-hidden="true">↗</span></a></div>
       <div className={styles.poster} aria-hidden="true"><div className={styles.sun} /><div className={styles.hill} /><div className={styles.hillTwo} /><span className={styles.posterTop}>LET THE EVERYDAY<br />FEEL FAR AWAY.</span><strong>{data.local}</strong><span className={styles.posterBottom}>{data.mood}<br />{data.name} / an invitation to explore</span></div>
