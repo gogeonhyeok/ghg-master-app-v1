@@ -64,7 +64,9 @@ clients receive snapshots. Redis carries invalidation events, not private tokens
 Existing HTTP message length limits, rate limits, and retry deduplication remain.
 
 Connections reconnect with backoff after network failures or Vercel's function
-time limit. The socket route sets `maxDuration = 300`. Each reconnect authenticates
+time limit. The socket route sets `maxDuration = 60` to support Hobby deployments
+with a 60-second function limit. The browser reconnects automatically when that
+limit closes a socket. Each reconnect authenticates
 the existing session, subscribes before reading its initial snapshot, and restores
 recent history. Expired sessions automatically join again. HTTP GET remains
 available for one-off diagnostics but the browser does not poll it.
