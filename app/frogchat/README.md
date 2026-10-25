@@ -41,7 +41,10 @@ frog, and deduplicated on retry. All messages are rendered as plain text.
 
 ## Vercel WebSockets
 
-Enable **Fluid compute** in the Vercel project. Configure these server-only
+The repository's `vercel.json` enables **Fluid compute**, which Vercel requires
+for WebSockets. Redeploy after changing this setting; a working local
+`vercel dev` socket does not confirm that the deployed runtime supports upgrades.
+Configure these server-only
 variables in the deployment environment (and locally when using Vercel dev):
 
 | Variable | Purpose |
@@ -109,6 +112,28 @@ instances to verify the Redis configuration.
 
 Official references: [Vercel WebSockets](https://vercel.com/docs/functions/websockets)
 and [upgradeWebSocket API / local development](https://vercel.com/docs/functions/functions-api-reference/vercel-functions-package#upgradewebsocket).
+
+### Deployed page stays on “Reconnecting”
+
+The composer becomes available after the authenticated WebSocket sends its first
+snapshot. A successful HTTP join alone does not mean the socket connected.
+In browser DevTools → Network, inspect `/api/frogchat/ws`:
+
+- `101`: the upgrade succeeded; inspect incoming frames and the close code.
+  An error frame or close code `1013` can indicate a Redis subscription or
+  database failure. Check the corresponding Vercel function logs and Redis
+  connection limits.
+- `403`: the Origin check rejected the request; compare the page's host with
+  the host received by the function. Keep the same-origin protection enabled.
+- `503`: check deployed MongoDB/Redis configuration and runtime support for
+  `upgradeWebSocket`. Ensure the deployment uses Fluid compute.
+- `502` before any socket frames: check Fluid compute first. An older project
+  can still have it disabled even though local WebSockets work. Deploy the
+  repository's `"fluid": true` configuration, or enable it in Settings → Functions
+  and redeploy.
+
+Environment changes and `vercel.json` changes require a new deployment. Settings
+in a local `.env.local` file do not configure the Vercel deployment environment.
 
 ## Checks
 
