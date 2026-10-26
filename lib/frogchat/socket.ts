@@ -2,8 +2,8 @@ import "server-only";
 
 import type WebSocket from "ws";
 import { sessionTokenPattern } from "./http";
-import { subscribePondChanges } from "./realtime";
-import { PondError, readPond } from "./store";
+import { publishPondChange, subscribePondChanges } from "./realtime";
+import { actInPond, PondError, readPond } from "./store";
 import { PRESENCE_MS, type PondServerEvent } from "./types";
 
 export function acceptPondSocket(socket: WebSocket) {
@@ -14,6 +14,8 @@ export function acceptPondSocket(socket: WebSocket) {
   let refreshing = false;
   let dirty = false;
   let lastHeartbeat = 0;
+  let moving = false;
+  let jumping = false;
   let deadline = setTimeout(() => socket.close(1008, "Authenticate first"), 10_000);
 
   function cleanup() {
@@ -55,7 +57,7 @@ export function acceptPondSocket(socket: WebSocket) {
   socket.on("message", async (data, binary) => {
     if (closed) return;
     if (binary) { socket.close(1008, "Text events only"); return; }
-    let event: { type?: string; token?: string };
+    let event: { type?: string; token?: string; direction?: unknown };
     try {
       event = JSON.parse(data.toString());
       if (!event || typeof event !== "object") throw new Error("Invalid event");
@@ -65,9 +67,9 @@ export function acceptPondSocket(socket: WebSocket) {
       try {
         // Authenticate before joining the shared subscription, then subscribe before
         // reading the initial snapshot so writes during setup cannot be missed.
-        await readPond(event.token);
+        const initial = await readPond(event.token);
         if (closed) return;
-        const remove = await subscribePondChanges(() => { void refresh(); }, () => socket.close(1013, "Broadcast unavailable"));
+        const remove = await subscribePondChanges(() => { void refresh(); }, () => socket.close(1013, "Broadcast unavailable"), initial.pond);
         if (closed) { remove(); return; }
         unsubscribe = remove;
         token = event.token;
@@ -81,6 +83,17 @@ export function acceptPondSocket(socket: WebSocket) {
       lastHeartbeat = Date.now();
       resetDeadline();
       await refresh();
+      return;
+    }
+    if (token && (event.type === "jump" || (event.type === "move" && (event.direction === -1 || event.direction === 1)))) {
+      const jump = event.type === "jump";
+      if (jump ? jumping : moving) return;
+      if (jump) jumping = true; else moving = true;
+      try {
+        const pond = await actInPond(token, jump ? { type: "jump" } : { type: "move", direction: event.direction as -1 | 1 });
+        if (pond) await publishPondChange(pond);
+      } catch (error) { fail(error); }
+      finally { if (jump) jumping = false; else moving = false; }
       return;
     }
     socket.close(1008, "Unexpected event");

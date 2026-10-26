@@ -125,3 +125,40 @@ it("recovers messages missed during a disconnect using a fresh initial snapshot"
   await flush();
   expect(recovered.latest()?.messages[0].text).toBe("Saved while disconnected");
 });
+
+it("binds subscriptions to the token’s pond and ignores client-supplied room overrides", async () => {
+  const woods = await joinPond("woodland");
+  const pixel = await joinPond("pixel");
+  const a = open(); const b = open();
+  a.receive({ type: "authenticate", token: woods.token, pond: "pixel" });
+  b.receive({ type: "authenticate", token: pixel.token });
+  await flush();
+  expect(a.latest()?.pond).toBe("woodland");
+  expect(a.latest()?.frogs.map(frog => frog.id)).toEqual([woods.selfId]);
+  const before = b.events.length;
+  await speakInPond(woods.token, "A woodland secret", "one");
+  await publishPondChange("woodland");
+  await flush();
+  expect(a.latest()?.messages[0].text).toBe("A woodland secret");
+  expect(b.events).toHaveLength(before);
+  b.receive({ type: "heartbeat" });
+  await flush();
+  expect(b.latest()?.messages).toEqual([]);
+});
+
+it("shares movement and jumps using the authenticated frog and rate limits repeated actions", async () => {
+  const first = await joinPond(); const second = await joinPond();
+  const a = open(); const b = open();
+  a.receive({ type: "authenticate", token: first.token }); b.receive({ type: "authenticate", token: second.token });
+  await flush();
+  const otherX = b.latest()?.frogs.find(frog => frog.id === second.selfId)?.x;
+  a.receive({ type: "move", direction: 1, frogId: second.selfId }); await flush();
+  expect(b.latest()?.frogs.find(frog => frog.id === first.selfId)).toMatchObject({ x: 52.5, facing: 1 });
+  expect(b.latest()?.frogs.find(frog => frog.id === second.selfId)?.x).toBe(otherX);
+  a.receive({ type: "move", direction: 1 }); await flush();
+  expect(b.latest()?.frogs.find(frog => frog.id === first.selfId)?.x).toBe(52.5);
+  a.receive({ type: "jump" }); await flush();
+  expect(b.latest()?.frogs.find(frog => frog.id === first.selfId)?.jumpedAt).toBe(Date.now());
+  a.receive({ type: "move", direction: 500 }); await flush();
+  expect(a.closeCode).toBe(1008);
+});

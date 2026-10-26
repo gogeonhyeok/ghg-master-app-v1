@@ -1,43 +1,39 @@
-# Frogchat
+# Frogchat — the white room
 
-Visit `/frogchat` to automatically join the single shared pond. Each visit gets an
-anonymous frog. The page subscribes to `/api/frogchat/ws` for live updates. HTTP
-POST requests join the pond and save croaks; Redis notifications tell connected
-WebSocket instances to send fresh snapshots. There is no recurring HTTP polling. Bubbles last
-ten seconds, and every new croak animates the frog for about one second. Sound is
-optional and starts off. Enabling sound previews a soft, two-syllable synthesized
-croak; each frog has a slightly different voice. Muting fades out active audio.
-No audio files or external sound services are needed. No simulated visitors or
-automated replies are used.
+`/frogchat` opens one shared white room. The supplied pixel frog is the only
+character asset (`public/frogchat/frog.svg`); there are no background images,
+scene switching, sounds, themes, or idle animations.
 
-The route’s components, styles, sound synthesis, and UI tests live together in
-`app/frogchat`. The HTTP and WebSocket handlers live in `app/api/frogchat`; shared message types,
-browser connection management, server-side socket handling, Redis broadcasts, and
-storage code live in `lib/frogchat`.
+- Frogs stand on one horizontal baseline slightly below the middle of the room.
+- Use **← / →** (or A / D) to move, and **Space** (or ↑ / W) to jump.
+- The on-screen arrow buttons support press-and-hold, and Jump works on touch.
+- Keyboard controls leave text inputs and other interactive elements alone.
+- Sent messages appear above their frog for **three seconds**, then disappear
+  from the scene while remaining in the message history on the right.
+- The composer stays at the bottom. On small screens, **Chat** opens the right
+  sidebar so the room and composer remain usable.
+- Reduced-motion mode replaces the full jump with a small hop and disables
+  sliding transitions. There are no ambient animations or idle clock timers.
 
-## Shared storage
+Movement and jumps use authenticated WebSocket frames. The server owns positions,
+bounds, facing, and jump timestamps; it limits movement and repeated jumps, stores
+state with the resident, and uses the existing Redis invalidation channel to
+share it across instances. Reconnects restore the same frog and position. These
+frames do not create extra HTTP POST requests. The camera uses normalized positions
+so the same scene fits different screen sizes; frogs may pass each other.
 
-The existing `MONGODB_URI` (or `MONGODB_URL`) enables shared storage across Next.js
-instances. `MONGODB_DB` selects the database, defaulting to `ghg-master-api-v1`.
-The application creates `frogchat_residents` and `frogchat_messages`, with TTL
-indexes. The database account needs permission to create these indexes and to
-read/write the two collections. A configured database outage returns a retryable
-error; it does not silently split visitors into separate ponds.
+Joining, saving messages, and leaving retain the existing HTTP endpoints. History
+is limited to the latest 100 messages within 30 minutes, and presence expires
+without a heartbeat after 90 seconds. No simulated visitors or replies are used.
 
-With neither MongoDB variable configured, an in-memory pond works for development
-or a single long-running Node.js server. It resets on restart and is not suitable
-for multiple instances or serverless deployment. Use MongoDB in those environments.
+## Archived illustrated version
 
-The browser sends a heartbeat over its socket every 25 seconds. Heartbeats renew
-presence and reconcile snapshots, including missed broadcasts and expired
-residents/messages. Visitors leave on page exit or expire after 90 seconds without
-a presence renewal. Other visitors see expired residents removed on their next
-snapshot (normally within one heartbeat). Socket disconnection alone does not
-delete a session, so reconnects preserve the same frog. Chat
-history contains the latest 100 messages from the last 30 minutes. Session tokens
-are private to each page visit, are hashed in storage, and are never exposed in
-other visitors’ snapshots. Message requests are length-limited, rate-limited per
-frog, and deduplicated on retry. All messages are rendered as plain text.
+The entire previous three-pond implementation, including supplied frog SVGs,
+generated day/night backgrounds, backend, tests, and configuration, is preserved
+in [`archive/frogchat-illustrated-2026-10-27.tar.gz`](../../archive/frogchat-illustrated-2026-10-27.tar.gz).
+All 40 files were verified against the adjacent SHA-256 manifest before changing
+the active app. See [the archive guide](../../archive/README.md) for restoration.
+The archive is outside `app` and introduces no Next.js routes.
 
 ## Vercel WebSockets
 
@@ -54,7 +50,7 @@ variables in the deployment environment (and locally when using Vercel dev):
 | `FROGCHAT_REDIS_URL` or `REDIS_URL` | Redis TCP connection URL, e.g. `rediss://default:PASSWORD@HOST:PORT`. The service must support Redis Pub/Sub; an HTTP REST endpoint/token is insufficient. |
 | `FROGCHAT_REDIS_CHANNEL` | Optional broadcast channel. Defaults to `frogchat:${VERCEL_ENV}` on Vercel, or `frogchat:development` elsewhere. Use the same value for instances sharing one pond. |
 
-Use a separate database/channel for independent preview ponds. Production instances
+Use a separate database/channel to isolate preview deployments from production. Production instances
 must share both storage and the channel. Vercel deployments fail requests when
 MongoDB or Redis is missing instead of silently creating isolated in-memory ponds.
 A Redis subscriber is shared by sockets in each instance; subscription failure
@@ -138,12 +134,16 @@ in a local `.env.local` file do not configure the Vercel deployment environment.
 ## Checks
 
 ```sh
-npx eslint app/frogchat app/api/frogchat lib/frogchat
+npx tsc --noEmit --incremental false
 npm test -- --runInBand --watchman=false lib/frogchat app/api/frogchat app/frogchat
 ```
 
-The tests cover authenticated broadcasts, heartbeat expiry, reconnect recovery,
-no HTTP polling, and Redis coordination between isolated instance hubs. The wire
-integration test opens real WebSocket connections on a temporary loopback port;
-it requires permission to listen locally. Redis coordination uses a test double;
-verify the configured Redis service in a Vercel preview before production use.
+The tests cover three-second bubbles, input-safe keyboard controls, held movement,
+remote jumps, bounds and cooldowns, authenticated broadcasts, reconnect recovery,
+and Redis coordination. The wire integration test opens real WebSocket connections
+on a temporary loopback port and verifies messages, motion, jumps, and recovery;
+it requires permission to listen locally. Redis coordination uses a test double.
+
+This app retains MongoDB driver 5. Its `findOneAndUpdate` and `findOneAndDelete`
+responses wrap the document in `.value`; `store.mongo.test.ts` checks authentication,
+atomic movement/jump claims, message rate limits, and departures with that format.

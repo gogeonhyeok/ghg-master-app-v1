@@ -2,6 +2,7 @@ import { joinPond, leavePond, PondError, readPond, speakInPond } from "../../../
 import { MAX_MESSAGE_LENGTH } from "../../../lib/frogchat/types";
 import { checkOrigin, sessionTokenPattern } from "../../../lib/frogchat/http";
 import { publishPondChange, requireRealtimeConfiguration } from "../../../lib/frogchat/realtime";
+import { DEFAULT_POND, isPondId } from "../../../lib/frogchat/ponds";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -44,12 +45,14 @@ export async function POST(request: Request) {
     const bytes = new Uint8Array(size);
     let offset = 0;
     for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
-    let body: { action?: unknown; text?: unknown; requestId?: unknown } | null;
+    let body: { action?: unknown; text?: unknown; requestId?: unknown; pond?: unknown } | null;
     try { body = JSON.parse(new TextDecoder().decode(bytes)); }
     catch { throw new PondError("Send a valid pond request.", 400); }
     if (body?.action === "join") {
-      const session = await joinPond();
-      await publishPondChange();
+      const pond = body.pond ?? DEFAULT_POND;
+      if (!isPondId(pond)) throw new PondError("Choose an existing pond.", 400);
+      const session = await joinPond(pond);
+      await publishPondChange(session.pond);
       return Response.json(session, { status: 201, headers });
     }
     if (body?.action !== "message" || typeof body.text !== "string" ||
@@ -58,7 +61,7 @@ export async function POST(request: Request) {
       throw new PondError(`Write a croak between 1 and ${MAX_MESSAGE_LENGTH} characters.`, 400);
     }
     const snapshot = await speakInPond(authenticate(request), body.text.trim(), body.requestId);
-    await publishPondChange();
+    await publishPondChange(snapshot.pond);
     return Response.json(snapshot, { headers });
   } catch (error) { return failure(error); }
 }
@@ -66,8 +69,8 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
   try {
     checkOrigin(request);
-    await leavePond(authenticate(request));
-    await publishPondChange();
+    const pond = await leavePond(authenticate(request));
+    await publishPondChange(pond);
     return new Response(null, { status: 204, headers });
   } catch (error) { return failure(error); }
 }

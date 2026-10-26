@@ -81,3 +81,75 @@ it("bounds chat history and expires older messages", async () => {
   expect(newcomer.messages).toHaveLength(0);
   expect(newcomer.frogs).toHaveLength(1);
 });
+
+it("isolates residents, message history, and departures by pond", async () => {
+  const classic = await joinPond();
+  const woods = await joinPond("woodland");
+  const neighbor = await joinPond("woodland");
+  const pixel = await joinPond("pixel");
+  await speakInPond(woods.token, "Only in the woods", "one");
+  expect((await readPond(neighbor.token)).messages[0].text).toBe("Only in the woods");
+  for (const visitor of [classic, pixel]) {
+    const view = await readPond(visitor.token);
+    expect(view.frogs.map(frog => frog.id)).toEqual([visitor.selfId]);
+    expect(view.messages).toEqual([]);
+  }
+  expect(await leavePond(woods.token)).toBe("woodland");
+  expect((await readPond(neighbor.token)).frogs.map(frog => frog.id)).toEqual([neighbor.selfId]);
+});
+
+it("keeps each pond’s history allowance independent", async () => {
+  const woods = await joinPond("woodland");
+  await speakInPond(woods.token, "Keep this quiet croak", "one");
+  const classic = await joinPond();
+  for (let index = 0; index < 105; index++) {
+    jest.advanceTimersByTime(801);
+    await speakInPond(classic.token, `Busy pond ${index}`, String(index));
+    if (index % 50 === 0) await readPond(woods.token);
+  }
+  expect((await readPond(classic.token)).messages).toHaveLength(100);
+  expect((await readPond(woods.token)).messages.map(message => message.text)).toEqual(["Keep this quiet croak"]);
+});
+
+it("keeps records from before room support in the original pond", async () => {
+  const old = await joinPond();
+  await speakInPond(old.token, "An old croak", "one");
+  const memory = shared.frogchatMemory as { residents: Map<string, { pond?: string }>; messages: { pond?: string }[] };
+  for (const resident of memory.residents.values()) delete resident.pond;
+  for (const message of memory.messages) delete message.pond;
+  const woods = await joinPond("woodland");
+  expect(woods.messages).toEqual([]);
+  expect(woods.frogs.map(frog => frog.id)).toEqual([woods.selfId]);
+  const classic = await joinPond();
+  expect(classic.frogs.map(frog => frog.id)).toContain(old.selfId);
+  expect(classic.messages[0].text).toBe("An old croak");
+});
+
+it("places visitors on separate starting positions and bounds movement to the room", async () => {
+  const { actInPond } = await import("./store");
+  const first = await joinPond(); const second = await joinPond();
+  expect(first.frogs[0].x).toBe(50);
+  expect(second.frogs.find(frog => frog.id === second.selfId)?.x).not.toBe(50);
+  await actInPond(first.token, { type: "move", direction: 1 });
+  expect((await readPond(first.token)).frogs.find(frog => frog.id === first.selfId)?.x).toBe(52.5);
+  expect(await actInPond(first.token, { type: "move", direction: 1 })).toBeNull();
+  for (let index = 0; index < 80; index++) {
+    jest.advanceTimersByTime(150);
+    await actInPond(first.token, { type: "move", direction: index < 30 ? 1 : -1 });
+  }
+  const view = await readPond(second.token);
+  expect(view.frogs.find(frog => frog.id === first.selfId)).toMatchObject({ x: 6, facing: -1 });
+  expect(view.frogs.find(frog => frog.id === second.selfId)?.x).toBe(second.frogs.find(frog => frog.id === second.selfId)?.x);
+});
+
+it("persists jumps with a cooldown and rejects actions from departed sessions", async () => {
+  const { actInPond } = await import("./store");
+  const frog = await joinPond();
+  await actInPond(frog.token, { type: "jump" });
+  expect((await readPond(frog.token)).frogs[0].jumpedAt).toBe(Date.now());
+  expect(await actInPond(frog.token, { type: "jump" })).toBeNull();
+  jest.advanceTimersByTime(650);
+  expect(await actInPond(frog.token, { type: "jump" })).toBe("classic");
+  await leavePond(frog.token);
+  await expect(actInPond(frog.token, { type: "jump" })).rejects.toMatchObject({ status: 401 });
+});

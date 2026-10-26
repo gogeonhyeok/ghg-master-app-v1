@@ -50,6 +50,13 @@ it("delivers and recovers croaks over real WebSocket connections", async () => {
     await speakInPond(first.token, "Live croak", "one");
     await publishPondChange();
     expect((await delivered).messages[0].text).toBe("Live croak");
+    const moved = nextSnapshot(b, snapshot => snapshot.frogs.some(frog => frog.id === first.selfId && frog.x === 52.5));
+    a.send(JSON.stringify({ type: "move", direction: 1 }));
+    expect((await moved).frogs.find(frog => frog.id === first.selfId)?.facing).toBe(1);
+    const jumped = nextSnapshot(b, snapshot => snapshot.frogs.some(frog => frog.id === first.selfId && (frog.jumpedAt ?? 0) > 0));
+    a.send(JSON.stringify({ type: "jump" }));
+    const jumpTime = (await jumped).frogs.find(frog => frog.id === first.selfId)?.jumpedAt;
+    expect(jumpTime).toBeGreaterThan(0);
     a.close();
     await once(a, "close");
     await speakInPond(second.token, "Croak during disconnect", "two");
@@ -57,7 +64,9 @@ it("delivers and recovers croaks over real WebSocket connections", async () => {
     const recovered = await connect(first.token);
     const refreshed = nextSnapshot(recovered, snapshot => snapshot.messages.some(message => message.text === "Croak during disconnect"));
     recovered.send(JSON.stringify({ type: "heartbeat" }));
-    expect((await refreshed).messages).toHaveLength(2);
+    const restored = await refreshed;
+    expect(restored.messages).toHaveLength(2);
+    expect(restored.frogs.find(frog => frog.id === first.selfId)).toMatchObject({ x: 52.5, jumpedAt: jumpTime });
     const departed = nextSnapshot(recovered, snapshot => snapshot.frogs.length === 1);
     await leavePond(second.token);
     await publishPondChange();

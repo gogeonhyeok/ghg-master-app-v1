@@ -1,8 +1,9 @@
 import "server-only";
 
 import Redis from "ioredis";
+import { DEFAULT_POND, isPondId, type PondId } from "./ponds";
 
-type Listener = { changed: () => void; disconnected: () => void };
+type Listener = { changed: () => void; disconnected: () => void; pond: PondId };
 type Hub = { listeners: Set<Listener>; subscriber?: Redis; ready?: Promise<void>; publisher?: Redis };
 const shared = globalThis as typeof globalThis & { frogchatHub?: Hub };
 const hub = () => shared.frogchatHub ??= { listeners: new Set() };
@@ -23,10 +24,10 @@ function redis() {
 }
 
 // One subscriber per instance; Redis carries invalidations, never session tokens.
-export async function subscribePondChanges(changed: () => void, disconnected: () => void) {
+export async function subscribePondChanges(changed: () => void, disconnected: () => void, pond: PondId = DEFAULT_POND) {
   requireRealtimeConfiguration();
   const state = hub();
-  const listener = { changed, disconnected };
+  const listener = { changed, disconnected, pond };
   state.listeners.add(listener);
   function remove() {
     state.listeners.delete(listener);
@@ -49,8 +50,9 @@ export async function subscribePondChanges(changed: () => void, disconnected: ()
       subscriber.on("error", failed);
       subscriber.on("end", failed);
       subscriber.on("message", (topic, message) => {
-        if (topic === channel() && message === "changed") {
-          for (const item of [...state.listeners]) item.changed();
+        const changedPond = message === "changed" ? DEFAULT_POND : message;
+        if (topic === channel() && isPondId(changedPond)) {
+          for (const item of [...state.listeners]) if (item.pond === changedPond) item.changed();
         }
       });
       state.ready = (async () => {
@@ -66,11 +68,11 @@ export async function subscribePondChanges(changed: () => void, disconnected: ()
   }
 }
 
-export async function publishPondChange() {
+export async function publishPondChange(pond: PondId = DEFAULT_POND) {
   requireRealtimeConfiguration();
   const state = hub();
   if (!redisUrl()) {
-    for (const listener of [...state.listeners]) listener.changed();
+    for (const listener of [...state.listeners]) if (listener.pond === pond) listener.changed();
     return;
   }
   if (!state.publisher || state.publisher.status === "end") {
@@ -79,5 +81,5 @@ export async function publishPondChange() {
     state.publisher.on("error", () => undefined);
   }
   // ioredis automatically connects a lazy client on its first command.
-  await state.publisher.publish(channel(), "changed");
+  await state.publisher.publish(channel(), pond === DEFAULT_POND ? "changed" : pond);
 }

@@ -22,7 +22,9 @@ export function connectPond(token: string, callbacks: Callbacks) {
     clearInterval(heartbeat);
   }
   function send(event: PondClientEvent) {
-    if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify(event));
+    if (socket?.readyState !== WebSocket.OPEN) return false;
+    socket.send(JSON.stringify(event));
+    return true;
   }
   function schedule() {
     if (stopped || retry) return;
@@ -89,6 +91,8 @@ export function connectPond(token: string, callbacks: Callbacks) {
   }
   connect();
   return {
+    move(direction: -1 | 1) { return ready && !stopped && send({ type: "move", direction }); },
+    jump() { return ready && !stopped && send({ type: "jump" }); },
     refresh() {
       if (stopped) return;
       if (ready) send({ type: "heartbeat" });

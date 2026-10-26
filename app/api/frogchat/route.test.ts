@@ -127,3 +127,13 @@ it("uses Vercel dev's public loopback host when the WebSocket proxy rewrites bot
     else process.env.VERCEL_URL = previousUrl;
   }
 });
+
+it("validates pond selection and derives message rooms from the session", async () => {
+  expect((await POST(post({ action: "join", pond: "missing" }))).status).toBe(400);
+  const woods = await (await POST(post({ action: "join", pond: "woodland" }))).json();
+  const pixel = await (await POST(post({ action: "join", pond: "pixel" }))).json();
+  const sent = await POST(post({ action: "message", pond: "pixel", text: "In the woods", requestId: messageId }, woods.token));
+  expect((await sent.json()).pond).toBe("woodland");
+  const view = await GET(new Request(url, { headers: { Authorization: `Bearer ${pixel.token}` } }));
+  expect((await view.json()).messages).toEqual([]);
+});

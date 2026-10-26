@@ -72,3 +72,20 @@ it("requires shared services on Vercel instead of silently splitting the pond", 
   delete process.env.FROGCHAT_REDIS_URL;
   expect(() => api.requireRealtimeConfiguration()).toThrow("Redis");
 });
+
+it("routes invalidations only to the affected pond using one shared subscriber", async () => {
+  const classic = jest.fn(); const woods = jest.fn(); const pixel = jest.fn();
+  const { clients } = jest.requireMock("ioredis") as { clients: EventEmitter[] };
+  const before = clients.length;
+  releases.push(await api.subscribePondChanges(classic, jest.fn()));
+  releases.push(await api.subscribePondChanges(woods, jest.fn(), "woodland"));
+  releases.push(await api.subscribePondChanges(pixel, jest.fn(), "pixel"));
+  expect(clients.length - before).toBe(1);
+  await api.publishPondChange("woodland");
+  expect(woods).toHaveBeenCalledTimes(1);
+  expect(classic).not.toHaveBeenCalled();
+  expect(pixel).not.toHaveBeenCalled();
+  await api.publishPondChange();
+  expect(classic).toHaveBeenCalledTimes(1);
+  expect(woods).toHaveBeenCalledTimes(1);
+});
