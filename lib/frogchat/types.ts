@@ -3,7 +3,7 @@ import type { PondId } from "./ponds";
 export const MAX_MESSAGE_LENGTH = 180;
 export const PRESENCE_MS = 90_000;
 export const MESSAGE_LIFETIME_MS = 30 * 60_000;
-export const BUBBLE_MS = 3_000;
+export const BUBBLE_MS = 5_000;
 export const JUMP_MS = 650;
 export const MOVE_INTERVAL_MS = 150;
 export const MOVE_STEP = 2.5;

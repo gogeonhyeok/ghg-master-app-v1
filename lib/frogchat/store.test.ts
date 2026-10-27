@@ -6,23 +6,22 @@ jest.mock("server-only", () => ({}));
 import { joinPond, leavePond, readPond, speakInPond } from "./store";
 import { MESSAGE_LIFETIME_MS, PRESENCE_MS } from "./types";
 
-const originalUri = process.env.MONGODB_URI;
-const originalUrl = process.env.MONGODB_URL;
+const environmentKeys = ["MONGODB_URI", "MONGODB_URL", "FROGCHAT_REDIS_URL", "REDIS_URL"] as const;
+const previousEnvironment = environmentKeys.map(key => process.env[key]);
 const shared = globalThis as typeof globalThis & { frogchatMemory?: unknown };
 
 beforeEach(() => {
-  delete process.env.MONGODB_URI;
-  delete process.env.MONGODB_URL;
+  environmentKeys.forEach(key => delete process.env[key]);
   delete shared.frogchatMemory;
   jest.useFakeTimers({ now: new Date("2026-10-14T08:00:00Z") });
 });
 
 afterEach(() => {
   jest.useRealTimers();
-  if (originalUri === undefined) delete process.env.MONGODB_URI;
-  else process.env.MONGODB_URI = originalUri;
-  if (originalUrl === undefined) delete process.env.MONGODB_URL;
-  else process.env.MONGODB_URL = originalUrl;
+  environmentKeys.forEach((key, index) => {
+    if (previousEnvironment[index] === undefined) delete process.env[key];
+    else process.env[key] = previousEnvironment[index];
+  });
 });
 
 it("puts anonymous visitors in the same pond and keeps session secrets private", async () => {

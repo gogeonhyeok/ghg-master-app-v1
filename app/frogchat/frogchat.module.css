@@ -1,4 +1,4 @@
-.app { --ink: #26362c; --muted: #869087; --line: #edf0ea; --green: #608345; height: 100dvh; min-height: 480px; display: grid; grid-template-columns: minmax(0, 1fr) 306px; grid-template-rows: 76px minmax(0, 1fr) auto; overflow: hidden; background: #fff; color: var(--ink); color-scheme: light; font-family: var(--font-geist-sans), Arial, sans-serif; }
+.app { --ink: #26362c; --muted: #869087; --line: #edf0ea; --green: #608345; height: 100vh; height: 100dvh; min-height: 480px; display: grid; grid-template-columns: minmax(0, 1fr) 306px; grid-template-rows: 76px minmax(0, 1fr) auto; overflow: hidden; background: #fff; color: var(--ink); color-scheme: light; font-family: var(--font-geist-sans), Arial, sans-serif; }
 .app { position: relative; }
 .app * { box-sizing: border-box; }
 .app button, .app input { font: inherit; }
@@ -16,21 +16,24 @@
 .invite { display: flex; align-items: center; gap: 12px; background: transparent; border: 0; padding: 10px 0; color: #75836b; font-size: 11px !important; }
 .invite > span { font-size: 17px; }
 .historyToggle, .closeHistory { display: none; }
-.room { grid-area: 2 / 1; min-height: 0; display: flex; flex-direction: column; position: relative; }
-.scene { position: relative; flex: 1; min-height: 240px; outline: none; }
+.room { grid-area: 2 / 1; min-width: 0; min-height: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto; position: relative; }
+.scene { position: relative; min-width: 0; min-height: 0; height: 100%; outline: none; --ground-level: 72%; }
 .scene:focus-visible { outline-offset: -5px; }
 .sceneNote { position: absolute; top: 29px; left: 35px; display: flex; align-items: center; gap: 8px; color: #9aa294; font-size: 10px; letter-spacing: .1px; }
 .smallDot { width: 3px; height: 3px; background: #bac8ae; }
-.field { position: absolute; inset: 0 55px; }
-.ground { position: absolute; top: 72%; left: 35px; right: 35px; height: 1px; background: linear-gradient(90deg, transparent, #edf1e8 15% 85%, transparent); }
-.resident { position: absolute; top: 72%; width: 94px; height: 94px; transform: translate(-50%, -100%); transition: left 150ms linear; z-index: 1; }
+.field { position: absolute; top: 0; right: 55px; bottom: 0; left: 55px; }
+.baseline { position: absolute; top: var(--ground-level); left: 0; right: 0; height: 1px; }
+.ground { position: absolute; top: 0; left: -20px; right: -20px; height: 1px; background: linear-gradient(90deg, transparent, #edf1e8 15% 85%, transparent); }
+.position { position: absolute; top: 0; left: 0; right: 0; height: 1px; transform-box: border-box; pointer-events: none; z-index: 1; }
+.position[data-self="true"] { z-index: 2; }
+.resident { position: absolute; top: 0; left: 0; pointer-events: auto; width: 94px; height: 94px; transform: translate(-50%, -100%); z-index: 1; }
 .resident[data-self="true"] { z-index: 2; }
 .frogImage { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
-.sprite, .jumping { position: relative; height: 100%; }
-.facing { height: 100%; }
+.sprite, .jumping { position: relative; height: 100%; transform: translate3d(0, 0, 0); backface-visibility: hidden; }
+.facing, .messageBounce, .body { width: 100%; height: 100%; }
+.messageBounce, .body { transform-origin: 50% 100%; transform: translate3d(0, 0, 0); backface-visibility: hidden; }
 .facing[data-facing="-1"] { transform: scaleX(-1); }
 .shadow { position: absolute; width: 62%; left: 19%; height: 5px; bottom: 0; border-radius: 50%; background: #dfe6d2; opacity: .48; }
-.jumping { animation: jump 650ms cubic-bezier(.36, 0, .66, 1) both; animation-delay: var(--jump-delay, 0ms); }
 .name { position: absolute; left: 50%; top: calc(100% + 15px); transform: translateX(-50%); display: flex; gap: 5px; align-items: center; white-space: nowrap; font-size: 9px; line-height: 1.3; color: #8c9786; }
 .name > i { display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--resident-color); }
 .resident[data-self="true"] .name { color: #657653; }
@@ -84,7 +87,6 @@
 .composer button svg { width: 17px; height: 17px; }
 .error { position: absolute; bottom: 100%; left: 34px; right: 34px; margin: 0 0 8px; padding: 10px 12px; border: 1px solid #eedfcf; border-radius: 6px; background: #fffcf8; font-size: 11px; color: #9a6d49; }
 .srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
-@keyframes jump { 0%, 100% { transform: translateY(0); } 45% { transform: translateY(-85px); } }
 @media (max-width: 1050px) { .app { grid-template-columns: minmax(0, 1fr) 270px; } .header { padding-inline: 24px; } .composerBar { padding-inline: 24px; gap: 14px; } .self > span:last-child { display: none; } .controlHelp { gap: 10px; } .roomFooter { padding-inline: 24px; } }
 @media (max-width: 760px) {
   .app { grid-template-columns: 1fr; grid-template-rows: 65px minmax(0, 1fr) auto; }
@@ -97,8 +99,8 @@
   .sidebar[data-open="true"] { visibility: visible; transform: translateX(0); }
   .closeHistory { display: block; border: 0; background: transparent; color: #8e9a83; font-size: 23px !important; padding: 0 4px; line-height: 1; }
   .sceneNote { top: 26px; left: 23px; font-size: 9px; }
-  .field { inset-inline: 24px; }
-  .ground { left: 22px; right: 22px; }
+  .field { left: 24px; right: 24px; }
+  .ground { left: -2px; right: -2px; }
   .resident { width: var(--sprite-size); height: var(--sprite-size); }
   .name { max-width: var(--sprite-size); overflow: hidden; text-overflow: ellipsis; display: block; text-align: center; }
   .name > i { margin-right: 4px; vertical-align: middle; }
@@ -115,8 +117,6 @@
   .error { left: 20px; right: 20px; }
 }
 @media (max-width: 400px) { .controlHelp { display: none; } .controls { margin-left: auto; } .presence { font-size: 10px; } .headerActions { gap: 12px; } }
-@media (prefers-reduced-motion: reduce) { .resident { transition: none; } .jumping { animation-name: gentleJump; } }
-@keyframes gentleJump { 0%, 100% { transform: translateY(0); } 45% { transform: translateY(-12px); } }
 .resident { --sprite-size: 94px; }
 .resident[data-edge="left"] .bubble { left: 10px; transform: none; }
 .resident[data-edge="right"] .bubble { left: auto; right: 10px; transform: none; }

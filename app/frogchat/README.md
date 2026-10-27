@@ -7,22 +7,61 @@ scene switching, sounds, themes, or idle animations.
 - Frogs stand on one horizontal baseline slightly below the middle of the room.
 - Use **← / →** (or A / D) to move, and **Space** (or ↑ / W) to jump.
 - The on-screen arrow buttons support press-and-hold, and Jump works on touch.
-- The name tag and speech bubble travel with a jumping frog; its shadow stays
-  on the ground.
+- Jumps include a small takeoff squash, a stretch into the air, and a landing
+  squash/rebound before returning to normal within the same 650 ms jump. Only
+  the frog artwork scales; the name tag and bubble stay readable and follow the
+  jump, while its shadow stays on the ground.
+- The line and all frogs share one explicit baseline inside the scene. The room
+  uses grid sizing, explicit field edges, and a `100vh` fallback for browsers
+  that do not support dynamic viewport units.
 - Keyboard controls leave text inputs and other interactive elements alone.
-- Sent messages appear above their frog for **three seconds**, then disappear
+- Each new message gives its frog a small squash-and-bounce. Your own frog
+  reacts immediately on send; saving the same message does not replay the
+  animation. Other frogs react when their message arrives. This reaction does
+  not interrupt jumps or remount the artwork, and reduced-motion mode disables it.
+- Sent messages appear above their frog for **five seconds**, then disappear
   from the scene while remaining in the message history on the right.
 - The composer stays at the bottom. On small screens, **Chat** opens the right
   sidebar so the room and composer remain usable.
 - Reduced-motion mode replaces the full jump with a small hop and disables
-  sliding transitions. There are no ambient animations or idle clock timers.
+  sliding and squash animations. There are no ambient animations or idle clock timers.
 
 Movement and jumps use authenticated WebSocket frames. Your browser predicts the
 action immediately. Each input has a sequence number; the server returns an
 acknowledgement with the confirmed frog state, and the browser reapplies inputs
 that have not been acknowledged yet. Rejected inputs are corrected. A stable jump
-ID prevents acknowledgements from restarting the animation. Other frogs use the
-existing short CSS transition to smooth position updates.
+ID owns a single browser animation timeline. The artwork stays mounted between
+jumps; takeoff/landing animations run through the Web Animations API, without
+recreating the SVG image or toggling CSS animations. Corrected acknowledgement
+timestamps cannot restart or truncate an already playing jump. Newly observed
+remote jumps seek to their current phase once, and completed jumps do not replay.
+Reduced-motion preference changes preserve the current jump phase.
+See the [Web Animations API](https://developer.mozilla.org/en-US/docs/Web/API/Element/animate)
+for the browser animation mechanism. Local movement starts
+on the next display frame and travels toward the predicted position over the
+150 ms input interval. A rejected input corrects from the current visible
+position rather than restarting from an old target.
+
+Remote movement keeps up to 12 timestamped positions per frog in a browser-only
+cache. It renders 180 ms behind the estimated server timeline and interpolates
+between confirmed positions, absorbing ordinary packet jitter. This deliberately
+adds a small visual delay for other frogs; your own frog has no interpolation
+buffer. Missing updates hold the last confirmed position, without extrapolation
+or overshooting. Large recovery corrections snap to the recovered position.
+
+Horizontal motion uses composited `translate3d` transforms and one shared
+`requestAnimationFrame` callback for moving frogs. Frames update DOM transforms
+directly, without rerendering the React tree or message history. The loop stops
+when movement settles, cancels on unmount, and discards old interpolation on tab
+resume. Reduced-motion mode displays updated positions directly. Names, bubbles,
+and grounded shadows remain attached to their moving frog.
+
+Unchanged snapshots retain their original motion timestamps. Latest messages are
+indexed once per history update, and unchanged frogs are memoized, so a moving
+neighbor does not repeatedly scan or rerender everyone else's chat bubbles.
+This cache affects browser presentation only; Redis still validates movement.
+See the [browser frame API](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame)
+for the refresh-driven animation mechanism.
 
 The server owns bounds, speed limits, facing, and jump cooldowns. A bounded queue
 processes inputs in order instead of dropping them while a database call is busy.
@@ -30,16 +69,39 @@ Cooldowns use server receipt times, so delayed processing does not turn normally
 spaced inputs into a burst. Monotonic movement versions prevent late snapshots or
 Redis events from moving frogs back to old positions.
 
-Redis broadcasts small public frog updates across instances; movement does not
-reload the room or message history for each viewer. Full snapshots remain for
-join, chat/history changes, departures, heartbeat recovery, and reconnects. Live
-positions still persist in MongoDB, so the server path still depends on database
-latency. No new services or environment variables are required.
+Redis holds live sessions, positions, facing, jump IDs/timestamps, movement
+versions, and presence. Each movement frame authenticates the session, checks
+bounds/cooldowns, updates state, and renews presence in one atomic Lua operation.
+The movement path does not connect to MongoDB or read message history. Redis
+broadcasts small public frog updates across instances; movement does not reload
+the room for each viewer. Commands and publishing share a connection, alongside
+one separate subscriber connection per instance.
+
+MongoDB stores message history only. Full snapshots combine current Redis frogs
+with MongoDB messages for join, chat/history changes, departures, heartbeat
+recovery, and reconnects. The browser still predicts its own movement immediately;
+remote frogs use the bounded interpolation cache above. High network latency or
+jitter beyond the buffer can still affect perceived smoothness.
+
+No new services or environment variables are required. The existing Redis URL
+now needs permission for Lua scripts, hashes, sorted sets, expiry, and Pub/Sub
+(the standard Redis user supports these). Storage keys are isolated by the same
+channel namespace used for broadcasts. Sessions expire after 90 seconds without
+activity; snapshots prune expired residents, and the live keys expire when the
+whole namespace is inactive. Redis connection errors fail the request rather
+than switching active sessions to isolated memory.
+
+After this update, existing MongoDB-backed sessions will rejoin once. Saved
+message history is retained; the old `frogchat_residents` collection is no longer
+read or written. Losing or clearing Redis live state also requires rejoining;
+positions are intentionally temporary. Without a Redis URL, local development
+keeps live sessions in process memory, which is suitable for a single instance.
+Vercel continues to require shared Redis and MongoDB.
 
 Sent messages appear immediately with a **Sending…** label while the existing
 HTTP save runs. A failed save removes the pending entry and retains the draft for
 retry with the same request ID. A slow successful save does not restart the local
-three-second bubble. History rendering is memoized during movement, and typing
+five-second bubble. History rendering is memoized during movement, and typing
 does not rerender the scene.
 
 Reconnects discard unconfirmed predictions and restore the server's current
@@ -70,10 +132,10 @@ variables in the deployment environment (and locally when using Vercel dev):
 
 | Variable | Purpose |
 | --- | --- |
-| `MONGODB_URI` or `MONGODB_URL` | Existing shared MongoDB storage. |
+| `MONGODB_URI` or `MONGODB_URL` | Shared MongoDB message history. |
 | `MONGODB_DB` | Optional database name; default `ghg-master-api-v1`. |
-| `FROGCHAT_REDIS_URL` or `REDIS_URL` | Redis TCP connection URL, e.g. `rediss://default:PASSWORD@HOST:PORT`. The service must support Redis Pub/Sub; an HTTP REST endpoint/token is insufficient. |
-| `FROGCHAT_REDIS_CHANNEL` | Optional broadcast channel. Defaults to `frogchat:${VERCEL_ENV}` on Vercel, or `frogchat:development` elsewhere. Use the same value for instances sharing one pond. |
+| `FROGCHAT_REDIS_URL` or `REDIS_URL` | Redis TCP connection URL, e.g. `rediss://default:PASSWORD@HOST:PORT`. The service must support Lua scripts and Redis Pub/Sub; an HTTP REST endpoint/token is insufficient. |
+| `FROGCHAT_REDIS_CHANNEL` | Optional broadcast channel and live-state namespace. Defaults to `frogchat:${VERCEL_ENV}` on Vercel, or `frogchat:development` elsewhere. Use the same value for instances sharing one pond. |
 
 Use a separate database/channel to isolate preview deployments from production. Production instances
 must share both storage and the channel. Vercel deployments fail requests when
@@ -84,8 +146,9 @@ closes those sockets so they reconnect and resynchronize.
 The server accepts a private session token in the first socket frame, never in a
 URL. It checks the browser's Origin before upgrading, limits frames to 4 KiB, and
 closes connections that do not authenticate within 10 seconds. Only authenticated
-clients receive snapshots. Redis carries public frog updates and invalidation
-events, never private tokens.
+clients receive snapshots. Redis Pub/Sub carries public frog updates and invalidation
+events. Private live-state records use hashed session tokens; raw tokens are
+never stored or broadcast.
 Existing HTTP message length limits, rate limits, and retry deduplication remain.
 
 Connections reconnect with backoff after network failures or Vercel's function
@@ -172,15 +235,27 @@ npx tsc --noEmit --incremental false
 npm test -- --runInBand --watchman=false lib/frogchat app/api/frogchat app/frogchat
 ```
 
-The tests cover three-second bubbles, delayed-save feedback, immediate prediction,
-acknowledgement/replay and rejection, stale versions, input-safe keyboard controls,
+The tests cover five-second bubbles, delayed-save feedback, immediate prediction,
+acknowledgement/replay and rejection, stale versions, timestamped interpolation,
+packet jitter, bounded caches, idle-frame cleanup, reduced motion, tab resume,
+input-safe keyboard controls,
 held movement, remote jumps, bounds and cooldowns, queued slow writes, authenticated
 delta broadcasts without room reads, reconnect recovery, and Redis coordination.
 The wire integration test opens real WebSocket connections
 on a temporary loopback port and verifies messages, motion, jumps, and recovery;
-it requires permission to listen locally. Redis coordination uses a test double.
+it requires permission to listen locally. Redis notification unit tests use a test double. A separate opt-in suite runs
+against real Redis to verify concurrent updates across connections, cooldowns,
+bounds, expiry, namespace isolation, reconnect snapshots, and the absence of
+MongoDB calls during movement:
 
-This app retains MongoDB driver 5. Its `findOneAndUpdate` and `findOneAndDelete`
-responses wrap the document in `.value`; `store.mongo.test.ts` checks authentication,
-atomic movement/jump claims and acknowledgements, message rate limits, and departures
-with that format.
+```sh
+# Use a disposable local Redis instance; each test uses and removes unique keys.
+FROGCHAT_TEST_REDIS_URL=redis://127.0.0.1:6379 npm test -- --runInBand --watchman=false lib/frogchat/live-state.integration.test.ts
+```
+
+The integration suite never uses the app's Redis URL or real MongoDB service;
+message storage is stubbed so only the Redis state and Pub/Sub path are external.
+
+This app retains MongoDB driver 5. `store.mongo.test.ts` checks message storage,
+retry deduplication, expiry queries, and legacy room history with its document
+and cursor API. Live residents no longer use MongoDB's modify-result wrappers.

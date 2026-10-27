@@ -3,67 +3,77 @@ import { afterEach, beforeEach, expect, it, jest } from "@jest/globals";
 import type { Db } from "mongodb";
 
 jest.mock("server-only", () => ({}));
-import { actInPond, leavePond, readPond, speakInPond } from "./store";
+import { joinPond, readPond, speakInPond } from "./store";
+import { MESSAGE_LIFETIME_MS } from "./types";
 
-// Driver 5 returns ModifyResult wrappers even when no document was matched.
-const frog = {
-  _id: "private-key", id: "frog-one", pond: "woodland", name: "Sunny Moss",
-  color: "#87b966", joinedAt: Date.now(), x: 50, facing: 1, jumpedAt: 0,
-  lastSpokeAt: new Date(0), expiresAt: new Date(Date.now() + 90_000),
-  motionVersion: 0,
+type Message = { _id: string; pond?: string; sentAt: number; expiresAt: Date };
+const messages = new Map<string, Message>();
+const findOne = jest.fn(async ({ _id }: { _id: string }) => messages.get(_id) ?? null);
+const insertOne = jest.fn(async (message: Message) => {
+  messages.set(message._id, message);
+  return { acknowledged: true, insertedId: message._id };
+});
+const cursor = {
+  sort: jest.fn(), limit: jest.fn(),
+  toArray: jest.fn(async () => [...messages.values()].reverse()),
 };
-const update = jest.fn<(...args: unknown[]) => Promise<{ value: typeof frog | null }>>();
-const remove = jest.fn<(...args: unknown[]) => Promise<{ value: typeof frog | null }>>();
-const insert = jest.fn();
-const collection = {
-  findOneAndUpdate: update, findOneAndDelete: remove, insertOne: insert,
-  findOne: jest.fn<() => Promise<null>>().mockResolvedValue(null),
-  find: () => ({ sort() { return this; }, limit() { return this; }, async toArray() { return []; } }),
-};
-const shared = globalThis as typeof globalThis & { frogchatDatabase?: Promise<Db> };
-const previousUri = process.env.MONGODB_URI;
+const find = jest.fn<(filter: unknown) => typeof cursor>(() => cursor);
+const collection = jest.fn((name: string) => {
+  if (name !== "frogchat_messages") throw new Error("Residents belong in live state, not MongoDB");
+  return { findOne, insertOne, find };
+});
+const shared = globalThis as typeof globalThis & { frogchatDatabase?: Promise<Db>; frogchatMemory?: unknown };
+const keys = ["MONGODB_URI", "MONGODB_URL", "FROGCHAT_REDIS_URL", "REDIS_URL"] as const;
+const previous = keys.map(key => process.env[key]);
 const previousDatabase = shared.frogchatDatabase;
+const previousMemory = shared.frogchatMemory;
 
 beforeEach(() => {
   jest.clearAllMocks();
+  messages.clear();
+  keys.forEach(key => delete process.env[key]);
   process.env.MONGODB_URI = "mongodb://unused-test-double";
-  shared.frogchatDatabase = Promise.resolve({ collection: () => collection } as unknown as Db);
+  shared.frogchatDatabase = Promise.resolve({ collection } as unknown as Db);
+  delete shared.frogchatMemory;
+  cursor.sort.mockReturnValue(cursor);
+  cursor.limit.mockReturnValue(cursor);
 });
 afterEach(() => {
   shared.frogchatDatabase = previousDatabase;
-  if (previousUri === undefined) delete process.env.MONGODB_URI;
-  else process.env.MONGODB_URI = previousUri;
+  shared.frogchatMemory = previousMemory;
+  keys.forEach((key, index) => {
+    if (previous[index] === undefined) delete process.env[key];
+    else process.env[key] = previous[index];
+  });
 });
 
-it("unwraps authenticated residents and rejects a wrapped missing session", async () => {
-  update.mockResolvedValueOnce({ value: frog });
-  expect((await readPond("token")).pond).toBe("woodland");
-  update.mockResolvedValueOnce({ value: null });
-  await expect(readPond("expired-token")).rejects.toMatchObject({ status: 401 });
+it("uses MongoDB message documents directly and deduplicates retried messages", async () => {
+  const session = await joinPond();
+  const snapshot = await speakInPond(session.token, "A stored croak", "one");
+  expect(insertOne).toHaveBeenCalledTimes(1);
+  const stored = insertOne.mock.calls[0][0];
+  expect(stored).toMatchObject({ _id: `${session.selfId}:one`, pond: "classic" });
+  expect(stored.expiresAt.getTime() - stored.sentAt).toBe(MESSAGE_LIFETIME_MS);
+  expect(snapshot.messages).toEqual([expect.objectContaining({ id: stored._id, text: "A stored croak" })]);
+  expect(snapshot.messages[0]).not.toHaveProperty("_id");
+  expect(snapshot.messages[0]).not.toHaveProperty("expiresAt");
+  expect((await speakInPond(session.token, "A stored croak", "one")).messages).toEqual(snapshot.messages);
+  expect(findOne).toHaveBeenLastCalledWith({ _id: stored._id });
+  expect(insertOne).toHaveBeenCalledTimes(1);
+  await expect(speakInPond(session.token, "Too soon", "two")).rejects.toMatchObject({ status: 429 });
+  expect(insertOne).toHaveBeenCalledTimes(1);
 });
 
-it.each([{ type: "move", direction: 1 } as const, { type: "jump" } as const])("checks the wrapped atomic claim for $type", async action => {
-  update.mockResolvedValueOnce({ value: frog }).mockResolvedValueOnce({ value: null }).mockResolvedValueOnce({ value: frog });
-  expect(await actInPond("token", action)).toMatchObject({ accepted: false, pond: "woodland", frog: { id: frog.id, x: 50, motionVersion: 0 } });
-  const updated = { ...frog, motionVersion: 1, ...(action.type === "move" ? { x: 52.5 } : { jumpedAt: Date.now() }) };
-  update.mockResolvedValueOnce({ value: frog }).mockResolvedValueOnce({ value: updated });
-  expect(await actInPond("token", action)).toMatchObject({ accepted: true, pond: "woodland", frog: { id: frog.id, x: updated.x, motionVersion: 1 } });
-  expect(update).toHaveBeenLastCalledWith(
-    expect.objectContaining({ _id: frog._id }),
-    { $set: expect.objectContaining(action.type === "move" ? { x: 52.5, facing: 1 } : { jumpedAt: expect.any(Number), jumpId: expect.any(String) }), $inc: { motionVersion: 1 } },
-    { returnDocument: "after" },
-  );
-});
-
-it("does not save messages when the wrapped rate-limit claim fails", async () => {
-  update.mockResolvedValueOnce({ value: frog }).mockResolvedValueOnce({ value: null });
-  await expect(speakInPond("token", "Too soon", "one")).rejects.toMatchObject({ status: 429 });
-  expect(insert).not.toHaveBeenCalled();
-});
-
-it("unwraps deleted residents to broadcast departure to their room", async () => {
-  remove.mockResolvedValueOnce({ value: frog });
-  expect(await leavePond("token")).toBe("woodland");
-  remove.mockResolvedValueOnce({ value: null });
-  expect(await leavePond("already-gone")).toBe("classic");
+it("queries unexpired room history while retaining legacy messages in the original pond", async () => {
+  const classic = await joinPond();
+  await readPond(classic.token);
+  expect(find).toHaveBeenLastCalledWith({
+    $or: [{ pond: "classic" }, { pond: { $exists: false } }],
+    expiresAt: { $gt: expect.any(Date) },
+  });
+  const woodland = await joinPond("woodland");
+  await readPond(woodland.token);
+  expect(find).toHaveBeenLastCalledWith({ pond: "woodland", expiresAt: { $gt: expect.any(Date) } });
+  expect(cursor.sort).toHaveBeenLastCalledWith({ sentAt: -1, _id: -1 });
+  expect(cursor.limit).toHaveBeenLastCalledWith(100);
 });

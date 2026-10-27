@@ -12,8 +12,8 @@ let GET: typeof import("./route").GET;
 let POST: typeof import("./route").POST;
 let DELETE: typeof import("./route").DELETE;
 
-const originalUri = process.env.MONGODB_URI;
-const originalUrl = process.env.MONGODB_URL;
+const environmentKeys = ["MONGODB_URI", "MONGODB_URL", "FROGCHAT_REDIS_URL", "REDIS_URL"] as const;
+const previousEnvironment = environmentKeys.map(key => process.env[key]);
 const url = "http://localhost/api/frogchat";
 const messageId = "e3c9925f-3972-4239-ae89-99f7c479e312";
 const shared = globalThis as typeof globalThis & { frogchatMemory?: unknown };
@@ -27,15 +27,14 @@ function post(body: unknown, token?: string, origin = "http://localhost") {
 
 beforeEach(async () => {
   ({ GET, POST, DELETE } = await import("./route"));
-  delete process.env.MONGODB_URI;
-  delete process.env.MONGODB_URL;
+  environmentKeys.forEach(key => delete process.env[key]);
   delete shared.frogchatMemory;
 });
 afterEach(() => {
-  if (originalUri === undefined) delete process.env.MONGODB_URI;
-  else process.env.MONGODB_URI = originalUri;
-  if (originalUrl === undefined) delete process.env.MONGODB_URL;
-  else process.env.MONGODB_URL = originalUrl;
+  environmentKeys.forEach((key, index) => {
+    if (previousEnvironment[index] === undefined) delete process.env[key];
+    else process.env[key] = previousEnvironment[index];
+  });
 });
 
 it("joins, sends a message, receives it from another visitor, and leaves", async () => {

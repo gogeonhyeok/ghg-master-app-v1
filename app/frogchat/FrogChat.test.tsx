@@ -32,6 +32,9 @@ class Socket {
   receive(event: unknown) { this.onmessage?.({ data: JSON.stringify(event) }); }
   close(code = 1000) { this.readyState = 3; this.onclose?.({ code }); }
 }
+function displayedX(frog: HTMLElement) {
+  return Number(frog.parentElement!.style.transform.match(/translate3d\(([-.\d]+)%/)?.[1]);
+}
 function respond(value: unknown, status = 200) { return Promise.resolve({ ok: status < 400, status, json: async () => value } as Response); }
 beforeEach(() => {
   jest.useFakeTimers({ now: 100_000 });
@@ -52,7 +55,7 @@ it("joins a single room with the supplied frog and leaves on exit", async () => 
   expect(fetchMock.mock.calls.at(-1)?.[1]).toMatchObject({ method: "DELETE", keepalive: true });
 });
 
-it("shows sent messages above the frog for exactly three seconds and keeps history", async () => {
+it("shows sent messages above the frog for exactly five seconds and keeps history", async () => {
   fetchMock.mockImplementation((_url, options) => {
     const body = JSON.parse(String(options?.body || "{}"));
     return respond(body.action === "message" ? { ...session, messages: [{ id: "hello", frogId: self.id, name: self.name, color: self.color, text: body.text, sentAt: Date.now() }], serverTime: Date.now() } : session);
@@ -63,7 +66,7 @@ it("shows sent messages above the frog for exactly three seconds and keeps histo
   await act(async () => { fireEvent.submit(input.closest("form")!); });
   const frog = screen.getByLabelText("Sunny Moss, your frog");
   expect(within(frog).getByText("Hello everyone")).toBeTruthy();
-  await act(async () => { jest.advanceTimersByTime(2999); });
+  await act(async () => { jest.advanceTimersByTime(4999); });
   expect(within(frog).getByText("Hello everyone")).toBeTruthy();
   await act(async () => { jest.advanceTimersByTime(2); });
   expect(within(frog).queryByText("Hello everyone")).toBeNull();
@@ -111,7 +114,7 @@ it("renders a remote frog’s position, direction and jump without jumping again
     Socket.instances[0].snapshot({ ...session, frogs: [self, { ...other, x: 65, facing: -1, jumpedAt: 100_000 }], serverTime: 100_000 });
   });
   const frog = screen.getByLabelText("Cozy Fern");
-  expect((frog as HTMLElement).style.left).toBe("65%");
+  expect(displayedX(frog as HTMLElement)).toBe(65);
   expect(frog.querySelector('[data-facing="-1"]')).toBeTruthy();
   expect(frog.querySelector(".jumping")).toBeTruthy();
   await act(async () => { jest.advanceTimersByTime(651); });
@@ -167,29 +170,34 @@ it("predicts immediately, replays unacknowledged inputs, and corrects rejected m
   const socket = Socket.instances[0];
   const frog = screen.getByLabelText("Sunny Moss, your frog") as HTMLElement;
   fireEvent.click(screen.getByRole("button", { name: "Move right" }));
-  expect(frog.style.left).toBe("52.5%"); // No server response has arrived.
-  await act(async () => { jest.advanceTimersByTime(150); });
+  await act(async () => { jest.advanceTimersByTime(160); });
+  expect(displayedX(frog)).toBe(52.5); // No server response has arrived.
   fireEvent.click(screen.getByRole("button", { name: "Move right" }));
-  expect(frog.style.left).toBe("55%");
+  await act(async () => { jest.advanceTimersByTime(160); });
+  expect(displayedX(frog)).toBe(55);
   await act(async () => {
     socket.receive({ type: "ack", seq: 1, accepted: true, frog: { ...self, x: 52.5, motionVersion: 1 }, serverTime: Date.now() });
   });
-  expect(frog.style.left).toBe("55%"); // Input #2 is still pending.
+  expect(displayedX(frog)).toBe(55); // Input #2 is still pending.
   await act(async () => { socket.snapshot({ ...session, serverTime: Date.now() }); });
-  expect(frog.style.left).toBe("55%"); // Old snapshot cannot undo prediction.
+  expect(displayedX(frog)).toBe(55); // Old snapshot cannot undo prediction.
   await act(async () => {
     socket.receive({ type: "ack", seq: 2, accepted: false, frog: { ...self, x: 52.5, motionVersion: 1 }, serverTime: Date.now() });
   });
-  expect(frog.style.left).toBe("52.5%");
+  await act(async () => { jest.advanceTimersByTime(160); });
+  expect(displayedX(frog)).toBe(52.5);
   await act(async () => { socket.snapshot({ ...session, serverTime: Date.now() }); });
-  expect(frog.style.left).toBe("52.5%"); // Nor can it undo a confirmed newer version.
+  await act(async () => { jest.advanceTimersByTime(160); });
+  expect(displayedX(frog)).toBe(52.5); // Nor can it undo a confirmed newer version.
   view.unmount();
 });
 
 it("starts a jump immediately and keeps the same animation when its acknowledgement arrives", async () => {
   const view = render(<FrogChat />); await act(async () => {});
+  const artwork = screen.getByLabelText("Sunny Moss, your frog").querySelector(".frogImage");
   fireEvent.click(screen.getByRole("button", { name: "Jump" }));
   const frog = screen.getByLabelText("Sunny Moss, your frog");
+  expect(frog.querySelector(".frogImage")).toBe(artwork);
   const jumping = frog.querySelector(".jumping");
   expect(jumping).toBeTruthy();
   expect(jumping?.querySelector(".name")?.textContent).toContain("You");
@@ -212,7 +220,7 @@ it("merges small remote updates and ignores late older movement versions", async
     socket.receive({ type: "motion", frog: { ...other, x: 60, motionVersion: 1 }, serverTime: Date.now() });
     socket.snapshot({ ...session, serverTime: Date.now() });
   });
-  expect((screen.getByLabelText("Cozy Fern") as HTMLElement).style.left).toBe("65%");
+  expect(displayedX(screen.getByLabelText("Cozy Fern") as HTMLElement)).toBe(65);
   expect(Socket.instances).toHaveLength(1);
   expect(fetchMock.mock.calls).toHaveLength(1);
   view.unmount();
@@ -222,11 +230,14 @@ it("discards pending prediction on reconnect and recovers the server position", 
   const view = render(<FrogChat />); await act(async () => {});
   const frog = screen.getByLabelText("Sunny Moss, your frog") as HTMLElement;
   fireEvent.click(screen.getByRole("button", { name: "Move right" }));
-  expect(frog.style.left).toBe("52.5%");
+  await act(async () => { jest.advanceTimersByTime(160); });
+  expect(displayedX(frog)).toBe(52.5);
   await act(async () => { Socket.instances[0].close(1006); });
-  expect(frog.style.left).toBe("50%");
+  await act(async () => { jest.advanceTimersByTime(160); });
+  expect(displayedX(frog)).toBe(50);
   await act(async () => { jest.advanceTimersByTime(1300); });
-  expect(frog.style.left).toBe("50%");
+  await act(async () => { jest.advanceTimersByTime(160); });
+  expect(displayedX(frog)).toBe(50);
   view.unmount();
 });
 
@@ -248,7 +259,7 @@ it("shows a pending bubble before a slow message save and removes it on failure"
   view.unmount();
 });
 
-it("does not restart the three-second bubble when a delayed save finally succeeds", async () => {
+it("does not restart the five-second bubble when a delayed save finally succeeds", async () => {
   let save!: (response: Response) => void;
   const delayed = new Promise<Response>(resolve => { save = resolve; });
   fetchMock.mockImplementation((_url, options) => JSON.parse(String(options?.body || "{}")).action === "message" ? delayed : respond(session));
@@ -257,7 +268,7 @@ it("does not restart the three-second bubble when a delayed save finally succeed
   fireEvent.change(input, { target: { value: "Slow save" } });
   fireEvent.submit(input.closest("form")!);
   const frog = screen.getByLabelText("Sunny Moss, your frog");
-  await act(async () => { jest.advanceTimersByTime(3001); });
+  await act(async () => { jest.advanceTimersByTime(5001); });
   expect(within(frog).queryByText("Slow save")).toBeNull();
   await act(async () => {
     save(await respond({ ...session, serverTime: Date.now(), messages: [{ id: `${self.id}:${crypto.randomUUID()}`, frogId: self.id, name: self.name, color: self.color, text: "Slow save", sentAt: Date.now() }] }));
@@ -266,4 +277,56 @@ it("does not restart the three-second bubble when a delayed save finally succeed
   expect(within(screen.getByRole("log")).getByText("Slow save")).toBeTruthy();
   expect(within(screen.getByRole("log")).queryByText("Sending…")).toBeNull();
   view.unmount();
+});
+
+it("buffers irregular remote updates, renders intermediate frames and holds the final position", async () => {
+  const view = render(<FrogChat />); await act(async () => {});
+  const frog = screen.getByLabelText("Cozy Fern") as HTMLElement;
+  const socket = Socket.instances[0];
+  await act(async () => { jest.advanceTimersByTime(150); });
+  await act(async () => { socket.receive({ type: "motion", frog: { ...other, x: 40.5, motionVersion: 1 }, serverTime: 100_150 }); });
+  expect(displayedX(frog)).toBe(38); // Short interpolation buffer, no packet snap.
+  await act(async () => { jest.advanceTimersByTime(100); });
+  expect(displayedX(frog)).toBeGreaterThan(38);
+  expect(displayedX(frog)).toBeLessThan(40.5);
+  await act(async () => { jest.advanceTimersByTime(100); });
+  // Second packet arrives late; its server timestamp preserves sample spacing.
+  await act(async () => { socket.receive({ type: "motion", frog: { ...other, x: 43, motionVersion: 2 }, serverTime: 100_300 }); });
+  const middle = displayedX(frog);
+  await act(async () => { jest.advanceTimersByTime(50); });
+  expect(displayedX(frog)).toBeGreaterThan(middle);
+  expect(displayedX(frog)).toBeLessThan(43);
+  await act(async () => { jest.advanceTimersByTime(200); });
+  expect(displayedX(frog)).toBe(43);
+  expect(frog.parentElement!.style.willChange).toBe("");
+  const frames = jest.spyOn(window, "requestAnimationFrame");
+  await act(async () => { jest.advanceTimersByTime(1000); });
+  expect(frames).not.toHaveBeenCalled(); // Idle rooms don't run an animation loop.
+  frames.mockRestore();
+  view.unmount();
+});
+
+it("honors reduced motion, snaps on tab resume and cancels frames on unmount", async () => {
+  const originalMedia = window.matchMedia;
+  let reduced = false;
+  window.matchMedia = jest.fn((query: string) => ({ matches: query.includes("reduced-motion") && reduced, addEventListener: jest.fn(), removeEventListener: jest.fn() }) as unknown as MediaQueryList);
+  try {
+    const view = render(<FrogChat />); await act(async () => {});
+    const frog = screen.getByLabelText("Sunny Moss, your frog") as HTMLElement;
+    reduced = true;
+    fireEvent.click(screen.getByRole("button", { name: "Move right" }));
+    expect(displayedX(frog)).toBe(52.5);
+    reduced = false;
+    await act(async () => { jest.advanceTimersByTime(150); });
+    fireEvent.click(screen.getByRole("button", { name: "Move right" }));
+    expect(displayedX(frog)).toBe(52.5);
+    fireEvent(document, new Event("visibilitychange"));
+    expect(displayedX(frog)).toBe(55);
+    fireEvent.click(screen.getByRole("button", { name: "Move left" }));
+    view.unmount();
+    const frames = jest.spyOn(window, "requestAnimationFrame");
+    await act(async () => { jest.advanceTimersByTime(1000); });
+    expect(frames).not.toHaveBeenCalled();
+    frames.mockRestore();
+  } finally { window.matchMedia = originalMedia; }
 });

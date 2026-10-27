@@ -20,7 +20,7 @@ jest.mock("ioredis", () => {
 });
 
 let api: typeof import("./realtime");
-const shared = globalThis as typeof globalThis & { frogchatHub?: unknown };
+const shared = globalThis as typeof globalThis & { frogchatHub?: unknown; frogchatRedis?: { disconnect(): void } };
 const keys = ["FROGCHAT_REDIS_URL", "REDIS_URL", "VERCEL", "MONGODB_URI", "MONGODB_URL"] as const;
 const previous = keys.map(key => process.env[key]);
 const releases: (() => void)[] = [];
@@ -30,10 +30,14 @@ beforeEach(async () => {
   keys.forEach(key => delete process.env[key]);
   process.env.FROGCHAT_REDIS_URL = "redis://test-only";
   delete shared.frogchatHub;
+  shared.frogchatRedis?.disconnect();
+  delete shared.frogchatRedis;
 });
 afterEach(() => {
   releases.splice(0).forEach(release => release());
   delete shared.frogchatHub;
+  shared.frogchatRedis?.disconnect();
+  delete shared.frogchatRedis;
   keys.forEach((key, i) => { if (previous[i] === undefined) delete process.env[key]; else process.env[key] = previous[i]; });
 });
 

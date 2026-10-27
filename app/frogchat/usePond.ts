@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { connectPond } from "../../lib/frogchat/connection";
 import { BUBBLE_MS, JUMP_MS, type Frog, type FrogAction, type PondMessage, type PondSession, type PondSnapshot } from "../../lib/frogchat/types";
-import { newerFrog, replayActions, type PendingAction } from "../../lib/frogchat/motion";
+import { replayActions, type PendingAction } from "../../lib/frogchat/motion";
+import { timeFrog, type TimedFrog } from "../../lib/frogchat/interpolation";
 
-const empty: PondSnapshot = { frogs: [], messages: [], serverTime: 0 };
+type RenderSnapshot = Omit<PondSnapshot, "frogs"> & { frogs: TimedFrog[] };
+const empty: RenderSnapshot = { frogs: [], messages: [], serverTime: 0 };
 class RequestError extends Error {
   constructor(message: string, public status: number) { super(message); }
 }
@@ -62,21 +64,21 @@ export function usePond() {
     clockReady.current = true;
     const previous = new Map(confirmed.current.frogs.map(frog => [frog.id, frog]));
     confirmed.current = { ...data,
-      // Saving a slow message must not restart its three-second local bubble.
+      // Saving a slow message must not restart its five-second local bubble.
       messages: data.messages.map(message => localMessageTimes.current.has(message.id) ? { ...message, sentAt: localMessageTimes.current.get(message.id)! } : message),
       frogs: data.frogs.map(frog => {
         const old = previous.get(frog.id);
         // Only acknowledgements can advance our baseline while inputs are pending.
-        return frog.id === identity.current && pending.current.length && old ? old : newerFrog(old, frog);
+        return frog.id === identity.current && pending.current.length && old ? old : timeFrog(old, frog, data.serverTime);
       }),
     };
     commit();
   }, [commit]);
 
-  const updateFrog = useCallback((frog: Frog) => {
+  const updateFrog = useCallback((frog: Frog, at: number) => {
     const data = confirmed.current;
     const old = data.frogs.find(item => item.id === frog.id);
-    const updated = newerFrog(old, frog);
+    const updated = timeFrog(old, frog, at);
     confirmed.current = { ...data, frogs: old ? data.frogs.map(item => item.id === frog.id ? updated : item) : [...data.frogs, updated] };
     commit();
   }, [commit]);
@@ -106,12 +108,12 @@ export function usePond() {
         subscription.current = connectPond(sessionToken, {
           snapshot: data => { if (!stopped && token.current === sessionToken) apply(data); },
           motion: event => {
-            if (!stopped && token.current === sessionToken && (event.serverTime >= latest.current || confirmed.current.frogs.some(frog => frog.id === event.frog.id))) updateFrog(event.frog);
+            if (!stopped && token.current === sessionToken && (event.serverTime >= latest.current || confirmed.current.frogs.some(frog => frog.id === event.frog.id))) updateFrog(event.frog, event.serverTime);
           },
           acknowledged: event => {
             if (stopped || token.current !== sessionToken || event.frog.id !== identity.current) return;
             pending.current = pending.current.filter(input => input.seq > event.seq);
-            updateFrog(event.frog);
+            updateFrog(event.frog, event.serverTime);
           },
           status: connected => {
             if (stopped) return;
