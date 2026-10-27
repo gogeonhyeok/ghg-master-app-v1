@@ -1,9 +1,12 @@
-import { HEARTBEAT_MS, type PondClientEvent, type PondServerEvent, type PondSnapshot } from "./types";
+import { HEARTBEAT_MS, type FrogAction, type PondClientEvent, type PondServerEvent, type PondSnapshot } from "./types";
+import { isMotionFrog } from "./motion";
 
 type Callbacks = {
   snapshot: (snapshot: PondSnapshot) => void;
   status: (connected: boolean) => void;
   expired: () => void;
+  motion: (event: Extract<PondServerEvent, { type: "motion" }>) => void;
+  acknowledged: (event: Extract<PondServerEvent, { type: "ack" }>) => void;
 };
 
 // Browser transport only. HTTP is used for join/send/leave, never recurring reads.
@@ -16,6 +19,7 @@ export function connectPond(token: string, callbacks: Callbacks) {
   let retryDelay = 1000;
   let ready = false;
   let receivedAt = 0;
+  let sequence = 0;
 
   function clearTimers() {
     clearTimeout(deadline);
@@ -61,6 +65,15 @@ export function connectPond(token: string, callbacks: Callbacks) {
         } else current.close();
         return;
       }
+      if (data?.type === "motion" || data?.type === "ack") {
+        if (!ready || !isMotionFrog(data.frog) || !Number.isFinite(data.serverTime)) { current.close(); return; }
+        if (data.type === "ack") {
+          if (!Number.isSafeInteger(data.seq) || data.seq < 1 || data.seq > sequence || typeof data.accepted !== "boolean") { current.close(); return; }
+          callbacks.acknowledged(data);
+        } else callbacks.motion(data);
+        receivedAt = Date.now();
+        return;
+      }
       if (data?.type !== "snapshot" || !data.snapshot || !Array.isArray(data.snapshot.frogs) || !Array.isArray(data.snapshot.messages) || !Number.isFinite(data.snapshot.serverTime)) {
         current.close(); return;
       }
@@ -90,9 +103,14 @@ export function connectPond(token: string, callbacks: Callbacks) {
     };
   }
   connect();
+  function act(action: FrogAction): number | false {
+    if (!ready || stopped) return false;
+    const seq = ++sequence;
+    return send({ ...action, seq }) ? seq : false;
+  }
   return {
-    move(direction: -1 | 1) { return ready && !stopped && send({ type: "move", direction }); },
-    jump() { return ready && !stopped && send({ type: "jump" }); },
+    move(direction: -1 | 1) { return act({ type: "move", direction }); },
+    jump(jumpId: string) { return act({ type: "jump", jumpId }); },
     refresh() {
       if (stopped) return;
       if (ready) send({ type: "heartbeat" });

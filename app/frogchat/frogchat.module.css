@@ -1,4 +1,5 @@
 .app { --ink: #26362c; --muted: #869087; --line: #edf0ea; --green: #608345; height: 100dvh; min-height: 480px; display: grid; grid-template-columns: minmax(0, 1fr) 306px; grid-template-rows: 76px minmax(0, 1fr) auto; overflow: hidden; background: #fff; color: var(--ink); color-scheme: light; font-family: var(--font-geist-sans), Arial, sans-serif; }
+.app { position: relative; }
 .app * { box-sizing: border-box; }
 .app button, .app input { font: inherit; }
 .app button { cursor: pointer; }

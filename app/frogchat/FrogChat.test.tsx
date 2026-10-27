@@ -29,6 +29,7 @@ class Socket {
     if (event.type === "authenticate" || event.type === "heartbeat") this.snapshot({ ...session, serverTime: Date.now() });
   }
   snapshot(snapshot: PondSnapshot) { this.onmessage?.({ data: JSON.stringify({ type: "snapshot", snapshot }) }); }
+  receive(event: unknown) { this.onmessage?.({ data: JSON.stringify(event) }); }
   close(code = 1000) { this.readyState = 3; this.onclose?.({ code }); }
 }
 function respond(value: unknown, status = 200) { return Promise.resolve({ ok: status < 400, status, json: async () => value } as Response); }
@@ -78,7 +79,7 @@ it("uses socket frames for held movement and jumping, then stops on release or b
   await act(async () => { jest.advanceTimersByTime(450); });
   fireEvent.keyDown(window, { key: " ", code: "Space" });
   expect(socket.events.filter(event => event.type === "move")).toHaveLength(4);
-  expect(socket.events.at(-1)).toEqual({ type: "jump" });
+  expect(socket.events.at(-1)).toMatchObject({ type: "jump", seq: 5, jumpId: expect.any(String) });
   fireEvent.keyUp(window, { key: "ArrowRight", code: "ArrowRight" });
   const count = socket.events.length;
   await act(async () => { jest.advanceTimersByTime(600); });
@@ -100,7 +101,7 @@ it("does not hijack arrows or Space while typing", async () => {
   expect(Socket.instances[0].events).toEqual([{ type: "authenticate", token: session.token }]);
   fireEvent.click(screen.getByRole("button", { name: "Move left" }));
   fireEvent.click(screen.getByRole("button", { name: "Jump" }));
-  expect(Socket.instances[0].events.slice(-2)).toEqual([{ type: "move", direction: -1 }, { type: "jump" }]);
+  expect(Socket.instances[0].events.slice(-2)).toMatchObject([{ type: "move", direction: -1, seq: 1 }, { type: "jump", seq: 2, jumpId: expect.any(String) }]);
   view.unmount();
 });
 
@@ -158,5 +159,111 @@ it("retries a failed join and clears its error on connection", async () => {
   await act(async () => { jest.advanceTimersByTime(1100); });
   expect(screen.queryByRole("alert")).toBeNull();
   expect(screen.getByLabelText("Sunny Moss, your frog")).toBeTruthy();
+  view.unmount();
+});
+
+it("predicts immediately, replays unacknowledged inputs, and corrects rejected moves", async () => {
+  const view = render(<FrogChat />); await act(async () => {});
+  const socket = Socket.instances[0];
+  const frog = screen.getByLabelText("Sunny Moss, your frog") as HTMLElement;
+  fireEvent.click(screen.getByRole("button", { name: "Move right" }));
+  expect(frog.style.left).toBe("52.5%"); // No server response has arrived.
+  await act(async () => { jest.advanceTimersByTime(150); });
+  fireEvent.click(screen.getByRole("button", { name: "Move right" }));
+  expect(frog.style.left).toBe("55%");
+  await act(async () => {
+    socket.receive({ type: "ack", seq: 1, accepted: true, frog: { ...self, x: 52.5, motionVersion: 1 }, serverTime: Date.now() });
+  });
+  expect(frog.style.left).toBe("55%"); // Input #2 is still pending.
+  await act(async () => { socket.snapshot({ ...session, serverTime: Date.now() }); });
+  expect(frog.style.left).toBe("55%"); // Old snapshot cannot undo prediction.
+  await act(async () => {
+    socket.receive({ type: "ack", seq: 2, accepted: false, frog: { ...self, x: 52.5, motionVersion: 1 }, serverTime: Date.now() });
+  });
+  expect(frog.style.left).toBe("52.5%");
+  await act(async () => { socket.snapshot({ ...session, serverTime: Date.now() }); });
+  expect(frog.style.left).toBe("52.5%"); // Nor can it undo a confirmed newer version.
+  view.unmount();
+});
+
+it("starts a jump immediately and keeps the same animation when its acknowledgement arrives", async () => {
+  const view = render(<FrogChat />); await act(async () => {});
+  fireEvent.click(screen.getByRole("button", { name: "Jump" }));
+  const frog = screen.getByLabelText("Sunny Moss, your frog");
+  const jumping = frog.querySelector(".jumping");
+  expect(jumping).toBeTruthy();
+  expect(jumping?.querySelector(".name")?.textContent).toContain("You");
+  const input = Socket.instances[0].events.at(-1)!;
+  await act(async () => {
+    jest.advanceTimersByTime(200);
+    Socket.instances[0].receive({ type: "ack", seq: 1, accepted: true, frog: { ...self, jumpedAt: 100_050, jumpId: (input as { jumpId?: string }).jumpId, motionVersion: 1 }, serverTime: Date.now() });
+  });
+  expect(frog.querySelector(".jumping")).toBe(jumping);
+  await act(async () => { jest.advanceTimersByTime(700); });
+  expect(frog.querySelector(".jumping")).toBeNull();
+  view.unmount();
+});
+
+it("merges small remote updates and ignores late older movement versions", async () => {
+  const view = render(<FrogChat />); await act(async () => {});
+  const socket = Socket.instances[0];
+  await act(async () => {
+    socket.receive({ type: "motion", frog: { ...other, x: 65, motionVersion: 2 }, serverTime: Date.now() });
+    socket.receive({ type: "motion", frog: { ...other, x: 60, motionVersion: 1 }, serverTime: Date.now() });
+    socket.snapshot({ ...session, serverTime: Date.now() });
+  });
+  expect((screen.getByLabelText("Cozy Fern") as HTMLElement).style.left).toBe("65%");
+  expect(Socket.instances).toHaveLength(1);
+  expect(fetchMock.mock.calls).toHaveLength(1);
+  view.unmount();
+});
+
+it("discards pending prediction on reconnect and recovers the server position", async () => {
+  const view = render(<FrogChat />); await act(async () => {});
+  const frog = screen.getByLabelText("Sunny Moss, your frog") as HTMLElement;
+  fireEvent.click(screen.getByRole("button", { name: "Move right" }));
+  expect(frog.style.left).toBe("52.5%");
+  await act(async () => { Socket.instances[0].close(1006); });
+  expect(frog.style.left).toBe("50%");
+  await act(async () => { jest.advanceTimersByTime(1300); });
+  expect(frog.style.left).toBe("50%");
+  view.unmount();
+});
+
+it("shows a pending bubble before a slow message save and removes it on failure", async () => {
+  let reject!: (error: Error) => void;
+  const delayed = new Promise<Response>((_resolve, fail) => { reject = fail; });
+  fetchMock.mockImplementation((_url, options) => JSON.parse(String(options?.body || "{}")).action === "message" ? delayed : respond(session));
+  const view = render(<FrogChat />); await act(async () => {});
+  const input = screen.getByRole("textbox", { name: "Your message" });
+  fireEvent.change(input, { target: { value: "Instant hello" } });
+  fireEvent.submit(input.closest("form")!);
+  const frog = screen.getByLabelText("Sunny Moss, your frog");
+  expect(within(frog).getByText("Instant hello")).toBeTruthy();
+  expect(within(screen.getByRole("log")).getByText("Sending…")).toBeTruthy();
+  await act(async () => { reject(new Error("Offline")); });
+  expect(within(frog).queryByText("Instant hello")).toBeNull();
+  expect(within(screen.getByRole("log")).queryByText("Instant hello")).toBeNull();
+  expect((input as HTMLInputElement).value).toBe("Instant hello");
+  view.unmount();
+});
+
+it("does not restart the three-second bubble when a delayed save finally succeeds", async () => {
+  let save!: (response: Response) => void;
+  const delayed = new Promise<Response>(resolve => { save = resolve; });
+  fetchMock.mockImplementation((_url, options) => JSON.parse(String(options?.body || "{}")).action === "message" ? delayed : respond(session));
+  const view = render(<FrogChat />); await act(async () => {});
+  const input = screen.getByRole("textbox", { name: "Your message" });
+  fireEvent.change(input, { target: { value: "Slow save" } });
+  fireEvent.submit(input.closest("form")!);
+  const frog = screen.getByLabelText("Sunny Moss, your frog");
+  await act(async () => { jest.advanceTimersByTime(3001); });
+  expect(within(frog).queryByText("Slow save")).toBeNull();
+  await act(async () => {
+    save(await respond({ ...session, serverTime: Date.now(), messages: [{ id: `${self.id}:${crypto.randomUUID()}`, frogId: self.id, name: self.name, color: self.color, text: "Slow save", sentAt: Date.now() }] }));
+  });
+  expect(within(frog).queryByText("Slow save")).toBeNull();
+  expect(within(screen.getByRole("log")).getByText("Slow save")).toBeTruthy();
+  expect(within(screen.getByRole("log")).queryByText("Sending…")).toBeNull();
   view.unmount();
 });

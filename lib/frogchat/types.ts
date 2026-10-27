@@ -18,6 +18,8 @@ export type Frog = {
   x?: number;
   facing?: -1 | 1;
   jumpedAt?: number;
+  jumpId?: string;
+  motionVersion?: number;
 };
 
 export type PondMessage = {
@@ -27,6 +29,7 @@ export type PondMessage = {
   color: string;
   text: string;
   sentAt: number;
+  pending?: boolean;
 };
 
 export type PondSnapshot = {
@@ -39,6 +42,8 @@ export type PondSnapshot = {
 export type PondSession = PondSnapshot & { token: string; selfId: string };
 
 export const HEARTBEAT_MS = 25_000;
-export type FrogAction = { type: "move"; direction: -1 | 1 } | { type: "jump" };
-export type PondClientEvent = { type: "authenticate"; token: string } | { type: "heartbeat" } | FrogAction;
-export type PondServerEvent = { type: "snapshot"; snapshot: PondSnapshot } | { type: "error"; status: number; message: string };
+export type FrogAction = { type: "move"; direction: -1 | 1 } | { type: "jump"; jumpId?: string };
+export type MotionEvent = { type: "motion"; frog: Frog; serverTime: number };
+export type ActionResult = { pond: PondId; frog: Frog; accepted: boolean };
+export type PondClientEvent = { type: "authenticate"; token: string } | { type: "heartbeat" } | (FrogAction & { seq: number });
+export type PondServerEvent = { type: "snapshot"; snapshot: PondSnapshot } | MotionEvent | { type: "ack"; seq: number; frog: Frog; accepted: boolean; serverTime: number } | { type: "error"; status: number; message: string };

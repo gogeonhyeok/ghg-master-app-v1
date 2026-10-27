@@ -1,8 +1,9 @@
 import { BUBBLE_MS, type PondSnapshot } from "../../lib/frogchat/types";
+import { memo } from "react";
 import Frog from "./Frog";
 import styles from "./frogchat.module.css";
 
-export default function PondScene({ snapshot, selfId, now }: { snapshot: PondSnapshot; selfId: string | null; now: number }) {
+function PondScene({ snapshot, selfId, now }: { snapshot: PondSnapshot; selfId: string | null; now: number }) {
   return (
     <section className={styles.scene} tabIndex={0} aria-label="Shared frog room" aria-describedby="movement-help">
       <div className={styles.sceneNote}><span className={styles.smallDot} />A little space to just be.</div>
@@ -18,3 +19,5 @@ export default function PondScene({ snapshot, selfId, now }: { snapshot: PondSna
     </section>
   );
 }
+
+export default memo(PondScene);

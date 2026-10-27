@@ -4,11 +4,16 @@ import { EventEmitter } from "node:events";
 import type WebSocket from "ws";
 
 jest.mock("server-only", () => ({}));
+jest.mock("./store", () => {
+  const actual = jest.requireActual<typeof import("./store")>("./store");
+  return { ...actual, readPond: jest.fn(actual.readPond), actInPond: jest.fn(actual.actInPond) };
+});
 
-import { acceptPondSocket } from "./socket";
 import { publishPondChange } from "./realtime";
-import { joinPond, leavePond, speakInPond } from "./store";
 import { PRESENCE_MS, type PondServerEvent } from "./types";
+
+const { acceptPondSocket } = jest.requireActual<typeof import("./socket")>("./socket");
+const { actInPond, joinPond, leavePond, readPond, speakInPond } = jest.requireMock<typeof import("./store")>("./store");
 
 class Socket extends EventEmitter {
   readyState = 1;
@@ -18,6 +23,7 @@ class Socket extends EventEmitter {
   send(value: string) { this.events.push(JSON.parse(value)); }
   close(code: number) { this.closeCode = code; this.readyState = 3; this.emit("close"); }
   receive(value: unknown, binary = false) { this.emit("message", Buffer.from(JSON.stringify(value)), binary); }
+  motion(id: string) { return this.events.filter(event => event.type === "motion" && event.frog.id === id).at(-1); }
   latest() { return this.events.filter(event => event.type === "snapshot").at(-1)?.snapshot; }
 }
 const keys = ["MONGODB_URI", "MONGODB_URL", "REDIS_URL", "FROGCHAT_REDIS_URL", "VERCEL"] as const;
@@ -33,6 +39,7 @@ function open() {
 async function flush() { for (let i = 0; i < 30; i++) await Promise.resolve(); }
 
 beforeEach(() => {
+  jest.clearAllMocks();
   keys.forEach(key => delete process.env[key]);
   delete shared.frogchatMemory;
   jest.useFakeTimers({ now: 100_000 });
@@ -152,13 +159,40 @@ it("shares movement and jumps using the authenticated frog and rate limits repea
   a.receive({ type: "authenticate", token: first.token }); b.receive({ type: "authenticate", token: second.token });
   await flush();
   const otherX = b.latest()?.frogs.find(frog => frog.id === second.selfId)?.x;
-  a.receive({ type: "move", direction: 1, frogId: second.selfId }); await flush();
-  expect(b.latest()?.frogs.find(frog => frog.id === first.selfId)).toMatchObject({ x: 52.5, facing: 1 });
+  a.receive({ type: "move", seq: 1, direction: 1, frogId: second.selfId }); await flush();
+  expect(b.motion(first.selfId)).toMatchObject({ frog: { x: 52.5, facing: 1 } });
   expect(b.latest()?.frogs.find(frog => frog.id === second.selfId)?.x).toBe(otherX);
-  a.receive({ type: "move", direction: 1 }); await flush();
-  expect(b.latest()?.frogs.find(frog => frog.id === first.selfId)?.x).toBe(52.5);
-  a.receive({ type: "jump" }); await flush();
-  expect(b.latest()?.frogs.find(frog => frog.id === first.selfId)?.jumpedAt).toBe(Date.now());
-  a.receive({ type: "move", direction: 500 }); await flush();
+  a.receive({ type: "move", seq: 2, direction: 1 }); await flush();
+  expect(b.motion(first.selfId)).toMatchObject({ frog: { x: 52.5 } });
+  a.receive({ type: "jump", seq: 3 }); await flush();
+  expect(b.motion(first.selfId)).toMatchObject({ frog: { jumpedAt: Date.now() } });
+  a.receive({ type: "move", seq: 4, direction: 500 }); await flush();
+  expect(a.closeCode).toBe(1008);
+});
+
+it("queues inputs during a slow write and broadcasts deltas without reading room history", async () => {
+  const first = await joinPond(); const second = await joinPond();
+  const a = open(); const b = open();
+  a.receive({ type: "authenticate", token: first.token }); b.receive({ type: "authenticate", token: second.token });
+  await flush();
+  const reads = jest.mocked(readPond).mock.calls.length;
+  const actual = jest.requireActual<typeof import("./store")>("./store");
+  let release!: () => void;
+  const slow = new Promise<void>(resolve => { release = resolve; });
+  jest.mocked(actInPond).mockImplementationOnce(async (...args) => { await slow; return actual.actInPond(...args); });
+  a.receive({ type: "move", direction: 1, seq: 1 });
+  jest.advanceTimersByTime(150);
+  a.receive({ type: "move", direction: 1, seq: 2 });
+  await flush();
+  expect(a.events.filter(event => event.type === "ack")).toHaveLength(0);
+  release(); await flush();
+  expect(a.events.filter(event => event.type === "ack")).toMatchObject([
+    { seq: 1, accepted: true, frog: { x: 52.5, motionVersion: 1 } },
+    { seq: 2, accepted: true, frog: { x: 55, motionVersion: 2 } },
+  ]);
+  expect(b.motion(first.selfId)).toMatchObject({ frog: { x: 55, motionVersion: 2 } });
+  expect(jest.mocked(readPond).mock.calls).toHaveLength(reads);
+  expect(b.events.filter(event => event.type === "motion").every(event => !("snapshot" in event))).toBe(true);
+  a.receive({ type: "move", direction: 1, seq: 2 });
   expect(a.closeCode).toBe(1008);
 });

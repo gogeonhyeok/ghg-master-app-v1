@@ -132,7 +132,7 @@ it("places visitors on separate starting positions and bounds movement to the ro
   expect(second.frogs.find(frog => frog.id === second.selfId)?.x).not.toBe(50);
   await actInPond(first.token, { type: "move", direction: 1 });
   expect((await readPond(first.token)).frogs.find(frog => frog.id === first.selfId)?.x).toBe(52.5);
-  expect(await actInPond(first.token, { type: "move", direction: 1 })).toBeNull();
+  expect(await actInPond(first.token, { type: "move", direction: 1 })).toMatchObject({ accepted: false });
   for (let index = 0; index < 80; index++) {
     jest.advanceTimersByTime(150);
     await actInPond(first.token, { type: "move", direction: index < 30 ? 1 : -1 });
@@ -147,9 +147,9 @@ it("persists jumps with a cooldown and rejects actions from departed sessions", 
   const frog = await joinPond();
   await actInPond(frog.token, { type: "jump" });
   expect((await readPond(frog.token)).frogs[0].jumpedAt).toBe(Date.now());
-  expect(await actInPond(frog.token, { type: "jump" })).toBeNull();
+  expect(await actInPond(frog.token, { type: "jump" })).toMatchObject({ accepted: false });
   jest.advanceTimersByTime(650);
-  expect(await actInPond(frog.token, { type: "jump" })).toBe("classic");
+  expect(await actInPond(frog.token, { type: "jump" })).toMatchObject({ pond: "classic", accepted: true });
   await leavePond(frog.token);
   await expect(actInPond(frog.token, { type: "jump" })).rejects.toMatchObject({ status: 401 });
 });

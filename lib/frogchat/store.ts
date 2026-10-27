@@ -2,7 +2,7 @@ import "server-only";
 
 import { createHash, randomUUID } from "node:crypto";
 import { MongoClient, type Db } from "mongodb";
-import { JUMP_MS, MAX_POSITION, MESSAGE_LIFETIME_MS, MIN_POSITION, MOVE_STEP, PRESENCE_MS, type Frog, type FrogAction, type PondMessage, type PondSession, type PondSnapshot } from "./types";
+import { JUMP_MS, MAX_POSITION, MESSAGE_LIFETIME_MS, MIN_POSITION, MOVE_STEP, PRESENCE_MS, type ActionResult, type Frog, type FrogAction, type PondMessage, type PondSession, type PondSnapshot } from "./types";
 import { DEFAULT_POND, isPondId, POND_IDS, type PondId } from "./ponds";
 
 type Resident = Frog & { _id: string; pond?: PondId; expiresAt: Date; lastSpokeAt: Date; lastMovedAt?: Date };
@@ -23,8 +23,8 @@ const adjectives = ["Sunny", "Sleepy", "Little", "Happy", "Mellow", "Bouncy", "C
 const names = ["Moss", "Clover", "Pebble", "Willow", "Fern", "Reed", "Lotus", "Sprout"];
 
 function tokenKey(token: string) { return createHash("sha256").update(token).digest("hex"); }
-function publicFrog({ id, name, color, joinedAt, x, facing, jumpedAt }: Resident): Frog {
-  return { id, name, color, joinedAt, x: x ?? 50, facing: facing ?? 1, jumpedAt: jumpedAt ?? 0 };
+function publicFrog({ id, name, color, joinedAt, x, facing, jumpedAt, jumpId, motionVersion }: Resident): Frog {
+  return { id, name, color, joinedAt, x: x ?? 50, facing: facing ?? 1, jumpedAt: jumpedAt ?? 0, jumpId, motionVersion: motionVersion ?? 0 };
 }
 function publicMessage({ id, frogId, name, color, text, sentAt }: StoredMessage): PondMessage {
   return { id, frogId, name, color, text, sentAt };
@@ -126,32 +126,36 @@ export async function joinPond(pond: PondId = DEFAULT_POND): Promise<PondSession
 
 // Actions only affect the authenticated resident. Both storage paths enforce
 // bounds and cooldowns, including concurrent sockets using the same token.
-export async function actInPond(token: string, action: FrogAction): Promise<PondId | null> {
+export async function actInPond(token: string, action: FrogAction, receivedAt = Date.now()): Promise<ActionResult> {
   if (action.type !== "jump" && (action.type !== "move" || (action.direction !== -1 && action.direction !== 1))) {
     throw new PondError("Choose a valid frog action.", 400);
   }
   const db = await database();
   const frog = await resident(db, token);
-  const now = Date.now();
+  const result = (value: Resident, accepted: boolean): ActionResult => ({ pond: value.pond ?? DEFAULT_POND, frog: publicFrog(value), accepted });
+  // Use server receipt times so a database delay doesn't collapse queued inputs
+  // into one instant and incorrectly reject normally spaced key presses.
+  const now = receivedAt;
   if (action.type === "move") {
-    if (now - (frog.lastMovedAt?.getTime() ?? 0) < 100) return null;
+    if (now - (frog.lastMovedAt?.getTime() ?? 0) < 100) return result(frog, false);
     const fields = { x: Math.min(MAX_POSITION, Math.max(MIN_POSITION, (frog.x ?? 50) + action.direction * MOVE_STEP)), facing: action.direction, lastMovedAt: new Date(now) };
     if (db) {
       const claimed = await db.collection<Resident>("frogchat_residents").findOneAndUpdate(
-        { _id: frog._id, $or: [{ lastMovedAt: { $exists: false } }, { lastMovedAt: { $lte: new Date(now - 100) } }] }, { $set: fields },
+        { _id: frog._id, $or: [{ lastMovedAt: { $exists: false } }, { lastMovedAt: { $lte: new Date(now - 100) } }] }, { $set: fields, $inc: { motionVersion: 1 } }, { returnDocument: "after" },
       );
-      if (!claimed.value) return null;
-    } else Object.assign(frog, fields);
+      return result(claimed.value ?? await resident(db, token), !!claimed.value);
+    } else Object.assign(frog, fields, { motionVersion: (frog.motionVersion ?? 0) + 1 });
   } else {
-    if (now - (frog.jumpedAt ?? 0) < JUMP_MS) return null;
+    if (now - (frog.jumpedAt ?? 0) < JUMP_MS) return result(frog, false);
+    const fields = { jumpedAt: now, jumpId: action.jumpId ?? randomUUID() };
     if (db) {
       const claimed = await db.collection<Resident>("frogchat_residents").findOneAndUpdate(
-        { _id: frog._id, $or: [{ jumpedAt: { $exists: false } }, { jumpedAt: { $lte: now - JUMP_MS } }] }, { $set: { jumpedAt: now } },
+        { _id: frog._id, $or: [{ jumpedAt: { $exists: false } }, { jumpedAt: { $lte: now - JUMP_MS } }] }, { $set: fields, $inc: { motionVersion: 1 } }, { returnDocument: "after" },
       );
-      if (!claimed.value) return null;
-    } else frog.jumpedAt = now;
+      return result(claimed.value ?? await resident(db, token), !!claimed.value);
+    } else Object.assign(frog, fields, { motionVersion: (frog.motionVersion ?? 0) + 1 });
   }
-  return frog.pond ?? DEFAULT_POND;
+  return result(frog, true);
 }
 
 export async function readPond(token: string): Promise<PondSnapshot> {

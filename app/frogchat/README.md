@@ -7,6 +7,8 @@ scene switching, sounds, themes, or idle animations.
 - Frogs stand on one horizontal baseline slightly below the middle of the room.
 - Use **← / →** (or A / D) to move, and **Space** (or ↑ / W) to jump.
 - The on-screen arrow buttons support press-and-hold, and Jump works on touch.
+- The name tag and speech bubble travel with a jumping frog; its shadow stays
+  on the ground.
 - Keyboard controls leave text inputs and other interactive elements alone.
 - Sent messages appear above their frog for **three seconds**, then disappear
   from the scene while remaining in the message history on the right.
@@ -15,12 +17,35 @@ scene switching, sounds, themes, or idle animations.
 - Reduced-motion mode replaces the full jump with a small hop and disables
   sliding transitions. There are no ambient animations or idle clock timers.
 
-Movement and jumps use authenticated WebSocket frames. The server owns positions,
-bounds, facing, and jump timestamps; it limits movement and repeated jumps, stores
-state with the resident, and uses the existing Redis invalidation channel to
-share it across instances. Reconnects restore the same frog and position. These
-frames do not create extra HTTP POST requests. The camera uses normalized positions
-so the same scene fits different screen sizes; frogs may pass each other.
+Movement and jumps use authenticated WebSocket frames. Your browser predicts the
+action immediately. Each input has a sequence number; the server returns an
+acknowledgement with the confirmed frog state, and the browser reapplies inputs
+that have not been acknowledged yet. Rejected inputs are corrected. A stable jump
+ID prevents acknowledgements from restarting the animation. Other frogs use the
+existing short CSS transition to smooth position updates.
+
+The server owns bounds, speed limits, facing, and jump cooldowns. A bounded queue
+processes inputs in order instead of dropping them while a database call is busy.
+Cooldowns use server receipt times, so delayed processing does not turn normally
+spaced inputs into a burst. Monotonic movement versions prevent late snapshots or
+Redis events from moving frogs back to old positions.
+
+Redis broadcasts small public frog updates across instances; movement does not
+reload the room or message history for each viewer. Full snapshots remain for
+join, chat/history changes, departures, heartbeat recovery, and reconnects. Live
+positions still persist in MongoDB, so the server path still depends on database
+latency. No new services or environment variables are required.
+
+Sent messages appear immediately with a **Sending…** label while the existing
+HTTP save runs. A failed save removes the pending entry and retains the draft for
+retry with the same request ID. A slow successful save does not restart the local
+three-second bubble. History rendering is memoized during movement, and typing
+does not rerender the scene.
+
+Reconnects discard unconfirmed predictions and restore the server's current
+state. Movement frames do not create extra HTTP POST requests. The camera uses
+normalized positions so the same scene fits different screen sizes; frogs may
+pass each other.
 
 Joining, saving messages, and leaving retain the existing HTTP endpoints. History
 is limited to the latest 100 messages within 30 minutes, and presence expires
@@ -59,7 +84,8 @@ closes those sockets so they reconnect and resynchronize.
 The server accepts a private session token in the first socket frame, never in a
 URL. It checks the browser's Origin before upgrading, limits frames to 4 KiB, and
 closes connections that do not authenticate within 10 seconds. Only authenticated
-clients receive snapshots. Redis carries invalidation events, not private tokens.
+clients receive snapshots. Redis carries public frog updates and invalidation
+events, never private tokens.
 Existing HTTP message length limits, rate limits, and retry deduplication remain.
 
 Connections reconnect with backoff after network failures or Vercel's function
@@ -93,6 +119,14 @@ is unset. Restart `npm run dev:vercel` after changing this configuration.
 The origin check uses the CLI's public loopback `VERCEL_URL` (or forwarded
 loopback host) during development; production requests still require the
 browser's origin host to match Host.
+
+Run only one Next.js development server for this workspace at a time. A second
+`npm run dev:vercel` can show `FUNCTION_INVOCATION_FAILED` when its Next.js child
+exits with **Another next dev server is already running**. Changing the HTTP port
+does not isolate the shared `.next/dev` directory. Stop the previous `next dev`
+or `vercel dev` in its terminal with Ctrl+C, then restart and use the URL printed
+by the new server. If its terminal is gone, the Next.js error identifies the
+specific stale PID to stop. Keep `dev` as `next dev`; `dev:vercel` wraps it.
 
 Match the Redis URL scheme to the endpoint: `rediss://` requires TLS, whereas
 `redis://` is unencrypted. Redis Cloud Free Essentials endpoints do not support
@@ -138,12 +172,15 @@ npx tsc --noEmit --incremental false
 npm test -- --runInBand --watchman=false lib/frogchat app/api/frogchat app/frogchat
 ```
 
-The tests cover three-second bubbles, input-safe keyboard controls, held movement,
-remote jumps, bounds and cooldowns, authenticated broadcasts, reconnect recovery,
-and Redis coordination. The wire integration test opens real WebSocket connections
+The tests cover three-second bubbles, delayed-save feedback, immediate prediction,
+acknowledgement/replay and rejection, stale versions, input-safe keyboard controls,
+held movement, remote jumps, bounds and cooldowns, queued slow writes, authenticated
+delta broadcasts without room reads, reconnect recovery, and Redis coordination.
+The wire integration test opens real WebSocket connections
 on a temporary loopback port and verifies messages, motion, jumps, and recovery;
 it requires permission to listen locally. Redis coordination uses a test double.
 
 This app retains MongoDB driver 5. Its `findOneAndUpdate` and `findOneAndDelete`
 responses wrap the document in `.value`; `store.mongo.test.ts` checks authentication,
-atomic movement/jump claims, message rate limits, and departures with that format.
+atomic movement/jump claims and acknowledgements, message rate limits, and departures
+with that format.

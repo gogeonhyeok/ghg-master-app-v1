@@ -89,3 +89,15 @@ it("routes invalidations only to the affected pond using one shared subscriber",
   expect(classic).toHaveBeenCalledTimes(1);
   expect(woods).toHaveBeenCalledTimes(1);
 });
+
+it("shares public movement deltas across instances without invalidating the room", async () => {
+  const first = jest.fn(); const second = jest.fn(); const elsewhere = jest.fn();
+  releases.push(await api.subscribePondChanges(first, jest.fn()));
+  delete shared.frogchatHub;
+  releases.push(await api.subscribePondChanges(second, jest.fn()));
+  releases.push(await api.subscribePondChanges(elsewhere, jest.fn(), "pixel"));
+  const frog = { id: "one", name: "Sunny Moss", color: "#87b966", joinedAt: 1, x: 55, facing: 1 as const, jumpedAt: 0, motionVersion: 2 };
+  await api.publishPondMotion("classic", frog);
+  for (const listener of [first, second]) expect(listener).toHaveBeenCalledWith({ type: "motion", frog, serverTime: expect.any(Number) });
+  expect(elsewhere).not.toHaveBeenCalled();
+});

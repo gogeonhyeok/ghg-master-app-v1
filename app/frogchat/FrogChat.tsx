@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type PointerEvent } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type FormEvent, type PointerEvent } from "react";
 import { MAX_MESSAGE_LENGTH } from "../../lib/frogchat/types";
 import { FrogPortrait } from "./Frog";
 import PondScene from "./PondScene";
@@ -34,6 +34,13 @@ export default function FrogChat() {
   const following = useRef(true);
   const me = pond.snapshot.frogs.find(frog => frog.id === pond.selfId);
   const lastMessage = pond.snapshot.messages.at(-1)?.id;
+
+  const messages = pond.snapshot.messages;
+  const selfId = pond.selfId;
+  const history = useMemo(() => messages.map(message => <article key={message.id} className={styles.message} data-own={message.frogId === selfId}>
+            <div className={styles.messageMeta}><span className={styles.messageDot} style={{ backgroundColor: message.color }} /><strong>{message.frogId === selfId ? "You" : message.name}</strong><time dateTime={new Date(message.sentAt).toISOString()}>{message.pending ? "Sending…" : new Date(message.sentAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</time></div>
+            <p>{message.text}</p>
+          </article>), [messages, selfId]);
 
   useEffect(() => {
     if (following.current && log.current) log.current.scrollTop = log.current.scrollHeight;
@@ -96,10 +103,7 @@ export default function FrogChat() {
         <div className={styles.log} ref={log} role="log" aria-label="Message history" aria-live="polite" aria-relevant="additions" onScroll={event => { const element = event.currentTarget; following.current = element.scrollHeight - element.scrollTop - element.clientHeight < 60; }}>
           <p className={styles.welcome}>A small hello goes a long way.<br /><span>Be kind. Stay a while.</span></p>
           {!pond.snapshot.messages.length && <div className={styles.empty}><span aria-hidden="true">“</span><p>It’s quiet in here.</p><small>Say the first hello.</small></div>}
-          {pond.snapshot.messages.map(message => <article key={message.id} className={styles.message} data-own={message.frogId === pond.selfId}>
-            <div className={styles.messageMeta}><span className={styles.messageDot} style={{ backgroundColor: message.color }} /><strong>{message.frogId === pond.selfId ? "You" : message.name}</strong><time dateTime={new Date(message.sentAt).toISOString()}>{new Date(message.sentAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</time></div>
-            <p>{message.text}</p>
-          </article>)}
+          {history}
         </div>
         <div className={styles.sidebarFooter}><span aria-hidden="true">❧</span> Nothing to do. Just be here.</div>
       </aside>

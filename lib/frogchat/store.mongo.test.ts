@@ -10,6 +10,7 @@ const frog = {
   _id: "private-key", id: "frog-one", pond: "woodland", name: "Sunny Moss",
   color: "#87b966", joinedAt: Date.now(), x: 50, facing: 1, jumpedAt: 0,
   lastSpokeAt: new Date(0), expiresAt: new Date(Date.now() + 90_000),
+  motionVersion: 0,
 };
 const update = jest.fn<(...args: unknown[]) => Promise<{ value: typeof frog | null }>>();
 const remove = jest.fn<(...args: unknown[]) => Promise<{ value: typeof frog | null }>>();
@@ -42,13 +43,15 @@ it("unwraps authenticated residents and rejects a wrapped missing session", asyn
 });
 
 it.each([{ type: "move", direction: 1 } as const, { type: "jump" } as const])("checks the wrapped atomic claim for $type", async action => {
-  update.mockResolvedValueOnce({ value: frog }).mockResolvedValueOnce({ value: null });
-  expect(await actInPond("token", action)).toBeNull();
-  update.mockResolvedValueOnce({ value: frog }).mockResolvedValueOnce({ value: frog });
-  expect(await actInPond("token", action)).toBe("woodland");
+  update.mockResolvedValueOnce({ value: frog }).mockResolvedValueOnce({ value: null }).mockResolvedValueOnce({ value: frog });
+  expect(await actInPond("token", action)).toMatchObject({ accepted: false, pond: "woodland", frog: { id: frog.id, x: 50, motionVersion: 0 } });
+  const updated = { ...frog, motionVersion: 1, ...(action.type === "move" ? { x: 52.5 } : { jumpedAt: Date.now() }) };
+  update.mockResolvedValueOnce({ value: frog }).mockResolvedValueOnce({ value: updated });
+  expect(await actInPond("token", action)).toMatchObject({ accepted: true, pond: "woodland", frog: { id: frog.id, x: updated.x, motionVersion: 1 } });
   expect(update).toHaveBeenLastCalledWith(
     expect.objectContaining({ _id: frog._id }),
-    { $set: expect.objectContaining(action.type === "move" ? { x: 52.5, facing: 1 } : { jumpedAt: expect.any(Number) }) },
+    { $set: expect.objectContaining(action.type === "move" ? { x: 52.5, facing: 1 } : { jumpedAt: expect.any(Number), jumpId: expect.any(String) }), $inc: { motionVersion: 1 } },
+    { returnDocument: "after" },
   );
 });
 

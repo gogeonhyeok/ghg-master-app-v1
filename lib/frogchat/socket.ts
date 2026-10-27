@@ -2,9 +2,9 @@ import "server-only";
 
 import type WebSocket from "ws";
 import { sessionTokenPattern } from "./http";
-import { publishPondChange, subscribePondChanges } from "./realtime";
+import { publishPondMotion, subscribePondChanges } from "./realtime";
 import { actInPond, PondError, readPond } from "./store";
-import { PRESENCE_MS, type PondServerEvent } from "./types";
+import { PRESENCE_MS, type FrogAction, type PondServerEvent } from "./types";
 
 export function acceptPondSocket(socket: WebSocket) {
   let closed = false;
@@ -14,13 +14,17 @@ export function acceptPondSocket(socket: WebSocket) {
   let refreshing = false;
   let dirty = false;
   let lastHeartbeat = 0;
-  let moving = false;
-  let jumping = false;
+  let selfId: string | undefined;
+  let initialized = false;
+  let lastSequence = 0;
+  let processing = false;
+  const actions: { action: FrogAction; seq: number; receivedAt: number }[] = [];
   let deadline = setTimeout(() => socket.close(1008, "Authenticate first"), 10_000);
 
   function cleanup() {
     closed = true;
     clearTimeout(deadline);
+    actions.length = 0;
     unsubscribe?.();
   }
   function send(event: PondServerEvent) {
@@ -52,12 +56,28 @@ export function acceptPondSocket(socket: WebSocket) {
     } catch (error) { fail(error); }
     finally { refreshing = false; }
   }
+  async function processActions() {
+    if (processing || !token || closed) return;
+    processing = true;
+    try {
+      while (actions.length && !closed) {
+        const input = actions.shift()!;
+        const result = await actInPond(token, input.action, input.receivedAt);
+        if (closed) break;
+        selfId = result.frog.id;
+        // Acknowledge even rate-limited actions so prediction can discard them.
+        send({ type: "ack", seq: input.seq, frog: result.frog, accepted: result.accepted, serverTime: Date.now() });
+        if (result.accepted) await publishPondMotion(result.pond, result.frog);
+      }
+    } catch (error) { fail(error); }
+    finally { processing = false; }
+  }
   socket.on("close", cleanup);
   socket.on("error", cleanup);
   socket.on("message", async (data, binary) => {
     if (closed) return;
     if (binary) { socket.close(1008, "Text events only"); return; }
-    let event: { type?: string; token?: string; direction?: unknown };
+    let event: { type?: string; token?: string; direction?: unknown; seq?: unknown; jumpId?: unknown };
     try {
       event = JSON.parse(data.toString());
       if (!event || typeof event !== "object") throw new Error("Invalid event");
@@ -69,12 +89,17 @@ export function acceptPondSocket(socket: WebSocket) {
         // reading the initial snapshot so writes during setup cannot be missed.
         const initial = await readPond(event.token);
         if (closed) return;
-        const remove = await subscribePondChanges(() => { void refresh(); }, () => socket.close(1013, "Broadcast unavailable"), initial.pond);
+        const remove = await subscribePondChanges(motion => {
+          if (motion && !initialized) { dirty = true; return; }
+          if (motion) { if (motion.frog.id !== selfId) send(motion); }
+          else void refresh();
+        }, () => socket.close(1013, "Broadcast unavailable"), initial.pond);
         if (closed) { remove(); return; }
         unsubscribe = remove;
         token = event.token;
         resetDeadline();
         await refresh();
+        initialized = true;
       } catch (error) { fail(error); }
       return;
     }
@@ -86,14 +111,14 @@ export function acceptPondSocket(socket: WebSocket) {
       return;
     }
     if (token && (event.type === "jump" || (event.type === "move" && (event.direction === -1 || event.direction === 1)))) {
-      const jump = event.type === "jump";
-      if (jump ? jumping : moving) return;
-      if (jump) jumping = true; else moving = true;
-      try {
-        const pond = await actInPond(token, jump ? { type: "jump" } : { type: "move", direction: event.direction as -1 | 1 });
-        if (pond) await publishPondChange(pond);
-      } catch (error) { fail(error); }
-      finally { if (jump) jumping = false; else moving = false; }
+      if (!Number.isSafeInteger(event.seq) || (event.seq as number) <= lastSequence ||
+          (event.jumpId !== undefined && (typeof event.jumpId !== "string" || !/^[\w-]{1,64}$/.test(event.jumpId)))) {
+        socket.close(1008, "Invalid action sequence"); return;
+      }
+      if (actions.length >= 32) { socket.close(1013, "Too many pending actions"); return; }
+      lastSequence = event.seq as number;
+      actions.push({ seq: lastSequence, receivedAt: Date.now(), action: event.type === "jump" ? { type: "jump", jumpId: event.jumpId as string | undefined } : { type: "move", direction: event.direction as -1 | 1 } });
+      void processActions();
       return;
     }
     socket.close(1008, "Unexpected event");

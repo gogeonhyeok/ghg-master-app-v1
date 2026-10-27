@@ -8,20 +8,26 @@ jest.mock("server-only", () => ({}));
 import { acceptPondSocket } from "./socket";
 import { publishPondChange } from "./realtime";
 import { joinPond, leavePond, speakInPond } from "./store";
-import type { PondSnapshot } from "./types";
+import type { PondSnapshot, PondServerEvent } from "./types";
 
-function nextSnapshot(socket: WebSocket, matches: (snapshot: PondSnapshot) => boolean) {
-  return new Promise<PondSnapshot>((resolve, reject) => {
+function nextEvent(socket: WebSocket, matches: (event: PondServerEvent) => boolean) {
+  return new Promise<PondServerEvent>((resolve, reject) => {
     const timeout = setTimeout(() => { cleanup(); reject(new Error("Snapshot timed out")); }, 5000);
     function cleanup() { clearTimeout(timeout); socket.off("message", receive); socket.off("error", failed); }
     function failed(error: Error) { cleanup(); reject(error); }
     function receive(data: WebSocket.RawData) {
       const event = JSON.parse(data.toString());
-      if (event.type === "snapshot" && matches(event.snapshot)) { cleanup(); resolve(event.snapshot); }
+      if (matches(event)) { cleanup(); resolve(event); }
     }
     socket.on("message", receive);
     socket.on("error", failed);
   });
+}
+
+async function nextSnapshot(socket: WebSocket, matches: (snapshot: PondSnapshot) => boolean) {
+  const event = await nextEvent(socket, event => event.type === "snapshot" && matches(event.snapshot));
+  if (event.type !== "snapshot") throw Error("Expected snapshot");
+  return event.snapshot;
 }
 
 it("delivers and recovers croaks over real WebSocket connections", async () => {
@@ -50,12 +56,13 @@ it("delivers and recovers croaks over real WebSocket connections", async () => {
     await speakInPond(first.token, "Live croak", "one");
     await publishPondChange();
     expect((await delivered).messages[0].text).toBe("Live croak");
-    const moved = nextSnapshot(b, snapshot => snapshot.frogs.some(frog => frog.id === first.selfId && frog.x === 52.5));
-    a.send(JSON.stringify({ type: "move", direction: 1 }));
-    expect((await moved).frogs.find(frog => frog.id === first.selfId)?.facing).toBe(1);
-    const jumped = nextSnapshot(b, snapshot => snapshot.frogs.some(frog => frog.id === first.selfId && (frog.jumpedAt ?? 0) > 0));
-    a.send(JSON.stringify({ type: "jump" }));
-    const jumpTime = (await jumped).frogs.find(frog => frog.id === first.selfId)?.jumpedAt;
+    const moved = nextEvent(b, event => event.type === "motion" && event.frog.id === first.selfId && event.frog.x === 52.5);
+    a.send(JSON.stringify({ type: "move", direction: 1, seq: 1 }));
+    expect(await moved).toMatchObject({ frog: { facing: 1 } });
+    const jumped = nextEvent(b, event => event.type === "motion" && event.frog.id === first.selfId && (event.frog.jumpedAt ?? 0) > 0);
+    a.send(JSON.stringify({ type: "jump", seq: 2 }));
+    const jumpEvent = await jumped;
+    const jumpTime = jumpEvent.type === "motion" ? jumpEvent.frog.jumpedAt : undefined;
     expect(jumpTime).toBeGreaterThan(0);
     a.close();
     await once(a, "close");
