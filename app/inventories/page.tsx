@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import InventoryForm from "./InventoryForm";
+import InventoryTheme, { InventoryThemeToggle } from "./InventoryTheme";
 import { getInventories } from "./data";
 import styles from "./page.module.css";
 
@@ -34,13 +35,16 @@ export default async function InventoriesPage() {
   }
 
   return (
-    <main className={styles.page}>
+    <InventoryTheme>
       <article className={styles.container}>
-        <nav className={styles.nav} aria-label="Breadcrumb">
-          <Link href="/">← Workspace</Link>
-          <span>/</span>
-          <span>Inventories</span>
-        </nav>
+        <div className={styles.topbar}>
+          <nav className={styles.nav} aria-label="Breadcrumb">
+            <Link href="/">← Workspace</Link>
+            <span>/</span>
+            <span>Inventories</span>
+          </nav>
+          <InventoryThemeToggle />
+        </div>
 
         <header className={styles.header}>
           <h1>Inventories</h1>
@@ -93,6 +97,6 @@ export default async function InventoriesPage() {
         </section>
         <InventoryForm />
       </article>
-    </main>
+    </InventoryTheme>
   );
 }

@@ -1,10 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { Binary } from "mongodb";
+import { ObjectId } from "mongodb";
 import { getInventoriesDatabase, INVENTORIES_COLLECTION } from "./data";
 import { isValidPhotoFile } from "./inventory-validation";
 import type { CreateInventoryState } from "./types";
+
+const PHOTO_API_URL = "https://vffz3e1r44.execute-api.ap-southeast-1.amazonaws.com/photos";
 
 export async function createInventory(
   _previousState: CreateInventoryState,
@@ -28,12 +30,25 @@ export async function createInventory(
   }
 
   try {
-    const photo = rawPhoto instanceof File
-      ? new Binary(new Uint8Array(await rawPhoto.arrayBuffer()))
-      : null;
     const database = await getInventoriesDatabase();
+    const id = new ObjectId();
+    let photo: string | null = null;
+    if (rawPhoto instanceof File) {
+      photo = `${PHOTO_API_URL}/${id.toHexString()}`;
+      const response = await fetch(photo, {
+        method: "PUT",
+        headers: { "Content-Type": rawPhoto.type },
+        body: await rawPhoto.arrayBuffer(),
+        cache: "no-store",
+        signal: AbortSignal.timeout(30_000),
+      });
+      if (!response.ok) {
+        return { status: "error", message: "The photo could not be uploaded. Your details are still in the form. Please try again." };
+      }
+    }
     const now = new Date();
     await database.collection(INVENTORIES_COLLECTION).insertOne({
+      _id: id,
       name,
       description,
       createdDate: now,

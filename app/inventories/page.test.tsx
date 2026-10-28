@@ -24,12 +24,15 @@ test("renders inventory data and timestamps", async () => {
     description: "Studio kit",
     createdDate: "2026-10-04T01:00:00.000Z",
     updatedDate: "2026-10-04T02:00:00.000Z",
-    photo: "",
+    photo: "https://vffz3e1r44.execute-api.ap-southeast-1.amazonaws.com/photos/507f1f77bcf86cd799439011",
   }]);
   render(await InventoriesPage());
   expect(screen.getByRole("heading", { name: "Camera" })).toBeInTheDocument();
   expect(screen.getByText("Studio kit")).toBeInTheDocument();
   expect(screen.getByText("1 item")).toBeInTheDocument();
+  expect(screen.getByRole("img", { name: "Photo of Camera" })).toHaveAttribute(
+    "src", "https://vffz3e1r44.execute-api.ap-southeast-1.amazonaws.com/photos/507f1f77bcf86cd799439011",
+  );
   expect(screen.getAllByRole("time")[0]).toHaveAttribute("dateTime", "2026-10-04T01:00:00.000Z");
 });
 

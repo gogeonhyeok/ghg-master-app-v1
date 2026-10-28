@@ -18,6 +18,7 @@ type InventoryDocument = {
   updatedDate?: unknown;
   photo?: unknown;
   photoContentType?: unknown;
+  photoUrl?: string;
   hasPhoto?: boolean;
 };
 
@@ -57,9 +58,14 @@ export async function getInventories(): Promise<Inventory[]> {
   const documents = await database
     .collection<InventoryDocument>(INVENTORIES_COLLECTION)
     .find({}, {
-      // Compute a flag in MongoDB so neither binary nor legacy Base64 bytes travel with the list.
+      // Return URLs for S3 photos without loading binary or legacy Base64 bytes with the list.
       projection: {
         name: 1, description: 1, createdDate: 1, updatedDate: 1,
+        photoUrl: { $cond: [
+          { $eq: [{ $type: "$photo" }, "string"] },
+          { $cond: [{ $regexMatch: { input: "$photo", regex: "^https://" } }, "$photo", ""] },
+          "",
+        ] },
         hasPhoto: { $and: [
           { $in: [{ $type: "$photo" }, ["binData", "string"]] },
           { $ne: ["$photo", ""] },
@@ -72,9 +78,9 @@ export async function getInventories(): Promise<Inventory[]> {
     .toArray();
 
   return documents.map((document) => {
-    const photo = document.hasPhoto
+    const photo = document.photoUrl || (document.hasPhoto
       ? `/inventories/${encodeURIComponent(String(document._id))}/photo`
-      : "";
+      : "");
 
     return {
       id: String(document._id),

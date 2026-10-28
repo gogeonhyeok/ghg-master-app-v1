@@ -39,6 +39,12 @@ test("reads the ghg-master-api-v1 inventories collection and normalizes records"
         hasPhoto: true,
       },
       { _id: "record-2", name: null, description: {}, createdDate: "invalid", hasPhoto: false },
+      {
+        _id: "507f1f77bcf86cd799439011",
+        name: "S3 camera",
+        photoUrl: "https://vffz3e1r44.execute-api.ap-southeast-1.amazonaws.com/photos/507f1f77bcf86cd799439011",
+        hasPhoto: true,
+      },
     ]),
   };
   const find = jest.fn().mockReturnValue(cursor);
@@ -71,6 +77,7 @@ test("reads the ghg-master-api-v1 inventories collection and normalizes records"
     createdDate: "",
     photo: "",
   }));
+  expect(result[2].photo).toBe("https://vffz3e1r44.execute-api.ap-southeast-1.amazonaws.com/photos/507f1f77bcf86cd799439011");
 
   await getInventories();
   expect(client.connect).toHaveBeenCalledTimes(1);
