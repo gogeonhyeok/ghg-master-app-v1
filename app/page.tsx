@@ -12,6 +12,14 @@ type Experience = {
   technologies: string[];
 };
 
+type Publication = {
+  title: string;
+  description: string;
+  href: string;
+  platform: string;
+  topics: string[];
+};
+
 type NavItem = {
   href: string;
   label: string;
@@ -24,6 +32,17 @@ const skills = [
   { label: "Frontend", value: "React · Next.js · Tauri" },
   { label: "Data", value: "Microsoft SQL Server · MySQL" },
   { label: "Platform", value: "Kubernetes · OpenShift · Jenkins · SonarQube · Dynatrace · Splunk" },
+];
+
+const publications: Publication[] = [
+  {
+    title: "Camel in Jupyter",
+    description:
+      "Run Apache Camel routes interactively from a Jupyter notebook and shorten the feedback loop while exploring integrations.",
+    href: "https://medium.com/@gogeonhyeok/camel-in-jupyter-efb56d944563",
+    platform: "Medium",
+    topics: ["Apache Camel", "Jupyter", "Integration"],
+  },
 ];
 
 const experiences: Experience[] = [
@@ -86,21 +105,68 @@ const pages: NavItem[] = [
 export default function Page() {
   return (
     <div className={styles.page}>
-      <div className={styles.container}>
-        <header className={styles.header}>
-          <Link href="/" className={styles.brand}><span>g.</span>Go Gun Hyuk</Link>
-          <a href="mailto:gogeonhyeok@outlook.com" className={styles.contact}>Get in touch <span aria-hidden="true">↗</span></a>
+      <div>
+        <header>
+          <Link href="/"><span>g.</span>Go Gun Hyuk</Link>
+          <a href="mailto:gogeonhyeok@outlook.com">Get in touch <span aria-hidden="true">↗</span></a>
         </header>
 
         <main>
+          <section className={styles.posts} aria-labelledby="posts-title">
+            <header>
+              <div>
+                <p>WRITING</p>
+                <h2 id="posts-title">Posts</h2>
+              </div>
+              <a
+                href="https://medium.com/@gogeonhyeok"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View on Medium <span aria-hidden="true">↗</span>
+              </a>
+            </header>
+            <p>
+              Practical notes on integration engineering, Apache Camel, and the tools I use to prototype ideas.
+            </p>
+            <ol aria-label="Published articles">
+              {publications.map((publication, index) => (
+                <li key={publication.href}>
+                  <article>
+                    <a
+                      href={publication.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Read ${publication.title} on ${publication.platform} (opens in a new tab)`}
+                    >
+                      <span aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+                      <div>
+                        <span>{publication.platform}</span>
+                        <h3>{publication.title}</h3>
+                        <p>{publication.description}</p>
+                        <ul aria-label="Topics">
+                          {publication.topics.map((topic) => <li key={topic}>{topic}</li>)}
+                        </ul>
+                      </div>
+                      <span aria-hidden="true">↗</span>
+                    </a>
+                  </article>
+                </li>
+              ))}
+            </ol>
+            <p>More field notes are in the works.</p>
+          </section>
+
           <section aria-labelledby="workspace-title" className={styles.workspace}>
-            <p className={styles.eyebrow}>PERSONAL WORKSPACE</p>
-            <h1 id="workspace-title">Projects & experiments.</h1>
-            <p className={styles.intro}>A collection of web tools and interface demos. Pick a page to explore.</p>
-            <nav aria-label="Projects and experiments" className={styles.grid}>
+            <header>
+              <p>PERSONAL WORKSPACE</p>
+              <h1 id="workspace-title">Projects & experiments.</h1>
+              <p>A collection of web tools and interface demos. Pick a page to explore.</p>
+            </header>
+            <nav aria-label="Projects and experiments">
               {pages.map((page) => (
-                <Link key={page.href} href={page.href} className={styles.card} style={{ "--accent": page.accent } as CSSProperties}>
-                  <span className={styles.projectIcon} aria-hidden="true">{page.label.slice(0, 1)}</span>
+                <Link key={page.href} href={page.href} style={{ "--accent": page.accent } as CSSProperties}>
+                  <span aria-hidden="true">{page.label.slice(0, 1)}</span>
                   <div><h2>{page.label}</h2><p>{page.description}</p></div>
                 </Link>
               ))}
@@ -108,45 +174,56 @@ export default function Page() {
           </section>
 
           <section className={styles.about} aria-labelledby="about-title">
-            <div className={styles.aboutHeading}>
+            <header>
               <div><h2 id="about-title">Built by Go Gun Hyuk</h2><p>Software Engineer & Tech Lead · Singapore</p></div>
-              <span className={styles.stack}>Java · Spring · React · Next.js</span>
-            </div>
-            <p className={styles.bio}>I build reliable payments, e-commerce integrations, and backend systems.</p>
-            <div className={styles.profileLinks}>
+              <span>Java · Spring · React · Next.js</span>
+            </header>
+            <p>I build reliable payments, e-commerce integrations, and backend systems.</p>
+            <nav aria-label="Contact links">
               <a href="mailto:gogeonhyeok@outlook.com">gogeonhyeok@outlook.com</a>
               <a href="https://www.linkedin.com/in/geon-hyeok-go-59638b155">LinkedIn</a>
-            </div>
-            <ol className={styles.careerSummary} aria-label="Career timeline">
+            </nav>
+            <ol aria-label="Career timeline">
               {experiences.map((experience, index) => (
-                <li key={experience.company} className={styles.careerItem}>
-                  <span className={index === 0 ? styles.currentRole : styles.previousRole}>
-                    {index === 0 ? "Current role" : "Previously"}
-                  </span>
+                <li key={experience.company}>
+                  <span>{index === 0 ? "Current role" : "Previously"}</span>
                   <h3>{experience.role}</h3>
                   <p>{experience.company} · {experience.location}</p>
-                  <span className={styles.careerPeriod}>{experience.period}</span>
-                  <p className={styles.careerDescription}>{experience.summary}</p>
+                  <span>{experience.period}</span>
+                  <p>{experience.summary}</p>
                 </li>
               ))}
             </ol>
-            <details className={styles.details}>
+            <details>
               <summary>More about me <span aria-hidden="true">+</span></summary>
-              <div className={styles.detailsContent}>
+              <div>
                 <h3>Experience</h3>
-                {experiences.map(experience => <article key={experience.company} className={styles.experience}><h4>{experience.role} · {experience.company}</h4><p>{experience.period} · {experience.location}</p><ul>{experience.highlights.map(highlight => <li key={highlight}>{highlight}</li>)}</ul><p>{experience.technologies.join(" · ")}</p></article>)}
+                {experiences.map((experience) => (
+                  <article key={experience.company}>
+                    <h4>{experience.role} · {experience.company}</h4>
+                    <p>{experience.period} · {experience.location}</p>
+                    <ul>
+                      {experience.highlights.map((highlight) => <li key={highlight}>{highlight}</li>)}
+                    </ul>
+                    <p>{experience.technologies.join(" · ")}</p>
+                  </article>
+                ))}
                 <h3>Expertise</h3>
-                <dl className={styles.skills}>{skills.map(skill => <div key={skill.label}><dt>{skill.label}</dt><dd>{skill.value}</dd></div>)}</dl>
+                <dl>
+                  {skills.map((skill) => (
+                    <div key={skill.label}><dt>{skill.label}</dt><dd>{skill.value}</dd></div>
+                  ))}
+                </dl>
                 <h3>Education</h3>
                 <p>Sejong University · Seoul, Korea · 2010 — 2017<br />Bachelor of Science in Physics · GPA 3.61 / 4.5</p>
                 <p>Scholarship for Language Excellence (English)<br />Scholarship for Academic Excellence</p>
                 <h3>Qualifications & certifications</h3>
-                <ul>{certifications.map(certification => <li key={certification}>{certification}</li>)}</ul>
+                <ul>{certifications.map((certification) => <li key={certification}>{certification}</li>)}</ul>
               </div>
             </details>
           </section>
         </main>
-        <footer className={styles.footer}>© {new Date().getFullYear()} Go Gun Hyuk</footer>
+        <footer>© {new Date().getFullYear()} Go Gun Hyuk</footer>
       </div>
     </div>
   );
