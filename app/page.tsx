@@ -148,7 +148,7 @@ export default function Page() {
               <p>A collection of web tools and interface demos. Pick a page to explore.</p>
             </header>
             <nav aria-label="Projects and experiments">
-              {pages.map((page) => (
+              {projects.map((page) => (
                 <Link key={page.href} href={page.href} style={{ "--accent": page.accent } as CSSProperties}>
                   <span aria-hidden="true">{page.label.slice(0, 1)}</span>
                   <div><h2>{page.label}</h2><p>{page.description}</p></div>
