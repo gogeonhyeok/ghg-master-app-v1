@@ -1,0 +1,59 @@
+.page { --ink:#e8eff2; --muted:#a0b2bc; --line:#33444e; --accent:#a1d5de; --canvas:#111a20; --surface:#1a262e; --soft:#24333c; --table-head:#22323c; --table-head-ink:#b7cbd4; --row-line:#2b3b45; --stripe:#1d2b34; --hover:#293f47; --table-footer:#17232b; --disabled:#80929d; --selected:#a1d5de; --selected-ink:#142b33; --warning:#302a20; --warning-ink:#e5c38e; color-scheme:dark; min-height:100vh; padding:28px 24px 48px; background:var(--canvas); color:var(--ink); font:14px/1.6 var(--font-geist-sans,system-ui),sans-serif; }
+.page[data-warehouse-theme="light"] { --ink:#18242c; --muted:#637480; --line:#dce3e6; --accent:#315c67; --canvas:#f3f5f5; --surface:#fff; --soft:#e3ebed; --table-head:#edf2f3; --table-head-ink:#506672; --row-line:#eaf0f1; --stripe:#fafcfc; --hover:#eef5f4; --table-footer:#fcfdfd; --disabled:#6c7f89; --selected:#244c58; --selected-ink:#fff; --warning:#fff9ef; --warning-ink:#6f5328; color-scheme:light; }
+.page * { box-sizing:border-box; }
+.container { width:min(1320px,100%); margin:auto; }
+.breadcrumb { display:flex; gap:12px; color:var(--muted); font-size:12px; }
+.breadcrumb a { color:var(--accent); text-decoration:none; }
+.header { display:flex; align-items:center; justify-content:space-between; gap:24px; padding:34px 0 30px; border-bottom:1px solid var(--line); }
+.eyebrow { margin:0 0 8px; color:var(--accent); font:600 10px/1.5 var(--font-geist-mono,monospace); letter-spacing:.13em; }
+.header h1 { margin:0; font-size:38px; font-weight:600; letter-spacing:-1.4px; line-height:1.2; }
+.intro { margin:10px 0 0; color:var(--muted); }
+.headerActions { display:flex; flex-wrap:wrap; align-items:center; gap:10px; flex-shrink:0; }
+.refresh,.themeToggle { flex-shrink:0; padding:10px 16px; border:1px solid var(--line); border-radius:7px; background:var(--surface); color:var(--accent); font-size:12px; font-weight:600; text-decoration:none; }
+.themeToggle { display:inline-flex; align-items:center; gap:7px; font-family:inherit; cursor:pointer; }
+.refresh:hover,.themeToggle:hover { background:var(--hover); }
+.sectionLinks { display:flex; gap:22px; padding-top:16px; font-size:12px; }
+.sectionLinks a { color:var(--accent); text-decoration:none; }
+.sectionLinks a:hover { text-decoration:underline; }
+.section { padding-top:34px; scroll-margin-top:24px; }
+.sectionHeading { display:flex; align-items:center; justify-content:space-between; gap:20px; margin-bottom:18px; }
+.sectionHeading h2 { margin:0; font-size:24px; line-height:1.3; font-weight:600; letter-spacing:-.6px; }
+.sectionHeading > div > p:last-child { margin:7px 0 0; color:var(--muted); font-size:13px; }
+.count { white-space:nowrap; padding:5px 9px; border-radius:5px; background:var(--soft); color:var(--accent); font:500 11px/1.5 var(--font-geist-mono,monospace); }
+/* Clip rounded corners without creating a scroll container for sticky pagination. */
+.panel { overflow:clip; border:1px solid var(--line); border-radius:9px; background:var(--surface); }
+.tableScroll { width:100%; overflow-x:auto; }
+.table { width:100%; border-collapse:collapse; text-align:left; font-size:12px; }
+.table th { padding:13px 16px; border-bottom:1px solid var(--line); background:var(--table-head); color:var(--table-head-ink); font-size:10px; letter-spacing:.04em; font-weight:600; white-space:nowrap; }
+.table td { padding:13px 16px; border-bottom:1px solid var(--row-line); vertical-align:top; max-width:300px; min-width:80px; overflow-wrap:anywhere; }
+.table td:first-child { white-space:nowrap; }
+.table tbody tr:last-child td { border-bottom:0; }
+.table tbody tr:nth-child(even) { background:var(--stripe); }
+.table tbody tr:hover { background:var(--hover); }
+.table .numeric { text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.referenceName { display:block; min-width:140px; font-weight:500; }
+.referenceId { display:block; margin-top:4px; color:var(--muted); font:10px/1.5 var(--font-geist-mono,monospace); white-space:nowrap; }
+.tablePagination { position:sticky; top:0; z-index:2; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 18px; border-bottom:1px solid var(--line); background:var(--table-footer); box-shadow:0 3px 8px #00000014; font-size:11px; color:var(--muted); }
+.tablePagination p { margin:0; }
+.pagination { display:flex; align-items:center; gap:16px; }
+.pagination a { color:var(--accent); text-decoration:none; font-weight:600; }
+.pagination a:hover { text-decoration:underline; }
+.pagination [aria-disabled] { color:var(--disabled); }
+.tabs { display:flex; gap:6px; margin-bottom:14px; overflow-x:auto; padding:2px; }
+.tabs a { padding:9px 17px; border:1px solid transparent; border-radius:6px; color:var(--muted); font-size:12px; font-weight:500; text-decoration:none; }
+.tabs a:hover { color:var(--accent); background:var(--hover); }
+.tabs a[aria-current] { background:var(--selected); border-color:var(--selected); color:var(--selected-ink); }
+.masterHeading { display:flex; justify-content:space-between; align-items:center; gap:20px; padding:20px; border-bottom:1px solid var(--line); }
+.masterHeading h3 { margin:0; font-size:17px; font-weight:600; }
+.masterHeading p { margin:4px 0 0; color:var(--muted); font-size:12px; }
+.empty { padding:50px 24px; text-align:center; color:var(--muted); }
+.empty h3 { margin:0 0 6px; color:var(--ink); font-size:17px; }
+.empty p { margin:0; font-size:13px; }
+.message { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:28px 24px; background:var(--warning); }
+.message h3 { margin:0; color:var(--warning-ink); font-size:15px; font-weight:600; }
+.message p { margin:6px 0 0; color:var(--muted); font-size:12px; }
+.message a { flex-shrink:0; color:var(--accent); font-size:12px; font-weight:600; }
+.footer { display:flex; justify-content:space-between; margin-top:32px; padding-top:20px; border-top:1px solid var(--line); color:var(--muted); font-size:11px; }
+.srOnly { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
+.page a:focus-visible,.themeToggle:focus-visible,.tableScroll:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+@media(max-width:700px) { .page { padding:20px 16px 32px; } .header { align-items:flex-start; flex-direction:column; gap:18px; padding-top:24px; } .header h1 { font-size:32px; } .sectionHeading { align-items:flex-start; flex-wrap:wrap; gap:12px; } .tablePagination { align-items:flex-start; flex-direction:column; gap:8px; } .pagination { width:100%; justify-content:space-between; gap:8px; } .masterHeading { align-items:flex-start; flex-wrap:wrap; gap:10px; } .tabs a { padding:9px 13px; } }

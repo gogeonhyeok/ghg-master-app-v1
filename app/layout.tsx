@@ -1,5 +1,6 @@
 import '../styles/globals.css'
 import { ThemeProvider } from '../components/ThemeProvider'
+import { CommandPaletteProvider } from '../components/CommandPalette'
 
 export const metadata = {
   title: 'GunHyuk',
@@ -15,7 +16,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ThemeProvider>
-          {children}
+          <CommandPaletteProvider>{children}</CommandPaletteProvider>
         </ThemeProvider>
       </body>
     </html>

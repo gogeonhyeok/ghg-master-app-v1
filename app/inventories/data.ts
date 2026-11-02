@@ -1,7 +1,7 @@
 import "server-only";
 
-import { MongoClient, type Db } from "mongodb";
-import { isValidPhotoDataUrl } from "./inventory-validation";
+import { Binary, MongoClient, ObjectId, type Db } from "mongodb";
+import { isValidPhotoDataUrl, isValidPhotoFile } from "./inventory-validation";
 import type { Inventory } from "./types";
 
 export const INVENTORIES_DATABASE = "ghg-master-api-v1";
@@ -17,6 +17,9 @@ type InventoryDocument = {
   createdDate?: unknown;
   updatedDate?: unknown;
   photo?: unknown;
+  photoContentType?: unknown;
+  photoUrl?: string;
+  hasPhoto?: boolean;
 };
 
 function toIsoDate(value: unknown): string {
@@ -55,7 +58,19 @@ export async function getInventories(): Promise<Inventory[]> {
   const documents = await database
     .collection<InventoryDocument>(INVENTORIES_COLLECTION)
     .find({}, {
-      projection: { name: 1, description: 1, createdDate: 1, updatedDate: 1, photo: 1 },
+      // Return URLs for S3 photos without loading binary or legacy Base64 bytes with the list.
+      projection: {
+        name: 1, description: 1, createdDate: 1, updatedDate: 1,
+        photoUrl: { $cond: [
+          { $eq: [{ $type: "$photo" }, "string"] },
+          { $cond: [{ $regexMatch: { input: "$photo", regex: "^https://" } }, "$photo", ""] },
+          "",
+        ] },
+        hasPhoto: { $and: [
+          { $in: [{ $type: "$photo" }, ["binData", "string"]] },
+          { $ne: ["$photo", ""] },
+        ] },
+      },
     })
     .sort({ updatedDate: -1, _id: -1 })
     .limit(100)
@@ -63,9 +78,9 @@ export async function getInventories(): Promise<Inventory[]> {
     .toArray();
 
   return documents.map((document) => {
-    const photo = typeof document.photo === "string" && isValidPhotoDataUrl(document.photo)
-      ? document.photo
-      : "";
+    const photo = document.photoUrl || (document.hasPhoto
+      ? `/inventories/${encodeURIComponent(String(document._id))}/photo`
+      : "");
 
     return {
       id: String(document._id),
@@ -76,4 +91,32 @@ export async function getInventories(): Promise<Inventory[]> {
       photo,
     };
   });
+}
+
+export async function getInventoryPhoto(id: string): Promise<{ bytes: Uint8Array; contentType: string } | null> {
+  if (!/^[a-f\d]{24}$/i.test(id)) return null;
+
+  const database = await getInventoriesDatabase();
+  const document = await database.collection<InventoryDocument>(INVENTORIES_COLLECTION).findOne(
+    { _id: new ObjectId(id) },
+    { projection: { photo: 1, photoContentType: 1 }, maxTimeMS: 5000 },
+  );
+  if (!document) return null;
+
+  if (document.photo instanceof Binary && typeof document.photoContentType === "string") {
+    const bytes = new Uint8Array(document.photo.read(0, document.photo.length()));
+    return isValidPhotoFile({ type: document.photoContentType, size: bytes.byteLength })
+      ? { bytes, contentType: document.photoContentType }
+      : null;
+  }
+
+  // Keep old records readable until their Base64 values have been migrated.
+  if (typeof document.photo === "string" && isValidPhotoDataUrl(document.photo)) {
+    const separator = document.photo.indexOf(",");
+    const bytes = new Uint8Array(Buffer.from(document.photo.slice(separator + 1), "base64"));
+    return bytes.byteLength > 0
+      ? { bytes, contentType: document.photo.slice(5, document.photo.indexOf(";")) }
+      : null;
+  }
+  return null;
 }

@@ -1,19 +1,19 @@
 "use client";
 
-import { useActionState, useRef, useState, useCallback } from "react";
+import { useActionState, useRef, useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import { createInventory } from "./actions";
-import { ACCEPTED_PHOTO_TYPES, MAX_PHOTO_BYTES } from "./inventory-validation";
+import { ACCEPTED_PHOTO_TYPES, isValidPhotoFile } from "./inventory-validation";
 import { initialCreateInventoryState, type CreateInventoryState } from "./types";
 import styles from "./page.module.css";
 
 // Helper to compress image using canvas
-async function compressImage(file: File): Promise<string> {
+async function compressImage(file: File): Promise<Blob> {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new window.Image();
-      img.onload = () => {
+    const img = new window.Image();
+    const sourceUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      try {
         const canvas = document.createElement("canvas");
         let width = img.width;
         let height = img.height;
@@ -39,36 +39,54 @@ async function compressImage(file: File): Promise<string> {
           return;
         }
         ctx.drawImage(img, 0, 0, width, height);
-        // Compress to JPEG with 0.7 quality
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
-        resolve(dataUrl);
-      };
-      img.onerror = () => reject(new Error("Failed to load image"));
-      img.src = e.target?.result as string;
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+          else reject(new Error("Could not compress image"));
+        }, "image/jpeg", 0.7);
+      } catch (error) {
+        reject(error);
+      } finally {
+        URL.revokeObjectURL(sourceUrl);
+      }
     };
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
+    img.onerror = () => {
+      URL.revokeObjectURL(sourceUrl);
+      reject(new Error("Failed to load image"));
+    };
+    img.src = sourceUrl;
   });
 }
 
 export default function InventoryForm() {
-  const [photo, setPhoto] = useState("");
+  const [photo, setPhoto] = useState<Blob | null>(null);
+  const [photoPreview, setPhotoPreview] = useState("");
   const [photoError, setPhotoError] = useState("");
   const [readingPhoto, setReadingPhoto] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    return () => {
+      if (photoPreview) URL.revokeObjectURL(photoPreview);
+    };
+  }, [photoPreview]);
+
   const [state, formAction, pending] = useActionState(async (previousState: CreateInventoryState, formData: FormData) => {
+    if (photo) formData.set("photo", photo, "inventory.jpg");
+    else formData.delete("photo");
     const result = await createInventory(previousState, formData);
     if (result.status === "success") {
       formRef.current?.reset();
-      setPhoto("");
+      setPhoto(null);
+      setPhotoPreview("");
       setPhotoError("");
     }
     return result;
   }, initialCreateInventoryState);
 
   const handleFileChange = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.currentTarget.files?.[0];
-    setPhoto("");
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+    setPhoto(null);
+    setPhotoPreview("");
     setPhotoError("");
     if (!file) return;
 
@@ -76,17 +94,23 @@ export default function InventoryForm() {
     const MAX_RAW_FILE_SIZE = 10 * 1024 * 1024; // 10MB
     if (!ACCEPTED_PHOTO_TYPES.includes(file.type as (typeof ACCEPTED_PHOTO_TYPES)[number]) || file.size > MAX_RAW_FILE_SIZE) {
       setPhotoError("Choose a valid image file no larger than 10 MB.");
-      event.currentTarget.value = "";
+      input.value = "";
       return;
     }
 
     setReadingPhoto(true);
     try {
-      const compressedDataUrl = await compressImage(file);
-      setPhoto(compressedDataUrl);
-    } catch (err) {
+      const compressedPhoto = await compressImage(file);
+      if (!isValidPhotoFile(compressedPhoto)) {
+        setPhotoError("The compressed photo is too large. Choose an image that compresses to 2 MB or less.");
+        input.value = "";
+        return;
+      }
+      setPhoto(compressedPhoto);
+      setPhotoPreview(URL.createObjectURL(compressedPhoto));
+    } catch {
       setPhotoError("This photo could not be processed. Choose another file.");
-      event.currentTarget.value = "";
+      input.value = "";
     } finally {
       setReadingPhoto(false);
     }
@@ -95,12 +119,10 @@ export default function InventoryForm() {
   return (
     <details className={styles.createPanel}>
       <summary className={styles.panelHeading}>
-        <span
-          >
-            <span className={styles.eyebrow}>NEW RECORD</span>
-            <span className={styles.panelTitle}>Add an inventory</span>
-          </span
-        >
+        <span>
+          <span className={styles.eyebrow}>NEW RECORD</span>
+          <span className={styles.panelTitle}>Add an inventory</span>
+        </span>
         <span className={styles.expandIcon} aria-hidden="true">
           +
         </span>
@@ -132,29 +154,29 @@ export default function InventoryForm() {
 
         <div className={styles.field}>
           <label htmlFor="inventory-photo">
-            Photo <span className={styles.optionalText}>optional</span>
+            Photo <span>optional</span>
           </label>
           <input
             id="inventory-photo"
             type="file"
             accept={ACCEPTED_PHOTO_TYPES.join(",")}
             capture="environment"
+            disabled={pending || readingPhoto}
             aria-describedby="photo-help photo-error"
             onChange={handleFileChange}
           />
-          <input type="hidden" name="photo" value={photo} />
           <p id="photo-help" className={styles.help}>
-            Images are automatically compressed for fast upload.
+            Choose an image up to 10 MB. It will be compressed for upload (2 MB maximum).
           </p>
           {photoError && (
             <p id="photo-error" className={styles.fieldError} role="alert">
               {photoError}
             </p>
           )}
-          {photo && (
+          {photoPreview && (
             <Image
               className={styles.preview}
-              src={photo}
+              src={photoPreview}
               alt="Selected inventory preview"
               width={240}
               height={150}

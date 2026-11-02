@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import StripeCheckout from "./StripeCheckout";
 import styles from "./page.module.css";
 
 type PaymentOption = {
@@ -87,8 +88,9 @@ export default function PaymentWorkspace({ items, unavailable }: { items: Stripe
     <main>
       <header className={styles.topbar}>
         <a href="#" className={styles.brand}>Payments<span> / workspace</span></a>
-        <div className={styles.topActions}><a href="#stripe-updates">Stripe journal ↓</a><button type="button" onClick={toggleTheme} aria-label="Dark mode" aria-pressed={dark}>{dark ? "☀ Light mode" : "☾ Dark mode"}</button></div>
+        <div className={styles.topActions}><a href="#stripe-checkout">Try Stripe ↓</a><a href="#stripe-updates">Stripe journal ↓</a><button type="button" onClick={toggleTheme} aria-label="Dark mode" aria-pressed={dark}>{dark ? "☀ Light mode" : "☾ Dark mode"}</button></div>
       </header>
+      <StripeCheckout dark={dark} />
       <StripeUpdates items={items} unavailable={unavailable} />
 
       <section className={styles.workspace} aria-label="Payment method explorer">
@@ -160,7 +162,7 @@ export default function PaymentWorkspace({ items, unavailable }: { items: Stripe
         <div>
           <p className={styles.eyebrow}>Payment methods / mock catalog</p>
           <h2>Build a payment <em>toolbox.</em></h2>
-          <p>Explore {paymentOptions.length} payment options for a modern checkout. This is a planning mockup: no live gateway credentials or payment processing are connected.</p>
+          <p>Explore {paymentOptions.length} payment options for a modern checkout. The catalog and preview are planning tools. Try the Stripe sandbox checkout above for an integrated test payment.</p>
         </div>
         <span className={styles.footerTag}>Mockup only</span>
       </footer>
