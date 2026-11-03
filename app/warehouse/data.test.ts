@@ -4,7 +4,7 @@ jest.mock("../inventories/data", () => ({ getInventoriesDatabase: jest.fn() }));
 
 import { Decimal128, type Db, type Document } from "mongodb";
 import { getInventoriesDatabase } from "../inventories/data";
-import { getWarehouseInventories, getWarehouseMasterData } from "./data";
+import { getWarehouseInventories, getWarehouseMasterData, getWarehouseOrders } from "./data";
 import { isMasterKind, parsePage } from "./catalog";
 
 function mockDatabase(records: Record<string, Document[]>, totals: Record<string, number> = {}, failures: string[] = []) {
@@ -57,6 +57,22 @@ test("keeps inventory IDs readable if reference lookups fail", async () => {
   mockDatabase({ wmsInventories: [{ _id: "1", productId: "P1", locationId: "L1", qty: 0 }] }, {}, ["masterProducts", "locations"]);
   const result = await getWarehouseInventories();
   expect(result.rows[0].cells).toMatchObject({ productId: "P1", productName: "—", locationId: "L1", locationNo: "—", qty: "0" });
+});
+
+test("reads orders from the shared database without projecting contact details", async () => {
+  const records = Array.from({ length: 26 }, (_, index) => ({
+    _id: `order-${index}`, ordNo: `ORD-${index}`, centerNo: "BKK5", isUrgent: index === 25,
+    collectBillAmount: index, contactPerson: "Private name", addr1: "Private address", tel: "Private phone",
+  }));
+  const { calls, collection } = mockDatabase({ orders: records }, { orders: 51 });
+  const result = await getWarehouseOrders(2);
+  expect(collection).toHaveBeenCalledWith("orders");
+  expect(result).toMatchObject({ page: 2, pageSize: 25, total: 51 });
+  expect(result.rows[0]).toMatchObject({ id: "order-25", cells: { ordNo: "ORD-25", centerNo: "BKK5", isUrgent: "Yes", collectBillAmount: "25" } });
+  expect(result.rows[0].cells).not.toHaveProperty("contactPerson");
+  expect(calls[0]).toMatchObject({ collection: "orders", skip: 25, limit: 25, sort: { createDate: -1, _id: -1 } });
+  expect(calls[0].projection).not.toHaveProperty("addr1");
+  expect(calls[0].projection).not.toHaveProperty("tel");
 });
 
 test.each([

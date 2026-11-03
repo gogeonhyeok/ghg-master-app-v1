@@ -15,6 +15,20 @@ export const inventoryColumns: TableColumn[] = [
   { key: "invenStatus", label: "Status" },
 ];
 
+export const orderColumns: TableColumn[] = [
+  { key: "ordNo", label: "Order" },
+  { key: "contactOrdNo", label: "Contact order" },
+  { key: "contactOrdType", label: "Order type" },
+  { key: "centerNo", label: "Center" },
+  { key: "etd", label: "ETD" },
+  { key: "dueDate", label: "Due date" },
+  { key: "ordReceiptDate", label: "Received" },
+  { key: "isUrgent", label: "Urgent" },
+  { key: "invenOwnership", label: "Inventory owner" },
+  { key: "collectBillAmount", label: "Collection amount", numeric: true },
+  { key: "cancelTag", label: "Cancel flag", numeric: true },
+];
+
 type MasterDefinition = { label: string; description: string; collection: string; sortKey: string; columns: TableColumn[] };
 
 export const masterData: Record<"products" | "locations" | "centers" | "skus", MasterDefinition> = {

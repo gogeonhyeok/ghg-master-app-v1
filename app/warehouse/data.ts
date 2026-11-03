@@ -2,7 +2,7 @@ import "server-only";
 
 import { Decimal128, ObjectId, type Db, type Document } from "mongodb";
 import { getInventoriesDatabase } from "../inventories/data";
-import { inventoryColumns, masterData, type MasterKind, type RecordPage, type TableColumn, type WarehouseRow } from "./catalog";
+import { inventoryColumns, masterData, orderColumns, type MasterKind, type RecordPage, type TableColumn, type WarehouseRow } from "./catalog";
 
 const numberFormat = new Intl.NumberFormat("en-SG", { maximumFractionDigits: 6 });
 
@@ -54,6 +54,11 @@ export async function getWarehouseInventories(requestedPage = 1): Promise<Record
     row.cells.locationNo = locationNames.get(row.cells.locationId) || "—";
   }
   return result;
+}
+
+export async function getWarehouseOrders(requestedPage = 1): Promise<RecordPage> {
+  const database = await getInventoriesDatabase();
+  return readPage(database, "orders", orderColumns, "createDate", requestedPage, 25);
 }
 
 export async function getWarehouseMasterData(kind: MasterKind, requestedPage = 1): Promise<RecordPage> {

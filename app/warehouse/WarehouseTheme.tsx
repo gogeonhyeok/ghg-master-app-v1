@@ -29,5 +29,5 @@ export default function WarehouseTheme({ children }: { children: ReactNode }) {
 
 export function WarehouseThemeToggle() {
   const { dark, toggle } = useContext(ThemeContext);
-  return <button className={styles.themeToggle} type="button" onClick={toggle} aria-label="Dark mode" aria-pressed={dark}><span aria-hidden="true">{dark ? "☀" : "☾"}</span> {dark ? "Light mode" : "Dark mode"}</button>;
+  return <button type="button" onClick={toggle} aria-label="Dark mode" aria-pressed={dark}><span aria-hidden="true">{dark ? "☀" : "☾"}</span> {dark ? "Light mode" : "Dark mode"}</button>;
 }
