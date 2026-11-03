@@ -57,7 +57,7 @@ async function database(): Promise<Db | null> {
 }
 
 function memory(now: number): MemoryPond {
-  const pond = shared.frogchatMemory ??= { residents: new Map(), messages: [] };
+  const pond: MemoryPond = shared.frogchatMemory ??= { residents: new Map(), messages: [] };
   for (const [key, resident] of pond.residents) {
     if (resident.expiresAt <= now) pond.residents.delete(key);
   }
