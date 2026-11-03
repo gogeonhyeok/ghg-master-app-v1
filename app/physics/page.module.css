@@ -1,15 +1,15 @@
 /* The local ID keeps tag selectors isolated from the shared app bar and other pages. */
 main#physicsPage {
-    --experiment-accent: light-dark(#38644e, #a7d9b5);
-    --lab-paper: light-dark(#f8f8f2, #151b18);
-    --lab-panel: light-dark(#ffffff, #1b2320);
-    --lab-ink: light-dark(#24362d, #e5ece5);
-    --lab-muted: light-dark(#5d6b61, #a7b6ab);
-    --lab-line: light-dark(#d7dfd5, #35473b);
+    --experiment-accent: #a7d9b5;
+    --lab-paper: #151b18;
+    --lab-panel: #1b2320;
+    --lab-ink: #e5ece5;
+    --lab-muted: #a7b6ab;
+    --lab-line: #35473b;
     color: var(--lab-ink);
     background: var(--lab-paper);
     padding: 0 max(24px, calc((100% - 1200px) / 2));
-    font-family: var(--font-geist-sans), sans-serif;
+    font-family: var(--font-geist-sans, system-ui), sans-serif;
     &, & * { box-sizing: border-box; }
     h1, h2, h3, p, figure { margin: 0; }
     a { color: inherit; text-underline-offset: 5px; }
@@ -19,15 +19,15 @@ main#physicsPage {
 
     > header {
         display: grid; grid-template-columns: 1.2fr 1fr; align-items: center; gap: 40px; padding: 78px 0 64px;
-        > div > p:first-child { font: 11px var(--font-geist-mono), monospace; letter-spacing: .15em; color: var(--experiment-accent); }
+        > div > p:first-child { font: 11px var(--font-geist-mono, ui-monospace), monospace; letter-spacing: .15em; color: var(--experiment-accent); }
         h1 { margin: 25px 0; font-size: clamp(44px, 5.5vw, 76px); line-height: 1.03; letter-spacing: -.065em; font-weight: 500; }
         h1 em { font-family: Georgia, serif; font-weight: 400; color: var(--experiment-accent); }
         > div > p:last-of-type { max-width: 430px; font-size: 15px; line-height: 1.85; color: var(--lab-muted); }
         a { display: inline-flex; gap: 42px; margin-top: 30px; padding-bottom: 10px; border-bottom: 1px solid var(--experiment-accent); text-decoration: none; font-size: 13px; }
         figure { color: var(--experiment-accent); }
         svg { width: 100%; height: auto; }
-        text { font: 11px var(--font-geist-mono), monospace; fill: currentColor; }
-        figcaption { color: var(--lab-muted); text-align: center; font: 10px var(--font-geist-mono), monospace; line-height: 1.7; }
+        text { font: 11px var(--font-geist-mono, ui-monospace), monospace; fill: currentColor; }
+        figcaption { color: var(--lab-muted); text-align: center; font: 10px var(--font-geist-mono, ui-monospace), monospace; line-height: 1.7; }
     }
     > nav {
         display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-block: 1px solid var(--lab-line);
@@ -35,20 +35,20 @@ main#physicsPage {
             display: flex; flex-direction: column; padding: 22px 20px; border-left: 1px solid var(--lab-line); text-decoration: none;
             &:first-child { border-left: 0; padding-left: 0; }
             &:hover { background: color-mix(in srgb, var(--experiment-accent) 7%, transparent); }
-            > span { display: flex; justify-content: space-between; margin-bottom: 23px; font: 11px var(--font-geist-mono), monospace; color: var(--experiment-accent); }
+            > span { display: flex; justify-content: space-between; margin-bottom: 23px; font: 11px var(--font-geist-mono, ui-monospace), monospace; color: var(--experiment-accent); }
             strong { font-size: 13px; font-weight: 500; }
             small { margin-top: 7px; font-size: 11px; color: var(--lab-muted); }
         }
     }
     > div[aria-label] {
-        display: flex; flex-wrap: wrap; gap: 15px 30px; align-items: center; padding: 22px 0; color: var(--lab-muted); font: 10px var(--font-geist-mono), monospace;
+        display: flex; flex-wrap: wrap; gap: 15px 30px; align-items: center; padding: 22px 0; color: var(--lab-muted); font: 10px var(--font-geist-mono, ui-monospace), monospace;
         p { margin-left: auto; }
     }
     > section {
         display: grid; grid-template-columns: minmax(0, .78fr) minmax(0, 1.5fr); gap: 70px; padding: 72px 0;
         border-bottom: 1px solid var(--lab-line); scroll-margin-top: calc(var(--app-bar-height, 80px) + 24px);
         > header {
-            > span { color: var(--experiment-accent); font: 10px var(--font-geist-mono), monospace; letter-spacing: .13em; }
+            > span { color: var(--experiment-accent); font: 10px var(--font-geist-mono, ui-monospace), monospace; letter-spacing: .13em; }
             h2 { margin: 19px 0 16px; font-size: clamp(28px, 3.2vw, 41px); font-weight: 500; line-height: 1.1; letter-spacing: -.05em; }
             h3 { margin-bottom: 15px; font-size: 14px; font-weight: 500; }
             > p, details p { color: var(--lab-muted); font-size: 13px; line-height: 1.85; }
@@ -63,16 +63,16 @@ main#physicsPage {
             min-width: 0; align-self: start; padding: 25px; border: 1px solid var(--lab-line); border-radius: 10px; background: var(--lab-panel);
             > header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding-bottom: 16px; }
             h3 { font-size: 14px; font-weight: 500; }
-            > header > span { font: 9px var(--font-geist-mono), monospace; color: var(--lab-muted); letter-spacing: .08em; }
+            > header > span { font: 9px var(--font-geist-mono, ui-monospace), monospace; color: var(--lab-muted); letter-spacing: .08em; }
             figure { padding: 12px 0 20px; border-block: 1px solid var(--lab-line); }
             svg { display: block; width: 100%; height: auto; color: var(--lab-muted); overflow: visible; }
-            svg text { fill: currentColor; font: 11px var(--font-geist-mono), monospace; }
+            svg text { fill: currentColor; font: 11px var(--font-geist-mono, ui-monospace), monospace; }
             svg text[font-size] { font-size: 22px; }
             figcaption { margin-top: 9px; color: var(--lab-muted); font-size: 11px; line-height: 1.7; }
             form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 24px; padding: 22px 0; }
             label { display: flex; flex-direction: column; justify-content: space-between; gap: 12px; min-width: 0; font-size: 11px; }
             label > span { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-            output { color: var(--experiment-accent); font: 11px var(--font-geist-mono), monospace; font-variant-numeric: tabular-nums; white-space: nowrap; }
+            output { color: var(--experiment-accent); font: 11px var(--font-geist-mono, ui-monospace), monospace; font-variant-numeric: tabular-nums; white-space: nowrap; }
             input[type="range"] { width: 100%; margin: 0; accent-color: var(--experiment-accent); cursor: pointer; min-height: 22px; }
             select { width: 100%; min-width: 0; background: var(--lab-paper); color: var(--lab-ink); border: 1px solid var(--lab-line); padding: 8px; border-radius: 4px; font-size: 11px; }
             form > div { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; grid-column: 1 / -1; }
@@ -119,4 +119,14 @@ main#physicsPage {
         > section > div form { grid-template-columns: 1fr; }
         > section > div dl { grid-template-columns: 1fr; }
     }
+}
+
+/* Explicit palettes also work after the production CSS compatibility transform. */
+:global([data-theme="light"]) main#physicsPage {
+    --experiment-accent: #38644e;
+    --lab-paper: #f8f8f2;
+    --lab-panel: #ffffff;
+    --lab-ink: #24362d;
+    --lab-muted: #5d6b61;
+    --lab-line: #d7dfd5;
 }
