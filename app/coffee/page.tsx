@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import styles from "./coffee.module.css";
 import OrderSection from "./OrderSection";
+import BeanPriceTracker from "./BeanPriceTracker";
 
 type CoffeeEntry = {
   name: string;
@@ -115,16 +116,17 @@ export default function CoffeePage() {
   const featuredCoffee = apiCoffees[featuredIndex % apiCoffees.length];
 
   return (
-    <main className={styles.page}>
+    <main id={styles.coffeePage}>
       <OrderSection />
-      <div className={styles.controls}>
-        <div className={styles.pageTitle}>
-          <p className={styles.eyebrow}>Coffee menu builder</p>
+      <BeanPriceTracker />
+      <header>
+        <div>
+          <p>Coffee menu builder</p>
           <h1>Choose a cup.</h1>
         </div>
-        <label className={styles.search}><span aria-hidden="true">⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search coffee, origin, or fact" /></label>
-        <span className={styles.count}>{filteredCoffees.length + filteredMachines.length} entries</span>
-      </div>
+        <label><span aria-hidden="true">⌕</span><input type="search" aria-label="Search coffee, origin, or fact" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search coffee, origin, or fact" /></label>
+        <span aria-live="polite">{filteredCoffees.length + filteredMachines.length} entries</span>
+      </header>
 
       <ApiCoffeeSection
         coffees={apiCoffees}
@@ -133,24 +135,24 @@ export default function CoffeePage() {
         onShuffle={() => setFeaturedIndex((index) => index + 1)}
       />
 
-      <section className={styles.section} aria-labelledby="coffee-title">
-        <SectionHeading number="01" title="Coffee drinks" description="Recipes, traditions, and useful ordering language." />
+      <section aria-labelledby="coffee-title">
+        <SectionHeading id="coffee-title" number="01" title="Coffee drinks" description="Recipes, traditions, and useful ordering language." />
         <FilterBar categories={coffeeCategories} active={coffeeFilter} onChange={setCoffeeFilter} />
-        <div className={styles.grid}>
+        <div>
           {filteredCoffees.map((coffee) => <CoffeeCard key={coffee.name} coffee={coffee} />)}
         </div>
       </section>
 
-      <section className={`${styles.section} ${styles.machineSection}`} aria-labelledby="machine-title">
-        <SectionHeading number="02" title="Coffee machines" description="The mechanisms behind pressure, immersion, filtration, and convenience." />
+      <section aria-labelledby="machine-title">
+        <SectionHeading id="machine-title" number="02" title="Coffee machines" description="The mechanisms behind pressure, immersion, filtration, and convenience." />
         <FilterBar categories={machineCategories} active={machineFilter} onChange={setMachineFilter} />
-        <div className={styles.grid}>
+        <div>
           {filteredMachines.map((machine) => <MachineCard key={machine.name} machine={machine} />)}
         </div>
       </section>
 
-      <footer className={styles.footer}>
-        <div><p className={styles.eyebrow}>For the neighborhood</p><h2>Free coffee from home.</h2><p>Help shape the first menu with a drink or machine idea. The goal is a welcoming cup, no charge, and a little time to meet people nearby.</p></div>
+      <footer>
+        <div><p>For the neighborhood</p><h2>Free coffee from home.</h2><p>Help shape the first menu with a drink or machine idea. The goal is a welcoming cup, no charge, and a little time to meet people nearby.</p></div>
         <a href="mailto:gogeonhyeok@outlook.com?subject=Coffee%20menu%20idea">Share a coffee idea <span aria-hidden="true">↗</span></a>
       </footer>
     </main>
@@ -169,39 +171,39 @@ function ApiCoffeeSection({
   onShuffle: () => void;
 }) {
   return (
-    <section className={styles.apiSection} aria-labelledby="api-coffee-title">
-      <div className={styles.apiHeading}>
+    <section aria-labelledby="api-coffee-title">
+      <header>
         <div>
-          <p className={styles.eyebrow}>Live from the coffee API</p>
+          <p>Live from the coffee API</p>
           <h2 id="api-coffee-title">A fresh pour.</h2>
           <p>New drink ideas with ingredients and images, pulled from a free public source.</p>
         </div>
-        <button className={styles.shuffleButton} type="button" onClick={onShuffle} disabled={!apiCoffees.length}>
+        <button type="button" onClick={onShuffle} disabled={!apiCoffees.length}>
           Shuffle pick <span aria-hidden="true">↻</span>
         </button>
-      </div>
+      </header>
 
-      {status === "loading" && <p className={styles.apiMessage}>Finding a few drinks...</p>}
-      {status === "error" && <p className={styles.apiMessage}>The live menu is taking a break. The glossary is still available below.</p>}
+      {status === "loading" && <p>Finding a few drinks...</p>}
+      {status === "error" && <p>The live menu is taking a break. The glossary is still available below.</p>}
       {featuredCoffee && (
-        <div className={styles.apiFeature}>
-          <div className={styles.apiImage} role="img" aria-label={`${featuredCoffee.title} coffee`} style={{ backgroundImage: `url("${featuredCoffee.image}")` }} />
-          <div className={styles.apiFeatureCopy}>
-            <div className={styles.cardTop}><span className={styles.category}>{featuredCoffee.source} pick</span><span className={styles.origin}>#{featuredCoffee.id}</span></div>
+        <article>
+          <div role="img" aria-label={`${featuredCoffee.title} coffee`} style={{ backgroundImage: `url("${featuredCoffee.image}")` }} />
+          <div>
+            <header><span>{featuredCoffee.source} pick</span><span>#{featuredCoffee.id}</span></header>
             <h3>{featuredCoffee.title}</h3>
             <p>{featuredCoffee.description}</p>
             <footer>{featuredCoffee.ingredients.join(" · ")}</footer>
           </div>
-        </div>
+        </article>
       )}
 
-      {apiCoffees.length > 1 && <div className={styles.apiGrid}>{apiCoffees.filter((coffee) => coffee.id !== featuredCoffee?.id || coffee.source !== featuredCoffee.source).map((coffee) => <ApiCoffeeCard key={`${coffee.source}-${coffee.id}`} coffee={coffee} />)}</div>}
+      {apiCoffees.length > 1 && <div>{apiCoffees.filter((coffee) => coffee.id !== featuredCoffee?.id || coffee.source !== featuredCoffee.source).map((coffee) => <ApiCoffeeCard key={`${coffee.source}-${coffee.id}`} coffee={coffee} />)}</div>}
     </section>
   );
 }
 
 function ApiCoffeeCard({ coffee }: { coffee: ApiCoffee }) {
-  return <article className={styles.apiCard}><div className={styles.apiThumbnail} role="img" aria-label={`${coffee.title} coffee`} style={{ backgroundImage: `url("${coffee.image}")` }} /><div><div className={styles.cardTop}><span className={styles.category}>{coffee.source}</span><span className={styles.origin}>API pick</span></div><h3>{coffee.title}</h3><footer>{coffee.ingredients.slice(0, 3).join(" · ")}</footer></div></article>;
+  return <article><div role="img" aria-label={`${coffee.title} coffee`} style={{ backgroundImage: `url("${coffee.image}")` }} /><div><header><span>{coffee.source}</span><span>API pick</span></header><h3>{coffee.title}</h3><footer>{coffee.ingredients.slice(0, 3).join(" · ")}</footer></div></article>;
 }
 
 function matches(entry: CoffeeEntry | MachineEntry, category: string, query: string) {
@@ -209,18 +211,18 @@ function matches(entry: CoffeeEntry | MachineEntry, category: string, query: str
   return (category === "All" || entry.category === category) && (!query || searchable.includes(query));
 }
 
-function SectionHeading({ number, title, description }: { number: string; title: string; description: string }) {
-  return <div className={styles.sectionHeading}><span>{number}</span><div><h2>{title}</h2><p>{description}</p></div></div>;
+function SectionHeading({ id, number, title, description }: { id: string; number: string; title: string; description: string }) {
+  return <header><span>{number}</span><div><h2 id={id}>{title}</h2><p>{description}</p></div></header>;
 }
 
 function FilterBar({ categories, active, onChange }: { categories: string[]; active: string; onChange: (category: string) => void }) {
-  return <div className={styles.filters} aria-label="Filter entries">{categories.map((category) => <button type="button" className={active === category ? styles.activeFilter : ""} key={category} onClick={() => onChange(category)}>{category}</button>)}</div>;
+  return <div role="group" aria-label="Filter entries">{categories.map((category) => <button type="button" aria-pressed={active === category} key={category} onClick={() => onChange(category)}>{category}</button>)}</div>;
 }
 
 function CoffeeCard({ coffee }: { coffee: CoffeeEntry }) {
-  return <article className={styles.card}><div className={styles.cardTop}><span className={styles.category}>{coffee.category}</span><span className={styles.origin}>{coffee.origin}</span></div><h3>{coffee.name}</h3><p>{coffee.fact}</p><footer>{coffee.ingredients}</footer></article>;
+  return <article><header><span>{coffee.category}</span><span>{coffee.origin}</span></header><h3>{coffee.name}</h3><p>{coffee.fact}</p><footer>{coffee.ingredients}</footer></article>;
 }
 
 function MachineCard({ machine }: { machine: MachineEntry }) {
-  return <article className={`${styles.card} ${styles.machineCard}`}><div className={styles.cardTop}><span className={styles.category}>{machine.brand ?? "Brewing method"}</span><span className={styles.origin}>{machine.category}</span></div><h3>{machine.name}</h3><p>{machine.fact}</p><footer><strong>Best for</strong>{machine.bestFor}</footer></article>;
+  return <article><header><span>{machine.brand ?? "Brewing method"}</span><span>{machine.category}</span></header><h3>{machine.name}</h3><p>{machine.fact}</p><footer><strong>Best for</strong>{machine.bestFor}</footer></article>;
 }
