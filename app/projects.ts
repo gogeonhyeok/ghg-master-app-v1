@@ -13,6 +13,7 @@ export const projects: Project[] = [
   { href: "/favicon", label: "Favicon", description: "Generate, preview, copy, and download website icons", accent: "#c6b6ff" },
   { href: "/softwares", label: "Softwares", description: "Explore software options", accent: "#22c55e" },
   { href: "/camel", label: "Camel", description: "Explore Apache Camel", accent: "#22c55e" },
+  { href: "/physics", label: "Physics", description: "Explore mechanics, electromagnetism, relativity and statistical physics with interactive experiments", accent: "#a7d9b5" },
   { href: "/coffee", label: "Coffee", description: "Explore a coffee shop concept", accent: "#f59e0b" },
   { href: "/finance", label: "Finance", description: "Explore a personal finance dashboard", accent: "#06b6d4" },
   { href: "/iphone", label: "iPhone", description: "View an iPhone product showcase", accent: "#ec4899" },
