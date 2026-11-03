@@ -8,6 +8,18 @@ function validDate(value: unknown): string | null {
   return typeof value === "string" && Number.isFinite(Date.parse(value)) ? new Date(value).toISOString() : null;
 }
 
+function isPartTime(row: Record<string, unknown>): boolean {
+  if (typeof row.title === "string" && /\bpart[\s\u2010-\u2015-]*time\b/i.test(row.title)) return true;
+  // Greenhouse has no standard employment-type field. Only use explicitly
+  // published employment metadata, never incidental mentions in descriptions.
+  return Array.isArray(row.metadata) && row.metadata.some((entry: unknown) => {
+    const field = record(entry);
+    if (typeof field.name !== "string" || !/^(employment type|employment schedule|job type|work schedule|time type)$/i.test(field.name.trim().replace(/[_-]+/g, " "))) return false;
+    const values = Array.isArray(field.value) ? field.value : [field.value];
+    return values.some((value: unknown) => typeof value === "string" && /^part[\s\u2010-\u2015-]*time$/i.test(value.trim()));
+  });
+}
+
 export function normalizeJobs(payload: unknown, employer: (typeof employers)[number]): Job[] {
   const data = record(payload);
   if (!Array.isArray(data.jobs)) throw new Error("Invalid job feed");
@@ -32,6 +44,7 @@ export function normalizeJobs(payload: unknown, employer: (typeof employers)[num
       id, title: row.title.trim(), company: employer.name, employer: employer.token,
       location, url: url.toString(), discipline,
       date: published ?? validDate(row.updated_at), dateLabel: published ? "Posted" : "Updated",
+      employmentType: isPartTime(row) ? "part-time" : null,
     }];
   });
 }

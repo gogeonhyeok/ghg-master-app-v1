@@ -2,21 +2,27 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { filterJobs, jobsUrl, pageSize, parseFilters, type JobsQuery } from "./catalog";
 import { getSingaporeJobs } from "./data";
+import { getPartTimeJobs } from "./himalayas";
+import { parsePartTimePage } from "./part-time";
 import JobsResults from "./JobsResults";
 import JobsSort from "./JobsSort";
 import JobsFilters from "./JobsFilters";
 import JobsPagination from "./JobsPagination";
 import JobBoards from "./JobBoards";
+import PartTimeJobs from "./PartTimeJobs";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
-  title: "Singapore IT Jobs | Go Gun Hyuk",
-  description: "Find Singapore software engineering, data, cloud, security, and IT opportunities from selected employers’ public job boards.",
+  title: "Singapore IT & Remote Part-Time Jobs | Go Gun Hyuk",
+  description: "Explore Singapore IT opportunities and remote part-time jobs across all industries open to applicants in Singapore.",
 };
 
 export default async function JobsPage({ searchParams }: { searchParams: Promise<JobsQuery> }) {
-  const filters = parseFilters(await searchParams);
-  const { jobs, sources } = await getSingaporeJobs();
+  const query = await searchParams;
+  const filters = parseFilters(query);
+  const [{ jobs, sources }, partTimeFeed] = await Promise.all([
+    getSingaporeJobs(), getPartTimeJobs(parsePartTimePage(query)),
+  ]);
   const result = filterJobs(jobs, filters);
   const available = sources.filter((source) => source.available);
   const failed = sources.filter((source) => !source.available);
@@ -81,11 +87,13 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
           </footer>
         </section>
 
+        <PartTimeJobs feed={partTimeFeed} filters={filters} />
+
         <JobBoards />
 
         <footer>
-          <p>Go Gun Hyuk <span>/</span> Singapore IT jobs</p>
-          <a href="https://docs.greenhouse.io/job-board" target="_blank" rel="noopener noreferrer">Job data via Greenhouse’s public API ↗</a>
+          <p>Go Gun Hyuk <span>/</span> Singapore IT & part-time jobs</p>
+          <a href="https://docs.greenhouse.io/job-board" target="_blank" rel="noopener noreferrer">IT job data via Greenhouse’s public API ↗</a>
         </footer>
       </main>
     </div>

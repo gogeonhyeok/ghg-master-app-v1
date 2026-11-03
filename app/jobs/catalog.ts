@@ -23,6 +23,7 @@ export type Job = {
   discipline: Discipline;
   date: string | null;
   dateLabel: "Posted" | "Updated";
+  employmentType: "part-time" | null;
 };
 export type JobsQuery = { [key: string]: string | string[] | undefined };
 export type JobsFilters = { q: string; discipline: string; employer: string; sort: "newest" | "company"; page: number };

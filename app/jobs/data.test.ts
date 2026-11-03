@@ -46,6 +46,34 @@ test("rejects unsafe links and expired postings; labels fallback dates accuratel
   expect(() => normalizeJobs({}, employers[0])).toThrow("Invalid job feed");
 });
 
+test.each(["Software Engineer (Part-time)", "Part Time Software Engineer", "Software Engineer — Part‑Time", "Parttime Developer"])("recognizes explicit part-time title: %s", (title) => {
+  expect(normalizeJobs({ jobs: [{ ...posting, title }] }, employers[0])[0].employmentType).toBe("part-time");
+});
+
+test.each([
+  { name: "Employment Type", value: "Part-time" },
+  { name: "employment_type", value: " part time " },
+  { name: "Job Type", value: ["Part-Time", "Permanent"] },
+  { name: "Work Schedule", value: "Part‑time" },
+])("recognizes publicly exposed employment metadata: %j", (metadata) => {
+  expect(normalizeJobs({ jobs: [{ ...posting, metadata: [metadata] }] }, employers[0])[0].employmentType).toBe("part-time");
+});
+
+test.each([
+  { title: "Contract Software Engineer" },
+  { title: "Freelance Developer" },
+  { title: "Software Engineering Intern" },
+  { title: "Remote Software Engineer" },
+  { content: "Benefits for full-time and part-time employees" },
+  { metadata: [{ name: "Benefits", value: "Part-time" }] },
+  { metadata: [{ name: "Employment Type", value: "Full-time" }] },
+  { metadata: [{ name: "Employment Type", value: "Full-time with part-time benefits" }] },
+  { metadata: [null, { name: "Employment Type", value: 20 }] },
+  { metadata: null },
+])("leaves employment type unknown without an explicit part-time signal: %j", (fields) => {
+  expect(normalizeJobs({ jobs: [{ ...posting, ...fields }] }, employers[0])[0].employmentType).toBeNull();
+});
+
 test("keeps successful feeds when other feeds fail or return malformed JSON", async () => {
   global.fetch = jest.fn<typeof fetch>().mockResolvedValueOnce(Response.json({ jobs: [posting] }))
     .mockRejectedValueOnce(new Error("Timeout"))
