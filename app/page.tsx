@@ -90,11 +90,6 @@ export default function Page() {
   return (
     <div className={styles.page}>
       <div>
-        <header>
-          <Link href="/"><span>g.</span>Go Gun Hyuk</Link>
-          <a href="mailto:gogeonhyeok@outlook.com">Get in touch <span aria-hidden="true">↗</span></a>
-        </header>
-
         <main>
           <section className={styles.posts} aria-labelledby="posts-title">
             <header>

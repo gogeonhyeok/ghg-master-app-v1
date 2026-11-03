@@ -1,0 +1,65 @@
+.shell {
+  --app-bar-height: 80px;
+  --app-content-height: calc(100vh - var(--app-bar-height));
+  --home-bg: #111216;
+  --home-surface: #191a20;
+  --home-text: #f1f0f5;
+  --home-muted: #aaa8b6;
+  --home-subtle: #85818f;
+  --home-border: #292a33;
+  --home-card-border: #302e38;
+  --home-accent: #c4b1f6;
+  --home-label: #b5a0f7;
+  --home-hover: #22212c;
+  --home-hover-border: #807193;
+  --home-tint: #292431;
+  --home-timeline: #1b1922;
+  --home-timeline-line: #494052;
+  --home-secondary: #c0b8cd;
+  --home-google-bg: #131314;
+  --home-google-border: #8e918f;
+  --home-google-text: #e3e3e3;
+  --home-google-hover: #242426;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 100vh;
+  background: var(--home-bg);
+  color: var(--home-text);
+}
+
+.shell[data-theme="light"] {
+  --home-bg: #faf9fc;
+  --home-surface: #ffffff;
+  --home-text: #262331;
+  --home-muted: #64606e;
+  --home-subtle: #716a7d;
+  --home-border: #e1dce8;
+  --home-card-border: #ddd6e6;
+  --home-accent: #6941ad;
+  --home-label: #7551b0;
+  --home-hover: #f2edf8;
+  --home-hover-border: #a28aba;
+  --home-tint: #eee7f6;
+  --home-timeline: #f3eef8;
+  --home-timeline-line: #cabdd9;
+  --home-secondary: #51485f;
+  --home-google-bg: #ffffff;
+  --home-google-border: #747775;
+  --home-google-text: #1f1f1f;
+  --home-google-hover: #f5f7fc;
+}
+
+.content { flex: 1; min-width: 0; }
+
+@supports (height: 100dvh) {
+  .shell {
+    --app-content-height: calc(100dvh - var(--app-bar-height));
+    min-height: 100dvh;
+  }
+}
+
+@media (max-width: 500px) {
+  .shell { --app-bar-height: 72px; }
+}

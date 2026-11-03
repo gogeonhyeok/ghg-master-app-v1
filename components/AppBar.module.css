@@ -1,0 +1,117 @@
+.appBar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  flex-shrink: 0;
+  font: 14px/1.6 var(--font-geist-sans, Arial), Arial, sans-serif;
+  border-bottom: 1px solid var(--home-border);
+  background: color-mix(in srgb, var(--home-bg) 96%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.appBar * { box-sizing: border-box; }
+.appBar a { text-decoration: none; }
+.appBar a:focus-visible { outline: 2px solid var(--home-accent); outline-offset: 5px; }
+
+.inner {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: min(1040px, 100%);
+  min-height: calc(var(--app-bar-height) - 1px);
+  margin: auto;
+  padding: 16px 32px;
+}
+
+.brand {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 11px;
+  color: var(--home-text);
+  font-weight: 600;
+}
+
+.logo {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding-bottom: 4px;
+  border-radius: 8px;
+  background: #b5a0f7;
+  color: #20182f;
+  font-size: 23px;
+  line-height: 1;
+}
+
+.actions, .account {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  min-width: 0;
+}
+
+.actions { margin-left: auto; }
+.actions form { margin: 0; flex-shrink: 0; }
+.contact { color: var(--home-accent); font-size: 13px; white-space: nowrap; }
+.contact span { margin-left: 7px; }
+.contact:hover { color: var(--home-text); }
+
+.themeToggle {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--home-card-border);
+  border-radius: 8px;
+  background: var(--home-surface);
+  color: var(--home-accent);
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+.themeToggle:hover { background: var(--home-hover); border-color: var(--home-hover-border); }
+
+.googleButton, .signOutButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 10px 16px;
+  border: 1px solid var(--home-google-border);
+  border-radius: 8px;
+  font: 500 13px/1.4 var(--font-geist-sans, Arial), Arial, sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+
+.googleButton { min-width: 180px; background: var(--home-google-bg); color: var(--home-google-text); }
+.googleButton svg { flex-shrink: 0; }
+.googleButton:hover:not(:disabled) { background: var(--home-google-hover); }
+.signOutButton { border-color: var(--home-card-border); background: transparent; color: var(--home-accent); }
+.signOutButton:hover:not(:disabled) { background: var(--home-hover); border-color: var(--home-hover-border); }
+.googleButton:disabled, .signOutButton:disabled { opacity: .65; cursor: default; }
+.appBar button:focus-visible { outline: 2px solid var(--home-accent); outline-offset: 4px; }
+.account { gap: 10px; }
+.avatar { display: grid; place-items: center; width: 32px; height: 32px; flex-shrink: 0; border: 1px solid var(--home-card-border); border-radius: 50%; background: var(--home-tint); color: var(--home-accent); font-size: 11px; font-weight: 600; }
+.userName { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--home-text); font-size: 12px; }
+
+@media (max-width: 650px) {
+  .contact { display: none; }
+  .inner { gap: 16px; }
+}
+
+@media (max-width: 500px) {
+  .inner { padding: 14px 20px; }
+  .googleButton { min-width: 0; padding-inline: 12px; font-size: 12px; }
+  .userName { display: none; }
+  .brandName { display: none; }
+  .actions { gap: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .googleButton, .signOutButton, .themeToggle { transition: none; }
+}
