@@ -2,13 +2,19 @@ import { beforeEach, expect, test } from "@jest/globals";
 declare const jest: typeof import("@jest/globals").jest;
 import "@testing-library/jest-dom/jest-globals";
 jest.mock("./data", () => ({ getProperties: jest.fn() }));
+jest.mock("./exchange", () => ({ getUsdRates: jest.fn() }));
 
 import { render, screen, within } from "@testing-library/react";
 import PropertiesPage from "./page";
 import { getProperties } from "./data";
-import { propertyFixture } from "./fixtures";
+import { getUsdRates } from "./exchange";
+import { propertyFixture, usdFixture } from "./fixtures";
 
-beforeEach(() => { jest.clearAllMocks(); jest.mocked(getProperties).mockResolvedValue({ available: true, data: propertyFixture() }); });
+beforeEach(() => {
+  jest.clearAllMocks();
+  jest.mocked(getProperties).mockResolvedValue({ available: true, data: propertyFixture() });
+  jest.mocked(getUsdRates).mockResolvedValue(usdFixture);
+});
 const query = { month: "2026-10" };
 
 test("renders all three markets, native currencies, original records and accessible filters", async () => {
@@ -25,13 +31,15 @@ test("renders all three markets, native currencies, original records and accessi
   expect(within(table).getByText(/TWD\s+25,000,000/)).toBeInTheDocument();
   expect(within(table).getByText("90 m²")).toBeInTheDocument();
   expect(within(table).getAllByText("View record")).toHaveLength(3);
-  expect(screen.getByText(/currency conversion and price ranking have not been applied/)).toBeInTheDocument();
+  expect(within(table).getByText(/USD\s+425,000.00/)).toBeInTheDocument();
+  expect(screen.getByText(/Sorting applies to the records on this page/)).toBeInTheDocument();
 });
 
 test("validates query parameters without requesting the Lambda", async () => {
   render(await PropertiesPage({ searchParams: Promise.resolve({ month: "2026-13" }) }));
   expect(screen.getByRole("alert")).toHaveTextContent("Choose a month");
   expect(getProperties).not.toHaveBeenCalled();
+  expect(getUsdRates).not.toHaveBeenCalled();
 });
 
 test("distinguishes a failed provider from a successful empty result and preserves retry filters", async () => {

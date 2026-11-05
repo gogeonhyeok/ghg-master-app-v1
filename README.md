@@ -7,7 +7,7 @@ Run the payment checks with `npm run test:payment`. For optional local HTTPS,
 use `npm run dev:https`.
 
 The `/properties` page displays property transactions from the deployed Lambda
-with month/location filters, source coverage and pagination. Start with
+with month/location filters, source coverage, USD estimates, sorting and pagination. Start with
 `/properties?month=2026-10`. See the [property page guide](app/properties/README.md).
 
 ## Google sign-in and shared app bar

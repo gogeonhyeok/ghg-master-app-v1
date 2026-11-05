@@ -1,4 +1,5 @@
 import { providers, type PropertyPage, type Provider } from "./catalog";
+import type { UsdRates } from "./usd";
 
 // Synthetic responses shared by tests; no tests contact the Lambda or public providers.
 export function propertyFixture(): PropertyPage {
@@ -13,3 +14,8 @@ export function propertyFixture(): PropertyPage {
       sourceData: [{ floor_area_sqm: "90" }, { area_m2: 84.85 }, { "建物移轉總面積平方公尺": "100.5" }][index] })),
   };
 }
+export const usdFixture: UsdRates = {
+  SGD: { localPerUsd: 1.25, date: "2026-11-05" },
+  KRW: { localPerUsd: 2000, date: "2026-11-04" },
+  TWD: { localPerUsd: 50, date: "2026-11-05" },
+};
