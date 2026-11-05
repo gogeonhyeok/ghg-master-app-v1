@@ -9,6 +9,7 @@ export const projects: Project[] = [
   { href: "/frogchat", label: "Frogchat", description: "Hop into a shared pond and chat with other frogs", accent: "#8fb96a" },
   { href: "/inventories", label: "Inventories", description: "Create and browse MongoDB inventory records", accent: "#93c46e" },
   { href: "/jobs", label: "Jobs", description: "Explore Singapore IT roles and remote part-time jobs across industries", accent: "#b9e3c8" },
+  { href: "/properties", label: "Properties", description: "Explore property transactions in Singapore, South Korea and Taiwan", accent: "#c4b1f6" },
   { href: "/warehouse", label: "Warehouse", description: "Browse WMS inventories, products, locations, centers, and SKUs", accent: "#85b7c2" },
   { href: "/favicon", label: "Favicon", description: "Generate, preview, copy, and download website icons", accent: "#c6b6ff" },
   { href: "/softwares", label: "Softwares", description: "Explore software options", accent: "#22c55e" },

@@ -6,6 +6,10 @@ Pay, and Google Pay, using Next.js API routes. See [payment setup and testing](a
 Run the payment checks with `npm run test:payment`. For optional local HTTPS,
 use `npm run dev:https`.
 
+The `/properties` page displays property transactions from the deployed Lambda
+with month/location filters, source coverage and pagination. Start with
+`/properties?month=2026-10`. See the [property page guide](app/properties/README.md).
+
 ## Google sign-in and shared app bar
 
 The root layout displays the app bar on every page, with Google sign-in,

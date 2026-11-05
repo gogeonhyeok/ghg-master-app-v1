@@ -77,7 +77,7 @@ test("navigates with arrows, wraps selection, and resets selection when filterin
   expect(push).toHaveBeenCalledWith("/inventories");
 });
 
-test.each(["camel", "softwares"])("searches this app's %s project", (project) => {
+test.each(["camel", "softwares", "properties"])("searches this app's %s project", (project) => {
   setup();
   fireEvent.keyDown(window, { key: "k", metaKey: true });
   const input = screen.getByRole("combobox");
