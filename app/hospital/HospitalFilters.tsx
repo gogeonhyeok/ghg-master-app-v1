@@ -8,9 +8,7 @@ export function HiddenHospitalFilters({ filters }: { filters: Filters }) {
 }
 
 const fields = [
-  ["name", "Hospital name", "e.g. General"], ["operator", "Operator", "e.g. SingHealth"],
-  ["speciality", "Specialty", "e.g. cardiology"], ["street", "Street", "e.g. Hospital Drive"],
-  ["postal_code", "Postal code", "e.g. 169608"],
+  ["name", "Hospital name", "e.g. General"], ["address", "Address", "e.g. Outram Road"],
 ] as const;
 
 export default function HospitalFilters({ filters, size, invalidFields }: {
@@ -27,7 +25,7 @@ export default function HospitalFilters({ filters, size, invalidFields }: {
     <input type="hidden" name="page" value="1" />
     <input type="hidden" name="size" value={size} />
     <div className={styles.searchRow}>
-      <div><label htmlFor="hospital-q">Search hospitals</label><input {...inputProps("q")} type="search" maxLength={256} placeholder="Name, operator, specialty or address" /></div>
+      <div><label htmlFor="hospital-q">Search hospitals</label><input {...inputProps("q")} type="search" maxLength={256} placeholder="Hospital name or address" /></div>
       <button type="submit">Search</button>
       {(hasFilters || invalid) && <Link prefetch={false} href={hospitalUrl(1, size)}>Clear search</Link>}
     </div>
@@ -35,11 +33,9 @@ export default function HospitalFilters({ filters, size, invalidFields }: {
       <summary>More filters</summary>
       <div className={styles.filterGrid}>
         {fields.map(([key, label, placeholder]) => <div key={key}><label htmlFor={`hospital-${key}`}>{label}</label><input {...inputProps(key)} type="search" maxLength={256} placeholder={placeholder} /></div>)}
-        <div><label htmlFor="hospital-emergency">Emergency services</label><select {...inputProps("emergency")}><option value="">Any / not specified</option><option value="yes">Yes</option><option value="no">No</option></select></div>
-        <div><label htmlFor="hospital-wheelchair">Wheelchair access</label><select {...inputProps("wheelchair")}><option value="">Any / not specified</option><option value="yes">Yes</option><option value="limited">Limited</option><option value="no">No</option></select></div>
       </div>
-      <p>All selected filters must match. Missing access or emergency details are not treated as “No”.</p>
+      <p>All selected filters must match.</p>
     </details>
-    {invalid && <p id="hospital-filter-error" role="alert" className={directory.description}>Enter each search field once, with up to 256 characters. Choose an emergency or wheelchair option from the list.</p>}
+    {invalid && <p id="hospital-filter-error" role="alert" className={directory.description}>Enter each search field once, with up to 256 characters.</p>}
   </form>;
 }
