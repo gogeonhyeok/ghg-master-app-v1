@@ -1,0 +1,24 @@
+.page { --accent:#346b88; --soft:#edf4f8; }
+:global([data-theme="dark"]) .page { --accent:#99c8df; --soft:#202e38; }
+.filters { padding:0 24px 24px; }
+.searchRow { display:flex; flex-wrap:wrap; align-items:flex-end; gap:12px; }
+.searchRow > div { flex:1 1 260px; max-width:540px; }
+.filters label { display:block; margin-bottom:6px; color:var(--home-muted,#687065); font-size:11px; }
+.filters :is(input:not([type="hidden"]),select) { box-sizing:border-box; width:100%; min-height:38px; padding:7px 10px; border:1px solid var(--home-border,#dce2d8); border-radius:6px; background:var(--home-bg,#f8f9f6); color:var(--home-text,#222820); font:inherit; font-size:13px; }
+.filters :is(input,select)[aria-invalid="true"] { border-color:#b34b38; }
+.filters :is(select,summary):focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
+.filters a { padding:8px 0; color:var(--accent); font-size:12px; }
+.advanced { margin-top:18px; }
+.advanced summary { width:fit-content; cursor:pointer; color:var(--accent); font-size:12px; }
+.advanced > p { margin:14px 0 0; color:var(--home-muted,#687065); font-size:11px; }
+.filterGrid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-top:18px; }
+.details { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:0 0 20px; padding-top:16px; border-top:1px solid var(--home-border,#dce2d8); }
+.details dt { margin-bottom:4px; color:var(--home-muted,#687065); font-size:10px; }
+.details dd { margin:0; font-size:12px; overflow-wrap:anywhere; }
+.contact { display:flex; flex-direction:column; align-items:flex-start; gap:8px; margin-bottom:20px; font-size:12px; overflow-wrap:anywhere; }
+.contact p { margin:0; }
+.contact a { color:var(--accent); }
+.contact span { color:var(--home-muted,#687065); }
+.cardFooter { margin-top:auto; padding-top:14px; border-top:1px solid var(--home-border,#dce2d8); }
+@media (max-width:900px) { .filterGrid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:700px) { .filters { padding:0 16px 20px; } .filterGrid { grid-template-columns:1fr; } }

@@ -16,9 +16,12 @@ export function parseDirectoryQuery(page: QueryValue, size: QueryValue, name: Qu
   };
 }
 
-export function directoryUrl(path: string, page: number, size: number, parameter: string, search = "") {
+export function directoryUrl(path: string, page: number, size: number, parameter: string, search = "", filters: Record<string, string> = {}) {
   const params = new URLSearchParams({ page: String(page), size: String(size) });
   if (search) params.set(parameter, search);
+  for (const [key, value] of Object.entries(filters)) {
+    if (value && key !== "page" && key !== "size") params.set(key, value);
+  }
   return `${path}?${params}`;
 }
 
