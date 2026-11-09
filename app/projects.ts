@@ -10,6 +10,8 @@ export const projects: Project[] = [
   { href: "/inventories", label: "Inventories", description: "Create and browse MongoDB inventory records", accent: "#93c46e" },
   { href: "/jobs", label: "Jobs", description: "Explore Singapore IT roles and remote part-time jobs across industries", accent: "#b9e3c8" },
   { href: "/properties", label: "Properties", description: "Explore property transactions in Singapore, South Korea and Taiwan", accent: "#c4b1f6" },
+  { href: "/companies", label: "Companies", description: "Browse registered local companies in Singapore from ACRA public records", accent: "#a3d8c8" },
+  { href: "/kopitiam", label: "Kopitiam", description: "Find Singapore hawker centres by name and browse addresses and stall counts", accent: "#ddb18b" },
   { href: "/warehouse", label: "Warehouse", description: "Browse WMS inventories, products, locations, centers, and SKUs", accent: "#85b7c2" },
   { href: "/favicon", label: "Favicon", description: "Generate, preview, copy, and download website icons", accent: "#c6b6ff" },
   { href: "/softwares", label: "Softwares", description: "Explore software options", accent: "#22c55e" },

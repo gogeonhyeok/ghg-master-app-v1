@@ -7,16 +7,20 @@ import { isMasterKind, parsePage } from "./catalog";
 const fetchMock = jest.fn();
 const originalFetch = global.fetch;
 const originalEndpoint = process.env.WAREHOUSE_API_URL;
+const originalMasterEndpoint = process.env.WAREHOUSE_MASTER_API_URL;
 
 beforeEach(() => {
   global.fetch = fetchMock;
   fetchMock.mockReset();
   delete process.env.WAREHOUSE_API_URL;
+  delete process.env.WAREHOUSE_MASTER_API_URL;
 });
 afterAll(() => {
   global.fetch = originalFetch;
   if (originalEndpoint === undefined) delete process.env.WAREHOUSE_API_URL;
   else process.env.WAREHOUSE_API_URL = originalEndpoint;
+  if (originalMasterEndpoint === undefined) delete process.env.WAREHOUSE_MASTER_API_URL;
+  else process.env.WAREHOUSE_MASTER_API_URL = originalMasterEndpoint;
 });
 
 function respond(body: unknown, ok = true) {
@@ -42,6 +46,19 @@ test.each(["products", "locations", "centers", "skus"] as const)("reads %s from 
   respond({ rows: [], total: 0, page: 1, pageSize: 25 });
   await expect(getWarehouseMasterData(kind, 5)).resolves.toMatchObject({ rows: [], total: 0, page: 1 });
   expect(fetchMock.mock.calls[0][0]).toBe(`${defaultEndpoint}/master-data/${kind}?page=5`);
+});
+
+test("uses the SQL master base independently of MongoDB transaction endpoints", async () => {
+  process.env.WAREHOUSE_API_URL = "http://localhost:8080/warehouse";
+  process.env.WAREHOUSE_MASTER_API_URL = "http://localhost:8080/warehouse-sql/master-data/";
+  respond({ rows: [], total: 0, page: 1, pageSize: 25 });
+  await getWarehouseMasterData("products", 2);
+  expect(fetchMock.mock.calls[0][0]).toBe("http://localhost:8080/warehouse-sql/master-data/products?page=2");
+  await getWarehouseOrders();
+  expect(fetchMock.mock.calls[1][0]).toBe("http://localhost:8080/warehouse/orders?page=1");
+  respond({ rows: [], total: 0, page: 1, pageSize: 50 });
+  await getWarehouseInventories();
+  expect(fetchMock.mock.calls[2][0]).toBe("http://localhost:8080/warehouse/inventories?page=1");
 });
 
 test("propagates service errors for the page's unavailable state", async () => {

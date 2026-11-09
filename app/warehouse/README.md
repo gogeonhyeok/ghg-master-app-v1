@@ -18,6 +18,18 @@ Deploy the new Camel endpoints before deploying this frontend change. Set
 
 The client calls `/inventories`, `/orders`, and
 `/master-data/{products|locations|centers|skus}` under that base, with `?page=N`.
+For the hybrid MongoDB/Aurora backend, keep transaction requests on
+`WAREHOUSE_API_URL` and set a separate master-data base after deploying and enabling
+`warehouse-sql.camel.yaml`:
+
+```dotenv
+WAREHOUSE_API_URL=http://localhost:8080/warehouse
+WAREHOUSE_MASTER_API_URL=http://localhost:8080/warehouse-sql/master-data
+```
+
+If `WAREHOUSE_MASTER_API_URL` is unset, masters continue to use the original base.
+Both requests still run only on the Next.js server.
+
 Camel returns `{ rows, total, page, pageSize }` with display-ready string cells,
 fixed page sizes (50 stock records or 25 other records), clamped pagination, and
 inventory product/location names. Existing independent unavailable states remain

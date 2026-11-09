@@ -23,8 +23,8 @@ function parseRecordPage(payload: unknown, pageSize: number): RecordPage {
   return { rows, total: data.total as number, page: data.page as number, pageSize };
 }
 
-async function readPage(resource: string, requestedPage: number, pageSize: number): Promise<RecordPage> {
-  const endpoint = (process.env.WAREHOUSE_API_URL || defaultEndpoint).replace(/\/+$/, "");
+async function readPage(resource: string, requestedPage: number, pageSize: number, baseUrl?: string): Promise<RecordPage> {
+  const endpoint = (baseUrl || process.env.WAREHOUSE_API_URL || defaultEndpoint).replace(/\/+$/, "");
   const url = new URL(`${endpoint}/${resource}`);
   url.searchParams.set("page", String(requestedPage));
   const response = await fetch(url.toString(), {
@@ -44,5 +44,7 @@ export async function getWarehouseOrders(requestedPage = 1): Promise<RecordPage>
 
 export async function getWarehouseMasterData(kind: MasterKind, requestedPage = 1): Promise<RecordPage> {
   if (!isMasterKind(kind)) throw new Error("Unknown warehouse master data.");
+  const masterEndpoint = process.env.WAREHOUSE_MASTER_API_URL;
+  if (masterEndpoint) return readPage(kind, requestedPage, 25, masterEndpoint);
   return readPage(`master-data/${kind}`, requestedPage, 25);
 }
