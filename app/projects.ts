@@ -7,6 +7,7 @@ export type Project = {
 
 export const projects: Project[] = [
   { href: "/frogchat", label: "Frogchat", description: "Hop into a shared pond and chat with other frogs", accent: "#8fb96a" },
+  { href: "/kamponglah", label: "Kamponglah", description: "Share everyday neighbourhood gripes in Singapore", accent: "#ac6344" },
   { href: "/inventories", label: "Inventories", description: "Create and browse MongoDB inventory records", accent: "#93c46e" },
   { href: "/jobs", label: "Jobs", description: "Explore Singapore IT roles and remote part-time jobs across industries", accent: "#b9e3c8" },
   { href: "/properties", label: "Properties", description: "Explore property transactions in Singapore, South Korea and Taiwan", accent: "#c4b1f6" },

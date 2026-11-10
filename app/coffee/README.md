@@ -1,4 +1,35 @@
-# Coffee bean price tracker
+# Coffee orders and bean price tracker
+
+## Coffee orders
+
+The order form sends `POST` and the received-orders admin section sends `GET`
+through Next.js server actions to
+`https://vffz3e1r44.execute-api.ap-southeast-1.amazonaws.com/coffee/order`.
+Coffee ordering no longer needs a MongoDB connection in the Next.js app.
+
+POST sends only `{ customerName, quantity }` for Americano orders. The name is
+trimmed and limited to 80 characters; quantity must be an integer from 1 to 10.
+Requests time out after 15 seconds and are not retried automatically. If order
+confirmation fails, check with the host before submitting again.
+
+The admin section is intentionally visible alongside the customer form to
+everyone who can access this testing page. It lists customer, items, status,
+Singapore time and reference, with 25 orders per page. It loads on arrival,
+supports manual refresh and pagination, and returns to the newest orders after
+a successful submission. GET requests bypass caching. A failed refresh keeps
+previously loaded orders visible.
+
+## Cafe menus
+
+`CoffeeMenuSection` loads `GET /coffee/menu` from the same Lambda through
+`menu-actions.ts`, with a 25-second timeout and no Next.js caching. It lists all
+returned drinks grouped by cafe, including category, description when provided,
+price in the original currency, availability and links to the original menus.
+The section loads on arrival, supports manual refresh, and keeps previously
+loaded menus visible if a refresh fails. The API may reuse its own 60-second
+cache. Coverage and the source retrieval time are shown with Menumigo attribution.
+
+## Coffee bean price tracker
 
 `page.tsx` and `BeanPriceTracker.tsx` use semantic elements and accessible
 attributes without `className` props. Their tag selectors live in `coffee.module.css`,

@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import styles from "./coffee.module.css";
 import OrderSection from "./OrderSection";
+import AdminOrders from "./AdminOrders";
+import CoffeeMenuSection from "./CoffeeMenuSection";
 import BeanPriceTracker from "./BeanPriceTracker";
 
 type CoffeeEntry = {
@@ -75,6 +77,7 @@ const coffeeCategories = ["All", ...new Set(coffees.map((coffee) => coffee.categ
 const machineCategories = ["All", ...new Set(machines.map((machine) => machine.category))];
 
 export default function CoffeePage() {
+  const [ordersVersion, setOrdersVersion] = useState(0);
   const [coffeeFilter, setCoffeeFilter] = useState("All");
   const [machineFilter, setMachineFilter] = useState("All");
   const [query, setQuery] = useState("");
@@ -117,7 +120,9 @@ export default function CoffeePage() {
 
   return (
     <main id={styles.coffeePage}>
-      <OrderSection />
+      <OrderSection onOrderPlaced={() => setOrdersVersion((version) => version + 1)} />
+      <AdminOrders key={ordersVersion} />
+      <CoffeeMenuSection />
       <BeanPriceTracker />
       <header>
         <div>

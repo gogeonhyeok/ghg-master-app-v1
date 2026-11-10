@@ -1,10 +1,11 @@
 "use server";
 
-import { MongoClient } from "mongodb";
+import type { CoffeeOrder, OrderPage, OrderListResult, OrderResult } from "./orders";
 
-const mongoGlobal = globalThis as typeof globalThis & { coffeeMongo?: Promise<MongoClient> };
+const orderUrl = "https://vffz3e1r44.execute-api.ap-southeast-1.amazonaws.com/coffee/order";
+const orderFailure = "We couldn’t confirm your order. Please check with the host before trying again.";
 
-export async function placeOrder(formData: FormData): Promise<{ ok: boolean; message: string }> {
+export async function placeOrder(formData: FormData): Promise<OrderResult> {
   const name = formData.get("customerName");
   const rawQuantity = formData.get("quantity");
   const quantity = typeof rawQuantity === "string" ? Number(rawQuantity) : NaN;
@@ -14,26 +15,56 @@ export async function placeOrder(formData: FormData): Promise<{ ok: boolean; mes
   }
 
   try {
-    const uri = process.env.MONGODB_URI || process.env.MONGODB_URL;
-    if (!uri) throw new Error("Missing MongoDB configuration");
-    if (!mongoGlobal.coffeeMongo) {
-      const client = new MongoClient(uri, { maxPoolSize: 10, serverSelectionTimeoutMS: 5000, connectTimeoutMS: 5000 });
-      mongoGlobal.coffeeMongo = client.connect().catch(async () => {
-        mongoGlobal.coffeeMongo = undefined;
-        await client.close().catch(() => undefined);
-        throw new Error("Coffee database unavailable");
-      });
-    }
-    const client = await mongoGlobal.coffeeMongo;
-    const result = await client.db("ghg-master-api-v1").collection("order").insertOne({
-      customerName: name.trim(),
-      items: [{ name: "Americano", quantity }],
-      status: "pending",
-      source: "coffee",
-      createdAt: new Date(),
+    const response = await fetch(orderUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ customerName: name.trim(), quantity }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(15000),
     });
-    return { ok: true, message: `Order received! Your reference is ${result.insertedId.toString()}.` };
+    if (!response.ok) return { ok: false, message: orderFailure };
+    const result = await response.json();
+    if (result?.ok !== true || typeof result.id !== "string" || !result.id || typeof result.message !== "string") {
+      return { ok: false, message: orderFailure };
+    }
+    return { ok: true, message: result.message };
   } catch {
-    return { ok: false, message: "We couldn’t confirm your order. Please check with the host before trying again." };
+    return { ok: false, message: orderFailure };
   }
+}
+
+export async function listOrders(page = 1, size = 25): Promise<OrderListResult> {
+  if (!Number.isInteger(page) || page < 1 || page > 1000000 ||
+      !Number.isInteger(size) || size < 1 || size > 100) {
+    return { ok: false, message: "Choose a valid order page and page size." };
+  }
+  try {
+    const response = await fetch(`${orderUrl}?page=${page}&size=${size}`, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!response.ok) throw new Error("Order list unavailable");
+    const data = await response.json();
+    if (!isOrderPage(data) || data.page !== page || data.size !== size) {
+      throw new Error("Invalid order list");
+    }
+    return { ok: true, data };
+  } catch {
+    return { ok: false, message: "Couldn’t load received orders. Please refresh to try again." };
+  }
+}
+
+function isOrderPage(value: unknown): value is OrderPage {
+  if (!value || typeof value !== "object") return false;
+  const data = value as OrderPage;
+  return Number.isSafeInteger(data.total) && data.total >= 0 &&
+    Number.isInteger(data.page) && Number.isInteger(data.size) &&
+    Array.isArray(data.orders) && data.orders.every((order: CoffeeOrder) =>
+      order && typeof order.id === "string" && typeof order.customerName === "string" &&
+      typeof order.status === "string" && typeof order.createdAt === "string" &&
+      Number.isFinite(Date.parse(order.createdAt)) && Array.isArray(order.items) &&
+      order.items.every((item) => item && typeof item.name === "string" &&
+        Number.isInteger(item.quantity) && item.quantity > 0));
 }

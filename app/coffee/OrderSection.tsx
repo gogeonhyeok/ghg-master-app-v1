@@ -1,31 +1,36 @@
 "use client";
 
-import { useRef, useState, type FormEvent } from "react";
+import { startTransition, useRef, useState, type FormEvent } from "react";
 import { placeOrder } from "./actions";
 import styles from "./coffee.module.css";
 
-export default function OrderSection() {
+export default function OrderSection({ onOrderPlaced }: { onOrderPlaced?: () => void }) {
   const submitting = useRef(false);
   const [pending, setPending] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (submitting.current) return;
     const form = event.currentTarget;
     submitting.current = true;
     setPending(true);
     setResult(null);
-    try {
-      const response = await placeOrder(new FormData(form));
-      setResult(response);
-      if (response.ok) form.reset();
-    } catch {
-      setResult({ ok: false, message: "We couldn’t confirm your order. Please check with the host before trying again." });
-    } finally {
-      submitting.current = false;
-      setPending(false);
-    }
+    startTransition(async () => {
+      try {
+        const response = await placeOrder(new FormData(form));
+        setResult(response);
+        if (response.ok) {
+          form.reset();
+          onOrderPlaced?.();
+        }
+      } catch {
+        setResult({ ok: false, message: "We couldn’t confirm your order. Please check with the host before trying again." });
+      } finally {
+        submitting.current = false;
+        setPending(false);
+      }
+    });
   }
 
   return (

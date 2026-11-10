@@ -202,6 +202,78 @@ main#coffeePage {
 .orderSection .orderError { color: #ffb4a8; }
 @media (max-width: 760px) { .orderForm { grid-template-columns: minmax(0, 1fr); } }
 
+.adminOrders {
+    width: min(1120px, calc(100% - 48px));
+    margin: 28px auto 0;
+    padding: 28px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--panel);
+    color: var(--ink);
+
+    > header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; }
+    h2 { margin: 8px 0; color: var(--green); font-size: clamp(26px, 4vw, 36px); }
+    p { color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .orderError { color: #ffb4a8; }
+    button { padding: 10px 16px; border: 1px solid var(--green); border-radius: 10px; color: var(--green); background: transparent; font: inherit; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: default; }
+    > nav { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 20px; font-size: 13px; }
+}
+
+.orderTable {
+    max-width: 100%;
+    overflow-x: auto;
+    margin-top: 20px;
+    &:focus-visible { outline: 2px solid var(--yellow); outline-offset: 3px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+    caption { padding-bottom: 12px; text-align: left; color: var(--muted); font-size: 12px; }
+    th, td { padding: 14px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--green); font-size: 12px; }
+    td:first-child { min-width: 140px; overflow-wrap: anywhere; }
+    time, code { white-space: nowrap; }
+    code { color: var(--muted); font-size: 11px; }
+}
+
+@media (max-width: 760px) {
+    .adminOrders { padding: 20px 16px; }
+}
+
+.coffeeMenus {
+    width: min(1120px, calc(100% - 48px));
+    margin: 28px auto 0;
+    padding: 28px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--panel);
+    color: var(--ink);
+
+    > header, > article > header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
+    h2 { margin: 8px 0; color: var(--green); font-size: clamp(26px, 4vw, 36px); }
+    p { color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .orderError { color: #ffb4a8; }
+    button { padding: 10px 16px; border: 1px solid var(--green); border-radius: 10px; color: var(--green); background: transparent; font: inherit; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: wait; }
+    a { color: var(--green); font-size: 12px; text-underline-offset: 4px; }
+    > article { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--line); }
+    h3 { margin: 0; font-size: 20px; overflow-wrap: anywhere; }
+    > article > header p { margin: 6px 0 0; }
+    ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 20px 0 0; padding: 0; list-style: none; }
+    li { display: flex; flex-direction: column; min-width: 0; padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-strong); }
+    li > p:first-child { margin: 0 0 10px; color: var(--yellow); font-size: 11px; }
+    h4 { margin: 0; font-size: 18px; overflow-wrap: anywhere; }
+    li > strong { margin-top: auto; padding-top: 20px; color: var(--green); font-size: 20px; font-variant-numeric: tabular-nums; }
+    li > span { margin-top: 8px; color: var(--muted); font-size: 11px; }
+    li > span[data-available="false"] { color: #ffb4a8; }
+    > footer { margin-top: 24px; padding-top: 14px; border-top: 1px solid var(--line); }
+    > footer p { font-size: 11px; }
+
+    @media (max-width: 1000px) { ul { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 650px) {
+        padding: 20px 16px;
+        ul { grid-template-columns: minmax(0, 1fr); }
+    }
+}
+
 /* The tracker is scoped by its named section; child components need no CSS classes. */
 main#coffeePage > section[aria-labelledby="bean-tracker-title"] {
     width: min(1120px, calc(100% - 48px));

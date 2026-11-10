@@ -1,0 +1,6 @@
+Generator: built-in image_gen tool
+Transparent background: true
+Edit target: public/kamponglah/bear.png
+Asset: public/kamponglah/bear-annoyed.png
+
+Use case: identity-preserve. Asset type: tiny website mascot immediately to the left of a complaint submit button. Input image 1 is the edit target: the existing original Kamponglah bear. Change only its expression to cute and visibly annoyed, as if grumbling about noisy neighbours: two clearly inward-slanting furrowed cream eyebrows, narrowed unimpressed eyes, and a tiny open complaining mouth with downturned corners. Keep it endearing, mildly exasperated rather than aggressive. Preserve the exact character identity, rounded charcoal-black bear head and ears, terracotta ear interiors and cheek patches, cream muzzle, cream-white V chest mark, little paws tucked beneath cheeks, cream outer rim, same compact head-and-bust pose, proportions, square composition and simple hand-drawn style. Remove any stray flecks beyond the silhouette. Keep the background truly transparent with real alpha. No text, no speech bubble, no arrows, no added objects or symbols, no scenery, no frame, no shadow. Strong simple facial details must read at 44 pixels.
