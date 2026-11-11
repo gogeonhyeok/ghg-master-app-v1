@@ -2,6 +2,7 @@ import { auth, isGoogleAuthConfigured } from "../../auth";
 import KamponglahPage from "./page";
 
 jest.mock("../../auth", () => ({ auth: jest.fn(), isGoogleAuthConfigured: jest.fn() }));
+jest.mock("./Kamponglah", () => jest.fn());
 
 beforeEach(() => jest.clearAllMocks());
 

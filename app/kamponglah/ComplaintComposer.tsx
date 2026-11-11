@@ -7,9 +7,10 @@ import styles from "./kamponglah.module.css";
 type Props = {
   text: string; onChange: (value: string) => void; onSubmit: () => void;
   canPostAnonymously: boolean; anonymous: boolean; onAnonymousChange: (value: boolean) => void;
+  disabled?: boolean;
 };
 
-export default function ComplaintComposer({ text, onChange, onSubmit, canPostAnonymously, anonymous, onAnonymousChange }: Props) {
+export default function ComplaintComposer({ text, onChange, onSubmit, canPostAnonymously, anonymous, onAnonymousChange, disabled }: Props) {
   const input = useRef<HTMLTextAreaElement>(null);
   const [caret, setCaret] = useState(0);
   const [dismissed, setDismissed] = useState(false);
@@ -82,7 +83,7 @@ export default function ComplaintComposer({ text, onChange, onSubmit, canPostAno
         </div>
         <div className={styles.composerBottom}>
           <div className={styles.quickTags} aria-label="Add a topic">{topics.map((topic) => <button type="button" key={topic} onClick={() => addTag(topicTags[topic])}><span aria-hidden="true">{topicSymbols[topic]}</span>{topic}</button>)}</div>
-          <button className={styles.submit} type="submit" disabled={!text.trim()}>Let it out</button>
+          <button className={styles.submit} type="submit" disabled={disabled || !text.trim()}>Let it out</button>
         </div>
       </form>
     </section>

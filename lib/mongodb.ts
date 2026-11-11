@@ -1,30 +1,20 @@
-import { MongoClient } from 'mongodb';
+import "server-only";
+import { MongoClient } from "mongodb";
 
-// if (!process.env.MONGODB_URI) {
-//   throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
-// }
+const shared = globalThis as typeof globalThis & { appMongoClient?: Promise<MongoClient> };
 
-const uri =
-  'mongodb+srv://gogeonhyeok:qTAB0aDdtRBKocyx@cluster0.smqlq.mongodb.net/?retryWrites=true&w=majority';
-const options = {};
-
-let client;
-let clientPromise: Promise<MongoClient>;
-
-if (process.env.NODE_ENV === 'development') {
-  // In development mode, use a global variable so that the value
-  // is preserved across module reloads caused by HMR (Hot Module Replacement).
-  if (!global._mongoClientPromise) {
-    client = new MongoClient(uri, options);
-    global._mongoClientPromise = client.connect();
+export async function getMongoClient(): Promise<MongoClient> {
+  const uri = process.env.MONGODB_URI || process.env.MONGODB_URL;
+  if (!uri) throw new Error("MongoDB server configuration is missing.");
+  if (!shared.appMongoClient) {
+    const client = new MongoClient(uri, { maxPoolSize: 10, serverSelectionTimeoutMS: 5000, connectTimeoutMS: 5000 });
+    shared.appMongoClient = client.connect().catch(async () => {
+      shared.appMongoClient = undefined;
+      await client.close().catch(() => undefined);
+      throw new Error("MongoDB connection unavailable.");
+    });
   }
-  clientPromise = global._mongoClientPromise;
-} else {
-  // In production mode, it's best to not use a global variable.
-  client = new MongoClient(uri, options);
-  clientPromise = client.connect();
+  return shared.appMongoClient;
 }
 
-// Export a module-scoped MongoClient promise. By doing this in a
-// separate module, the client can be shared across functions.
-export default clientPromise;
+export default getMongoClient;

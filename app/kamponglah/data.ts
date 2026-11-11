@@ -1,5 +1,3 @@
-import { isValidSavedAuthor } from "./authors";
-
 export type Topic = "Noise" | "Smells" | "Blackout" | "Shared spaces";
 export type Place = { tag: string; label: string; area: string; lat: number; lng: number };
 export type Complaint = {
@@ -9,7 +7,7 @@ export type Complaint = {
   place: string | null;
   topic: Topic;
   createdAt: number;
-  sample?: boolean;
+  canDelete?: boolean;
   author?: string;
 };
 
@@ -35,15 +33,6 @@ export const places: Place[] = [
 export const topics: Topic[] = ["Noise", "Smells", "Blackout", "Shared spaces"];
 export const topicTags: Record<Topic, string> = { Noise: "Noise", Smells: "Smells", Blackout: "Blackout", "Shared spaces": "SharedSpaces" };
 export const topicSymbols: Record<Topic, string> = { Noise: "≋", Smells: "〰", Blackout: "ϟ", "Shared spaces": "▦" };
-
-export const sampleComplaints: Complaint[] = [
-  { id: "sample-1", text: "Upstairs has opened a bowling alley. Apparently, business starts at midnight. #485SegarRoad #Noise", area: "Bukit Panjang", place: "485 Segar Road", topic: "Noise", createdAt: Date.parse("2026-11-09T23:40:00+08:00"), sample: true },
-  { id: "sample-2", text: "Quite a strong rubbish smell near the lift lobby this morning. Hope the bin area can get a good wash. #FajarRoad #Smells", area: "Bukit Panjang", place: "Fajar Road", topic: "Smells", createdAt: Date.parse("2026-11-09T08:15:00+08:00"), sample: true },
-  { id: "sample-3", text: "The common corridor lights keep flickering. A bit tricky for our older neighbours coming home at night. #SenjaRoad #SharedSpaces", area: "Bukit Panjang", place: "Senja Road", topic: "Shared spaces", createdAt: Date.parse("2026-11-08T19:20:00+08:00"), sample: true },
-  { id: "sample-4", text: "Power went off during my work call. Anyone else in the area affected, or is it just my place? #Tampines #Blackout", area: "Tampines", place: "Tampines", topic: "Blackout", createdAt: Date.parse("2026-11-08T14:05:00+08:00"), sample: true },
-  { id: "sample-5", text: "The upstairs chairs have more nightlife than I do. Felt pads, anyone? #Punggol #Noise", area: "Punggol", place: "Punggol", topic: "Noise", createdAt: Date.parse("2026-11-07T23:10:00+08:00"), sample: true },
-  { id: "sample-6", text: "Bicycles are blocking the shared walkway at our condo. Can we leave enough space for wheelchairs and prams please? #Bedok #SharedSpaces", area: "Bedok", place: "Bedok", topic: "Shared spaces", createdAt: Date.parse("2026-11-07T18:30:00+08:00"), sample: true },
-];
 
 export function hashtags(text: string): string[] {
   return Array.from(text.matchAll(/#([\p{L}\p{N}_]+)/gu), (match) => match[1]);
@@ -113,18 +102,4 @@ export function rankComplaints(complaints: Complaint[], text: string, area: stri
       reason: samePlace ? "Same location tag" : sameArea ? "In your area" : sameTopic || overlap ? "Related to your post" : "Around Singapore",
     };
   }).sort((a, b) => b.score - a.score || b.post.createdAt - a.post.createdAt).map(({ post, reason }) => ({ ...post, reason }));
-}
-
-export const STORAGE_KEY = "kamponglah-posts-v1";
-
-export function readSavedComplaints(raw: string | null): Complaint[] {
-  try {
-    const parsed: unknown = JSON.parse(raw ?? "[]");
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((post): post is Complaint => Boolean(post && typeof post === "object" &&
-      typeof post.id === "string" && post.id.startsWith("local-") && typeof post.text === "string" &&
-      post.text.trim().length > 0 && post.text.length <= 600 && typeof post.createdAt === "number" && Number.isFinite(new Date(post.createdAt).getTime()) &&
-      (post.area === null || typeof post.area === "string") && (post.place === null || typeof post.place === "string") &&
-      topics.includes(post.topic) && !post.sample && isValidSavedAuthor(post.author))).slice(0, 50);
-  } catch { return []; }
 }

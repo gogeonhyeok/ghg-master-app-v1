@@ -98,15 +98,9 @@
 .search input::placeholder { color: var(--placeholder); }
 .search input::-webkit-search-cancel-button { display: none; }
 .search button { flex-shrink: 0; border: 0; padding: 8px 0; color: var(--accent); background: transparent; font-size: 11px; }
-.highlights { margin-top: 26px; }
-.highlightsHeading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
-.highlightsHeading h2 { margin: 0; font: 700 14px/1.4 Verdana, Arial, sans-serif; letter-spacing: -.3px; }
-.highlightsHeading > span { color: var(--muted); font-size: 10px; }
-.highlightsEmpty { margin: 0; padding: 16px 0; color: var(--muted); font-size: 11px; }
 .feedback { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 12px; background: var(--tint); color: var(--ink); font-size: 11px; border: 1px solid var(--line); border-radius: 2px; }
 .feedback button { background: transparent; color: var(--muted); border: 0; font-size: 18px; padding: 3px; }
 .feed { margin-top: 20px; }
-.feedHeading h2 { font: 700 14px/1.4 Verdana, Arial, sans-serif; letter-spacing: -.3px; margin: 0 0 12px; }
 .filters { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
 .filters button { padding: 5px 0; font-size: 11px; background: transparent; color: var(--muted); border: 0; white-space: nowrap; text-underline-offset: 5px; }
 .filters button[aria-pressed='true'] { color: var(--ink); font-weight: 700; text-decoration: underline; text-decoration-color: var(--red); }
@@ -125,6 +119,12 @@
 .post footer button { border: 0; background: transparent; color: var(--red); font-size: 10px; padding: 3px; }
 .post footer button:hover { text-decoration: underline; }
 .comments { margin-top: 10px; }
+.postActions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+.votes { display: flex; gap: 6px; }
+.votes button { display: inline-flex; align-items: center; gap: 5px; padding: 4px 7px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: var(--muted); font-size: 11px !important; }
+.votes button:hover { background: var(--soft); color: var(--ink); }
+.votes button[aria-pressed='true'] { border-color: var(--header-line); background: var(--tint); color: var(--accent); }
+.votes button span { font-variant-numeric: tabular-nums; }
 .commentToggle { border: 0; padding: 3px 0; background: transparent; color: var(--accent); font-size: 11px !important; }
 .commentToggle:hover { text-decoration: underline; }
 .commentThread { margin-top: 10px; padding-left: 14px; border-left: 2px solid var(--line); }

@@ -13,8 +13,3 @@ export function resolveAuthor(userName: string | null | undefined, area: string 
   const region = area && Object.prototype.hasOwnProperty.call(regions, area) ? regions[area] : undefined;
   return region === "central" ? "Someone from central Singapore" : region ? `Someone from the ${region}` : "Wanderer";
 }
-
-export function isValidSavedAuthor(author: unknown): boolean {
-  // Older local entries have no author; keep them usable with an anonymous fallback.
-  return author === undefined || (typeof author === "string" && author.trim().length > 0 && author.length <= 100);
-}

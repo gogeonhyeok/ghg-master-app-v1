@@ -1,23 +1,46 @@
 # Kamponglah
 
-Visit `/kamponglah`. A frontend preview for everyday complaints about Singapore HDB and condo living. No API, authentication, or new dependencies are required.
+Visit `/kamponglah`. Complaints, comments, votes and theme preferences use the deployed Camel API at `https://vffz3e1r44.execute-api.ap-southeast-1.amazonaws.com/kamponglah`. Camel owns MongoDB access to **`ghg-master-app-v1`**. Kamponglah does not connect to MongoDB from Next.js or use a Next.js API route.
 
-- `ComplaintComposer.tsx`: one textarea, optional topic buttons, and mouse/keyboard hashtag completion. Try `#485 segar`, then Enter. The bundled hints cover a small selection of blocks, roads, and estates; arbitrary hashtags still work as text.
-- `ComplaintFeed.tsx` and `ComplaintList.tsx`: a simple complaint list with topic filters, quiet hashtag styling, sample labels, and deletion of local posts.
-- Each complaint footer shows its saved date and time in Singapore time (SGT), including highlights and search results. Sample posts use fixed fictional dates; local posts retain their original submission time after refresh.
-- `ComplaintComments.tsx` and `comments.ts`: expandable comments on each complaint in highlights, search results, and the main list. Replies are plain text (up to 400 characters), can be deleted, and persist in this browser under `kamponglah-comments-v1`. The most recent 500 replies are retained. Invalid saved entries are ignored; deleting or dropping a local post also removes its comments. Blocked storage keeps replies usable for the current visit.
-- `NearbyHighlights.tsx`: up to three posts from the selected approximate neighbourhood, without repeating them in the main list. Without an area, it offers a short location/hashtag prompt; without local matches, it stays empty rather than substituting distant posts. An area tag in a submitted post remains selected for the current visit.
-- `data.ts`: starter hints, fictional complaints, storage validation, topic detection, and ranking. Exact location tags rank first, followed by the tagged or detected area, topic/keyword similarity, then recency. Cross-area posts remain available when a neighbourhood has few matches. Area hashtags override geolocation. Unknown tags remain plain hashtags without an inferred area.
-- `Kamponglah.tsx`: opt-in browser location and local post persistence. Precise coordinates are used only to select the nearest approximate starter area inside a Singapore bounding box, then discarded. Location is not requested on load or persisted separately. Location denial, timeout, unsupported browsers, and overseas positions fall back to tags, topic matching, and other posts.
+## Server configuration
 
-The route has a light/dark toggle, independent of the app shell. It remembers the selected palette in `localStorage` under `kamponglah-theme`, with a usable in-memory fallback when storage is blocked.
+Set `KAMPONGLAH_IDENTITY_SECRET` in the app server environment to the **same** strong random key of at least 32 UTF-8 bytes stored in AWS Secrets Manager as the plain-text secret `kamponglah.identity-secret`. The API's SAM template resolves that secret into Lambda's environment during the existing GitHub Actions deployment. Its OIDC deployment role needs `secretsmanager:GetSecretValue` on that secret. No copy of the identity key is needed in GitHub Actions secrets. Keep it server-only; do not prefix it with `NEXT_PUBLIC_`, commit it, or send it to the browser. Restart/redeploy the affected service after changing its environment; rotating the secret also requires updating Lambda's resource and the app's environment.
 
-The server page reads the existing Google session using `auth()` when configured and passes only the display name to the client. New complaints and comments snapshot that name as their author. Signed-in users can check “Anonymous” separately in the complaint or comment form; the choice stays checked for that form until changed during the visit. Anonymous entries store only the fallback label, never the Google name. Guests automatically use “Someone from the west/north/east/north-east/central” from the selected starter neighbourhood or opted-in approximate location; unknown areas use “Wanderer”. These are broad labels, not verified residence. Legacy posts derive a fallback from their saved area; legacy comments use “Wanderer”. Reading old content never assigns the current viewer's name to it. No email, profile image, account ID, or precise coordinates are stored with these entries. Authorship remains browser-local demo data until a shared service is added.
+The supplied API URL is the default. Optional `KAMPONGLAH_API_BASE_URL` overrides the base URL (without `/kamponglah`), for example an API Gateway stage. HTTPS is required except for localhost fixtures.
 
-The kampong chicken mascot in `public/kamponglah/chicken.png` was generated with the built-in image_gen tool; its brief is in `mascot-chicken-prompt.txt`. It uses muted earth colours as a left-aligned background inside the textarea (128px desktop, 104px mobile, 70% opacity). The full chicken fits within the input, with “Then complain loh?” aligned beside its beak. Text is inset to avoid overlap, and the decorative background does not intercept pointer input. The transparent background works with either theme. Earlier bear assets and prompts are retained but are not displayed. The Chinese neighbourhood seal remains beside the title.
+## Operations
 
-A single search field matches complaint contents and hashtags together, case-insensitively, with or without `#`. All query terms must match; spaced address terms can match compact address tags. Search respects the topic filter and searches every area. While searching, nearby highlights give way to one result list. Clear the search to restore highlights.
+Collections:
 
-Local posts are capped at 600 characters and the most recent 50 entries in `localStorage` under `kamponglah-posts-v1`. Blocked storage falls back to the current visit. Posts and comments are not shared between devices or residents, and are not official reports. There is no live address service or production complaint backend yet. Before a public community launch, add a shared post and comment service and a full Singapore address source; keep their loading, error, privacy, and moderation behaviour explicit.
+- `kamponglah_complaints`: server-generated ID, author, text, approximate area/place, topic, creation time, normalized search text, and private owner ID.
+- `kamponglah_comments`: complaint ID, author, text, creation time, and private owner ID.
+- `kamponglah_votes`: one uniquely keyed record per resident/complaint. Like/Dislike sets a choice; clicking the selected choice deletes that vote. Counts aggregate all residents' records.
+- `kamponglah_preferences`: a theme per resident.
 
-Validation: `npm test -- --runInBand --watchman=false app/kamponglah` and `npx tsc --noEmit --incremental false`.
+`actions.ts` contains thin Next.js Server Actions, resolving the resident from the existing Google session or guest cookie. `api.ts` signs a 60-second resident assertion using HMAC-SHA256 over `kamponglah.v1.<base64url JSON>` and calls the external API. This matches `ghg-master-api-v1/docs/kamponglah.md`; it is not a Google token or JWT. The shared key and assertion stay on the server. Actions retain the existing UI result shape.
+
+| Operation | External API |
+| --- | --- |
+| Feed, search, tabs and location ranking | `GET /kamponglah/feed?query=…&filter=…&area=…` |
+| Post complaint | `POST /kamponglah/complaints` |
+| Delete own complaint | `DELETE /kamponglah/complaints/{id}` |
+| Comment | `POST /kamponglah/complaints/{id}/comments` |
+| Delete own comment | `DELETE /kamponglah/comments/{id}` |
+| Like, dislike or undo | `PUT /kamponglah/complaints/{id}/vote` |
+| Light/dark preference | `PUT /kamponglah/preferences` |
+
+Client-provided authors, owner IDs, timestamps and counts are never forwarded as entry fields. The API generates these values and enforces ownership. Returned snapshots are validated and reduced to public fields, including `canDelete` flags. Entry removal uses a server-side deletion timestamp. Replies/votes on a removed parent disappear from reads; new replies/votes require an active parent. The API's parent check and child write are separate operations; a concurrent deletion can leave a hidden child record.
+
+Signed-in identity is derived from the authenticated Google email, hashed server-side, and follows the account across devices. Public author names are snapshotted from the Google session. “Anonymous” uses only the broad regional label (or Wanderer) publicly; private ownership still allows the resident to manage the entry. Guests receive a random HttpOnly, SameSite=Lax cookie, Secure in production, lasting up to one year. The cookie holds only a guest token; all content and preferences live in MongoDB. Clearing cookies or switching to another browser loses guest ownership. Signing in does not automatically claim earlier guest posts.
+
+The client confirms writes before clearing drafts or changing counts. Failed operations show an error without pretending to save locally. API calls use `no-store`, a 15-second timeout and no automatic retries or redirects; arbitrary upstream error details are kept private. There is no direct MongoDB or browser-storage fallback. A failed/lost response can follow a successful write, so creation requests are not automatically retried. Initial load failure never displays fictional sample posts. The feed refreshes after writes, on window focus, and every 30 seconds. The API searches and filters in MongoDB before the 200-result limit; approximate area matches sort first, followed by recency. Client ranking further prioritizes exact address hashtags and related topics. One search field matches main contents and hashtags together, case-insensitively, with or without `#`, including spaced terms matching compact tags. Searches are limited to 200 characters; complaints to 600; comments to 400. There are no automatic expiry or 50-post browser limits.
+
+The current one-list layout, compact thumbs icons, quiet hashtags, Singapore timestamps, Chinese seal, and light/dark palette remain. The kampong chicken background in `public/kamponglah/chicken.png` uses muted earth colours, 128px desktop / 104px mobile, 70% opacity. Its generation brief is in `mascot-chicken-prompt.txt`. Earlier bear assets are retained but unused.
+
+Location is opt-in. Precise coordinates select only an approximate bundled neighbourhood, then are discarded. Area hashtags override location. Hashtag completion uses bundled starter hints, not a full Singapore address directory. Search/location/query/draft state stays in memory. There are **no localStorage reads or writes** in Kamponglah. Old browser-only complaints/comments/votes are not automatically uploaded, and the fictional fixtures are used only in tests.
+
+Validation:
+
+- `npm test -- --runInBand --watchman=false app/kamponglah`
+- `npx tsc --noEmit --incremental false`
+- Opt-in read-only deployed API check: `KAMPONGLAH_API_TEST=1 npm test -- --runInBand --watchman=false app/kamponglah/api.integration.test.ts`. Requires the matching signing key in the app environment. It reads the feed with a temporary resident identity and never creates or changes real complaints.

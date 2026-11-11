@@ -1,4 +1,5 @@
-import { detectTopics, findPlaces, hashtagAtCaret, nearestArea, rankComplaints, readSavedComplaints, sampleComplaints, searchComplaints, suggestPlaces } from "./data";
+import { sampleComplaints } from "./fixtures";
+import { detectTopics, findPlaces, hashtagAtCaret, nearestArea, rankComplaints, searchComplaints, suggestPlaces } from "./data";
 
 test("matches partial, spaced address hints and complete case-insensitive hashtags", () => {
   expect(suggestPlaces("485 segar")[0].tag).toBe("485SegarRoad");
@@ -31,13 +32,6 @@ test("maps approximate Singapore positions and refuses invalid or overseas posit
   expect(nearestArea(1.354, 103.945)).toBe("Tampines");
   expect(nearestArea(51.5, -0.1)).toBeNull();
   expect(nearestArea(NaN, 103.8)).toBeNull();
-});
-
-test("restores only valid local posts and tolerates corrupt browser storage", () => {
-  const valid = { ...sampleComplaints[0], id: "local-123", sample: false };
-  expect(readSavedComplaints(JSON.stringify([valid, sampleComplaints[0], { ...valid, text: 4 }, { ...valid, topic: "invalid" }, { ...valid, createdAt: 1e20 }, { ...valid, author: { name: "Invalid" } }]))).toEqual([valid]);
-  expect(readSavedComplaints("broken json")).toEqual([]);
-  expect(readSavedComplaints('{"not":"an array"}')).toEqual([]);
 });
 
 test("searches body text and hashtags together, ignoring case and optional hash marks", () => {
