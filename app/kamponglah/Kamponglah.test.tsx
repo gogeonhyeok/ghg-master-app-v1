@@ -36,6 +36,39 @@ test("loads shared records without reading or writing local storage and keeps on
   expect(actions.loadComplaints).toHaveBeenCalledWith({ query: "", filter: "All", area: null });
 });
 
+test("refreshes on request without polling or window-focus reloads and preserves the current view and draft", async () => {
+  jest.useFakeTimers();
+  let view: ReturnType<typeof render> | undefined;
+  try {
+    view = await open();
+    fireEvent.change(composer(), { target: { value: "An unfinished complaint" } });
+    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "upstairs" } });
+    await act(async () => { jest.advanceTimersByTime(200); });
+    fireEvent.click(within(screen.getByRole("group", { name: "Filter complaints" })).getByRole("button", { name: "Noise" }));
+    await act(async () => { jest.advanceTimersByTime(200); });
+    const calls = jest.mocked(actions.loadComplaints).mock.calls.length;
+
+    snapshot = { ...snapshot, posts: [{ ...sampleComplaints[0], id: "new", text: "Upstairs has a new complaint" }] };
+    await act(async () => {
+      jest.advanceTimersByTime(120000);
+      window.dispatchEvent(new Event("focus"));
+    });
+    expect(actions.loadComplaints).toHaveBeenCalledTimes(calls);
+    expect(screen.queryByText("Upstairs has a new complaint")).not.toBeInTheDocument();
+
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Refresh" })); });
+    expect(actions.loadComplaints).toHaveBeenCalledTimes(calls + 1);
+    expect(actions.loadComplaints).toHaveBeenLastCalledWith({ query: "upstairs", filter: "Noise", area: null });
+    expect(screen.getByText("Upstairs has a new complaint")).toBeInTheDocument();
+    expect(screen.getByRole("searchbox")).toHaveValue("upstairs");
+    expect(composer()).toHaveValue("An unfinished complaint");
+    expect(within(screen.getByRole("group", { name: "Filter complaints" })).getByRole("button", { name: "Noise" })).toHaveAttribute("aria-pressed", "true");
+  } finally {
+    view?.unmount();
+    jest.useRealTimers();
+  }
+});
+
 test("posts through the server, preserves a failed draft and waits for confirmation", async () => {
   await open("Alex Tan");
   fireEvent.click(screen.getByRole("checkbox", { name: "Anonymous" }));

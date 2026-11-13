@@ -57,10 +57,7 @@ export default function Kamponglah({ userName = null }: { userName?: string | nu
 
   useEffect(() => {
     mounted.current = true;
-    const onFocus = () => { if (!busyRef.current) void refreshRef.current(); };
-    const timer = window.setInterval(onFocus, 30000);
-    window.addEventListener("focus", onFocus);
-    return () => { mounted.current = false; ++request.current; window.clearInterval(timer); window.removeEventListener("focus", onFocus); };
+    return () => { mounted.current = false; ++request.current; };
   }, []);
   useEffect(() => {
     const timer = window.setTimeout(() => { if (!busyRef.current) void refresh(); }, 200);
@@ -147,7 +144,7 @@ export default function Kamponglah({ userName = null }: { userName?: string | nu
           {query && <button type="button" onClick={() => setQuery("")}>Clear search</button>}
         </form>
         {loadError && !loading && <button type="button" onClick={() => void refresh()}>Retry</button>}
-        <ComplaintFeed posts={visiblePosts} filter={filter} onFilter={setFilter} searching={searching}
+        <ComplaintFeed posts={visiblePosts} filter={filter} onFilter={setFilter} searching={searching} onRefresh={() => void refresh()}
           onEdit={() => document.getElementById("complaint")?.focus()}
           loading={loading} ready={loaded} onDelete={(id) => { void run(() => deleteComplaint(id), "Post removed."); }} disabled={busy} commentThreads={commentThreads} voting={voting} />
       </div>
